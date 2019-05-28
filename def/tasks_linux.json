@@ -1,0 +1,61 @@
+{
+  "id": "TASK_NET",
+  "desc": "test task net object",
+  "type": "net",
+  "subtasks": [
+    {
+      "id": "T1",
+      "desc": "test task names T1",
+      "type": "task",
+      "command": "/nuc/opt/ebr-cli_lt/bin/sleep.sh",
+	  "args": "T1 5"
+    },
+    {
+      "id": "T2",
+      "desc": "test task names T2",
+      "type": "unit",
+      "trigger": {
+        "predecessors": ["T1"]
+      },
+      "subtasks": [
+        {
+          "id": "T2-1",
+          "desc": "test task names T2-1",
+          "type": "task",
+          "command": "/nuc/opt/ebr-cli_lt/bin/sleep.sh",
+		  "args": "T2-1 10"
+        },
+        {
+          "id": "T2-2",
+          "desc": "test task names T2-1",
+          "type": "task",
+          "command": "/nuc/opt/ebr-cli_lt/bin/sleep.sh",
+		  "args": "T2-2 5",
+          "trigger": {
+          	"predecessors": ["T2-1"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "T3",
+      "desc": "test task names T3",
+      "type": "task",
+      "command": "/nuc/opt/ebr-cli_lt/bin/sleep.sh",
+	  "args": "T3 5",
+      "trigger": {
+          "predecessors": ["T1", "T2"]
+      }
+    },
+    {
+      "id": "T4",
+      "desc": "test task names T4",
+      "type": "task",
+      "command": "/nuc/opt/ebr-cli_lt/bin/sleep.sh",
+	  "args": "T4 10",
+      "trigger": {
+        "predecessors": ["T1"]
+      }
+    }
+  ]
+}

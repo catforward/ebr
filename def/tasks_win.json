@@ -1,0 +1,61 @@
+{
+  "id": "TASK_NET",
+  "desc": "test task net object",
+  "type": "net",
+  "subtasks": [
+    {
+      "id": "T1",
+      "desc": "test task names T1",
+      "type": "task",
+      "command": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+	  "args": "-Command echo 'T1 start...';sleep 5;echo 'T1 Finished...'"
+    },
+    {
+      "id": "T2",
+      "desc": "test task names T2",
+      "type": "unit",
+      "trigger": {
+        "predecessors": ["T1"]
+      },
+      "subtasks": [
+        {
+          "id": "T2-1",
+          "desc": "test task names T2-1",
+          "type": "task",
+          "command": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+		  "args": "-Command echo 'T2-1 start...';sleep 10;echo 'T2-1 Finished...'"
+        },
+        {
+          "id": "T2-2",
+          "desc": "test task names T2-1",
+          "type": "task",
+          "command": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+		  "args": "-Command echo 'T2-2 start...';sleep 5;echo 'T2-2 Finished...'",
+          "trigger": {
+          	"predecessors": ["T2-1"]
+          }
+        }
+      ]
+    },
+    {
+      "id": "T3",
+      "desc": "test task names T3",
+      "type": "task",
+      "command": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+	  "args": "-Command echo 'T3 start...';sleep 5;echo 'T3 Finished...'",
+      "trigger": {
+          "predecessors": ["T1", "T2"]
+      }
+    },
+    {
+      "id": "T4",
+      "desc": "test task names T4",
+      "type": "task",
+      "command": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe",
+	  "args": "-Command echo 'T4 start...';sleep 10;echo 'T4 Finished...'",
+      "trigger": {
+        "predecessors": ["T1"]
+      }
+    }
+  ]
+}
