@@ -5,7 +5,7 @@ JAVA_OPTS="-Xms32m -Xmx64m"
 
 SCRIPT_ROOT=$(cd $(dirname $0); pwd)
 EBR_ROOT=${SCRIPT_ROOT}/..
-APP_NAME=ebr-cli-0.1-all.jar
+APP_NAME=ebr-0.1-all.jar
 APP_PID=${APP_NAME}.pid
 APP_JAR=${EBR_ROOT}/libs/${APP_NAME}
 
@@ -54,6 +54,8 @@ restart() {
 	stop
 	start
 }
+
+cd ${EBR_ROOT}
 
 case "$1" in
 	"start")

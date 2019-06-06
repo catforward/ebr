@@ -27,7 +27,7 @@ package tsm.one.ebr.handlers;
 import static tsm.one.ebr.base.Handler.HandlerEvent.Const.ACT_LOAD_DEF_FILE;
 import static tsm.one.ebr.base.Handler.HandlerEvent.Const.ACT_MANAGEMENT_APPEND;
 import static tsm.one.ebr.base.Handler.HandlerEvent.Const.DATA_PATH;
-import static tsm.one.ebr.base.Handler.HandlerEvent.Const.DATA_TASK_NET;
+import static tsm.one.ebr.base.Handler.HandlerEvent.Const.DATA_TASK_GRAPH;
 import static tsm.one.ebr.base.Handler.HandlerEvent.Const.FLG;
 import static tsm.one.ebr.base.Handler.HandlerEvent.Const.FLG_AUTO_START;
 import static tsm.one.ebr.base.HandlerId.TASK_APP;
@@ -41,8 +41,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Logger;
@@ -54,15 +54,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.google.common.eventbus.Subscribe;
-import com.google.common.graph.ElementOrder;
-import com.google.common.graph.GraphBuilder;
-import com.google.common.graph.MutableGraph;
 
 import tsm.one.ebr.base.Application;
 import tsm.one.ebr.base.Handler;
-import tsm.one.ebr.base.Task.Meta;
-import tsm.one.ebr.base.Task.Net;
-import tsm.one.ebr.base.Task.Node;
+import tsm.one.ebr.base.data.TaskGraph;
+import tsm.one.ebr.base.data.TaskUnit;
+import tsm.one.ebr.base.data.TaskUnit.Symbols;
+import tsm.one.ebr.base.data.TaskUnit.Type;
 import tsm.one.ebr.base.utils.ConfigUtils;
 import tsm.one.ebr.base.utils.PathUtils;
 
@@ -122,7 +120,7 @@ public class TaskBuilder extends Handler {
 		try {
 			switch (event.getAct()) {
 			case ACT_LOAD_DEF_FILE: {
-				buildTaskNet(event);
+				onLoadDefineFile(event);
 				break;
 			}
 			case ACT_SERV_SHUTDOWN: {
@@ -147,18 +145,20 @@ public class TaskBuilder extends Handler {
 	 * @param event 事件类实例
 	 * @throws IOException
 	 */
-	private void buildTaskNet(HandlerEvent event) throws IOException {
+	private void onLoadDefineFile(HandlerEvent event) throws IOException {
 		String filePath = makeDefFileFullPath(event);
 
-		Node rootNode = TaskItemBuilder.loadDefineFileFromDisk(filePath);
-		if (!TaskValidator.validateNodeTree(rootNode)) {
+		Map<String, TaskUnit> unitPool = TaskItemBuilder.loadUnitFromDefineFile(filePath);
+		if (!TaskValidator.validateUnitDefine(unitPool)) {
 			logger.info("Task的JSON(NodeTree)定义不合法");
 			finishNoticeFrom(TASK_BUILDER);
 			return;
 		}
 
-		Net taskNet = new Net(rootNode);
-		if (!TaskValidator.validateTaskNet(taskNet)) {
+		TaskGraph taskGraph = new TaskGraph(unitPool.get(Symbols.KEY_ROOT_UNIT));
+		try {
+			taskGraph.build(unitPool);
+		} catch (Exception ex) {
 			logger.info("Task的JSON(Net)定义不合法");
 			finishNoticeFrom(TASK_BUILDER);
 			return;
@@ -169,7 +169,7 @@ public class TaskBuilder extends Handler {
 				.setDst(TASK_MANAGER)
 				.setAct(ACT_MANAGEMENT_APPEND)
 				.addParam(FLG, FLG_AUTO_START)
-				.addParam(DATA_TASK_NET, taskNet));
+				.addParam(DATA_TASK_GRAPH, taskGraph));
 	}
 
 	/**
@@ -212,10 +212,10 @@ class TaskItemBuilder {
 	 * @param filePath Task定义文件的完整路径
 	 * @throws IOException
 	 */
-	static Node loadDefineFileFromDisk(String filePath) throws IOException {
+	static Map<String, TaskUnit> loadUnitFromDefineFile(String filePath) throws IOException {
 		try (FileInputStream fis = new FileInputStream(filePath);
-				InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
-				BufferedReader reader = new BufferedReader(isr)) {
+			InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
+			BufferedReader reader = new BufferedReader(isr)) {
 			return parse(initObjectMapper().readTree(reader));
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -260,12 +260,10 @@ class TaskItemBuilder {
 	 * @param jsonRoot Task定义文件转换后的json根节点
 	 * @return Node
 	 */
-	private static Node parse(JsonNode jsonRoot) {
-		HashMap<String, Node> taskNodePool = new HashMap<>();
-		createTaskNodeTree(null, jsonRoot, taskNodePool);
-		Node nRoot = taskNodePool.get(Node.ROOT_NODE);
-		taskNodePool.clear();
-		return nRoot;
+	private static Map<String, TaskUnit> parse(JsonNode jsonRoot) {
+		HashMap<String, TaskUnit> taskUnitPool = new HashMap<>();
+		createUnitTree(null, jsonRoot, taskUnitPool);
+		return taskUnitPool;
 	}
 
 	/**
@@ -278,90 +276,62 @@ class TaskItemBuilder {
 	 * @param taskNodePool 所有节点对象池
 	 * 
 	 */
-	private static void createTaskNodeTree(Node parent, JsonNode jsonNode, Map<String, Node> taskNodePool) {
-		// 基本项目
-		Optional<JsonNode> value = Optional.ofNullable(jsonNode.get(Meta.KEY_ID));
-		if (value.isEmpty()) {
-			throw new RuntimeException("没有设置id元素");
+	private static void createUnitTree(TaskUnit parent, JsonNode jsonNode,
+											Map<String, TaskUnit> taskUnitPool) {
+		Optional<JsonNode> optValue = Optional.ofNullable(jsonNode.get(Symbols.KEY_UID));
+		if (optValue.isEmpty()) {
+			throw new RuntimeException("没有设置uid元素");
 		}
-		// 使用ID取得或创建Meta
-		String id = value.get().asText();
-		Node currentNode = getTaskNode(id, taskNodePool);
-		// 类型
-		value = Optional.ofNullable(jsonNode.get(Meta.KEY_TYPE));
-		if (value.isPresent()) {
-			currentNode.getMeta().setType(value.get().asText());
-		}
+		// 使用ID取得或创建Unit
+		String uid = optValue.get().asText();
+		TaskUnit currentUnit = Optional.ofNullable(taskUnitPool.get(uid)).orElseGet(() -> {
+			TaskUnit newUnit = new TaskUnit(uid, parent);
+			taskUnitPool.put(uid, newUnit);
+			if (newUnit.parent == null) {
+				newUnit.setType(Type.ROOT);
+				newUnit.setUrl(String.format("/%s", uid));
+				taskUnitPool.put(Symbols.KEY_ROOT_UNIT, newUnit);
+			} else {
+				newUnit.setUrl(String.format("%s/%s", parent.getUrl(), uid));
+				parent.children.add(newUnit);
+			}
+			return newUnit;
+		});
 		// 描述
-		value = Optional.ofNullable(jsonNode.get(Meta.KEY_DESC));
-		if (value.isPresent()) {
-			currentNode.getMeta().setDesc(value.get().asText());
+		optValue = Optional.ofNullable(jsonNode.get(Symbols.KEY_DESC));
+		if (optValue.isPresent()) {
+			currentUnit.meta.put(Symbols.KEY_DESC, optValue.get().asText());
 		}
 		// 命令
-		if (Meta.VALUE_TYPE_TASK.equalsIgnoreCase(currentNode.getMeta().getType())) {
-
-			value = Optional.ofNullable(jsonNode.get(Meta.KEY_COMMAND));
-			if (value.isPresent()) {
-				currentNode.getMeta().setCommand(value.get().asText());
-			}
-			value = Optional.ofNullable(jsonNode.get(Meta.KEY_ARGS));
-			if (value.isPresent()) {
-				currentNode.getMeta().setArgs(value.get().asText());
-			}
+		optValue = Optional.ofNullable(jsonNode.get(Symbols.KEY_COMMAND));
+		if (optValue.isPresent()) {
+			currentUnit.meta.put(Symbols.KEY_COMMAND, optValue.get().asText());
 		}
-		// 触发器,前驱后继关系
-		value = Optional.ofNullable(jsonNode.get(Meta.KEY_TRIGGER));
-		if (value.isPresent()) {
-			Optional<JsonNode> subValue = Optional.ofNullable(value.get().get(Meta.KEY_PREDECESSORS));
-			if (subValue.isPresent()) {
-				JsonNode prevTasks = subValue.get();
-				int size = prevTasks.size();
+		// 触发器
+		optValue = Optional.ofNullable(jsonNode.get(Symbols.KEY_PREDECESSORS_LIST));
+		if (optValue.isPresent()) {
+			JsonNode predecessorsNode = optValue.get();
+			int size = predecessorsNode.size();
+			if (size != 0) {
+				ArrayList<String> predecessorList = new ArrayList<>(size);
 				for (int idx = 0; idx < size; ++idx) {
-					Node prevNode = getTaskNode(prevTasks.get(idx).asText(), taskNodePool);
-					prevNode.addSuccessors(currentNode);
-					currentNode.addPredecessors(prevNode);
+					predecessorList.add(predecessorsNode.get(idx).asText());
 				}
+				currentUnit.meta.put(Symbols.KEY_PREDECESSORS_LIST, predecessorList);
 			}
-		}
-		// 与父节点关系
-		if (Meta.VALUE_TYPE_NET.equalsIgnoreCase(currentNode.getMeta().getType())) {
-			if (taskNodePool.containsKey(Node.ROOT_NODE)) {
-				throw new RuntimeException("不允许存在复数个类型为NET元素的声明");
-			}
-			currentNode.setUrl(String.format("/%s", currentNode.getMeta().getId()));
-			taskNodePool.remove(currentNode.getMeta().getId());
-			taskNodePool.put(Node.ROOT_NODE, currentNode);
-		} else {
-			currentNode.setParent(parent);
-			currentNode.setUrl(String.format("%s/%s", parent.getUrl(), currentNode.getMeta().getId()));
-			parent.addChild(currentNode);
 		}
 		// 子元素
-		value = Optional.ofNullable(jsonNode.get(Meta.KEY_SUB_TASKS));
-		if (value.isPresent()) {
-			int size = value.get().size();
+		optValue = Optional.ofNullable(jsonNode.get(Symbols.KEY_UNITS));
+		if (optValue.isPresent()) {
+			int size = optValue.get().size();
 			for (int idx = 0; idx < size; ++idx) {
-				createTaskNodeTree(currentNode, value.get().get(idx), taskNodePool);
+				createUnitTree(currentUnit, optValue.get().get(idx), taskUnitPool);
+			}
+			// 类型
+			if (Type.ROOT != currentUnit.getType()) {
+				currentUnit.setType(Type.MODULE);
 			}
 		}
-	}
-
-	/**
-	 * <pre>
-	 * 取得一个指定ID的节点实例
-	 * 如果指定ID的节点实例不存在则创建，保存入节点实例池并返回
-	 * </pre>
-	 * 
-	 * @param id 节点ID
-	 * @param taskNodePool 节点实例池
-	 * @return Node
-	 */
-	private static Node getTaskNode(String id, Map<String, Node> taskNodePool) {
-		return Optional.ofNullable(taskNodePool.get(id)).orElseGet(() -> {
-			Node newNode = new Node(new Meta(id));
-			taskNodePool.put(id, newNode);
-			return newNode;
-		});
 	}
 }
 
@@ -371,7 +341,6 @@ class TaskItemBuilder {
  * - 对构建的tasknet对象进行以下验证
  *  -- 必须的定义项是否完整定义
  *  -- 存在逻辑先后关系的task是否存在
- *  -- 逻辑图不允许出现自环
  * </pre>
  * 
  * @author catforward
@@ -382,104 +351,28 @@ class TaskValidator {
 
 	/**
 	 * <pre>
-	 * 验证一个节点树是否符合以下想定
-	 * - 必要的属性是否设定
-	 * - 存在子节点时对子节点作同样验证
+	 * 验证一个任务单元是否符合以下想定
+	 * - 单元类型为任务单元时必要要存在命令定义属性
+	 * - 存在前驱任务定义时，前驱必须存在
 	 * </pre>
 	 * 
-	 * @param rootNode 根节点
+	 * @param unitPool 任务定义集
 	 * @return boolean true:验证通过 false:验证失败
 	 */
-	static boolean validateNodeTree(Node rootNode) {
-		return checkTaskNode(rootNode);
-	}
-
-	/**
-	 * <pre>
-	 * 一个节点集合类似一个图结构，此图结构否符合以下想定
-	 * - 可以没有前驱后继
-	 * - 可以存在多前驱，多后继
-	 * - 可以存在只有前驱的节点或只有后继的节点
-	 * - 不允许出现自环
-	 * </pre>
-	 * 
-	 * @param net 节点集
-	 * @return boolean true:验证通过 false:验证失败
-	 */
-	static boolean validateTaskNet(Net net) {
-		boolean validated = true;
-		MutableGraph<Node> taskGraph = GraphBuilder.directed() // 指定为有向图
-				.nodeOrder(ElementOrder.<Node>insertion()) // 节点按插入顺序输出
-				// (还可以取值无序unordered()、节点类型的自然顺序natural())
-				// .expectedNodeCount(NODE_COUNT) //预期节点数
-				.allowsSelfLoops(false) // 不允许自环
-				.build();
-		try {
-			net.getHeadNodes().forEach(headNode -> {
-				fillTaskGraph(headNode, taskGraph);
-			});
-		} catch (Exception ex) {
-			// TODO
-			ex.printStackTrace();
-			validated = false;
-		}
-		return validated;
-	}
-
-	/**
-	 * <pre>
-	 * 验证一个给定的节点的以下属性是否被设置
-	 * - Type属性
-	 * - Command属性
-	 * </pre>
-	 * 
-	 * @param taskNode 验证对象节点
-	 * @return boolean true:验证通过 false:验证失败
-	 */
-	private static boolean checkTaskNode(Node taskNode) {
-		boolean validated = true;
-		String type = "";
-		Optional<String> value = Optional.ofNullable(taskNode.getMeta().getType());
-		if (value.isEmpty()) {
-			logger.severe(String.format("Task:[%s]的Type属性未设定", taskNode.getMeta().getId()));
-			validated = false;
-		} else {
-			type = value.get();
-		}
-		// 执行命令的定义
-		value = Optional.ofNullable(taskNode.getMeta().getCommand());
-		if (Meta.VALUE_TYPE_TASK.equalsIgnoreCase(type) && value.isEmpty()) {
-			logger.severe(String.format("Task:[%s]的Command未设定", taskNode.getMeta().getId()));
-			validated = false;
-		}
-		// 子Task存在检查
-		Optional<List<Node>> childrenOpt = Optional.ofNullable(taskNode.getChildren());
-		if (childrenOpt.isPresent()) {
-			for (Node child : childrenOpt.get()) {
-				if (!checkTaskNode(child)) {
-					validated = false;
+	static boolean validateUnitDefine(Map<String, TaskUnit> unitPool) {
+		for (var entry : unitPool.entrySet()) {
+			TaskUnit unit = entry.getValue();
+			if (Type.TASK == unit.getType() && unit.getCommand().isEmpty()) {
+				logger.warning(String.format("uid:[%s]没有定义command阿！老哥！", unit.getUid()));
+				return false;
+			}
+			for (String predecessorId : unit.getPredecessorsId()) {
+				if (!unitPool.containsKey(predecessorId)) {
+					logger.warning(String.format("uid:[%s]的前驱[%s]没有定义阿！老哥！", unit.getUid(), predecessorId));
+					return false;
 				}
 			}
 		}
-		return validated;
-	}
-
-	/**
-	 * <pre>
-	 * 将创建的任务节点信息填充至图结构
-	 * 出现自环时验证失败
-	 * </pre>
-	 * 
-	 * @param taskNode 节点
-	 * @param taskGraph 节点图
-	 */
-	private static void fillTaskGraph(Node taskNode, MutableGraph<Node> taskGraph) {
-		taskGraph.addNode(taskNode);
-		taskNode.getPredecessors().forEach(predecessor -> {
-			taskGraph.putEdge(predecessor, taskNode);
-		});
-		for (Node childNode : taskNode.getChildren()) {
-			fillTaskGraph(childNode, taskGraph);
-		}
+		return true;
 	}
 }
