@@ -24,24 +24,21 @@
  */
 package tsm.one.ebr.handlers;
 
-import static tsm.one.ebr.base.Handler.HandlerEvent.Const.ACT_EXEC_NODE;
-import static tsm.one.ebr.base.Handler.HandlerEvent.Const.ACT_NET_STATE_CHANGED;
-import static tsm.one.ebr.base.Handler.HandlerEvent.Const.DATA_TASK_META;
-import static tsm.one.ebr.base.Handler.HandlerEvent.Const.DATA_TASK_NET;
-import static tsm.one.ebr.base.Handler.HandlerEvent.Const.DATA_TASK_NET_INSTANCE_ID;
-import static tsm.one.ebr.base.Handler.HandlerEvent.Const.DATA_TASK_NODE_NEW_STATE;
-import static tsm.one.ebr.base.Handler.HandlerEvent.Const.DATA_TASK_URL;
+import static tsm.one.ebr.base.Handler.HandlerEvent.Const.ACT_LAUNCH_TASK_UNIT;
+import static tsm.one.ebr.base.Handler.HandlerEvent.Const.ACT_TASK_GRAPH_STATE_CHANGED;
+import static tsm.one.ebr.base.Handler.HandlerEvent.Const.ACT_TASK_UNIT_STATE_CHANGED;
+import static tsm.one.ebr.base.Handler.HandlerEvent.Const.DATA_TASK_GRAPH;
+import static tsm.one.ebr.base.Handler.HandlerEvent.Const.DATA_TASK_GRAPH_NEW_STATE;
+import static tsm.one.ebr.base.Handler.HandlerEvent.Const.DATA_TASK_UNIT_COMMAND;
+import static tsm.one.ebr.base.Handler.HandlerEvent.Const.DATA_TASK_UNIT_NEW_STATE;
+import static tsm.one.ebr.base.Handler.HandlerEvent.Const.DATA_TASK_UNIT_URL;
 import static tsm.one.ebr.base.Handler.HandlerEvent.Const.FLG;
 import static tsm.one.ebr.base.Handler.HandlerEvent.Const.FLG_AUTO_START;
 import static tsm.one.ebr.base.HandlerId.TASK_APP;
 import static tsm.one.ebr.base.HandlerId.TASK_EXECUTOR;
 import static tsm.one.ebr.base.HandlerId.TASK_MANAGER;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -49,10 +46,10 @@ import com.google.common.eventbus.Subscribe;
 
 import tsm.one.ebr.base.Application;
 import tsm.one.ebr.base.Handler;
-import tsm.one.ebr.base.Task.Meta;
-import tsm.one.ebr.base.Task.Net;
-import tsm.one.ebr.base.Task.Node;
-import tsm.one.ebr.base.Task.TaskStatus;
+import tsm.one.ebr.base.data.TaskGraph;
+import tsm.one.ebr.base.data.TaskUnit;
+import tsm.one.ebr.base.data.TaskUnit.State;
+import tsm.one.ebr.base.data.TaskUnit.Type;
 
 /**
  * <pre>
@@ -63,8 +60,7 @@ import tsm.one.ebr.base.Task.TaskStatus;
  */
 public final class TaskManager extends Handler {
 	Logger logger = Logger.getLogger(TaskManager.class.getName());
-	private Map<String, Net> standbyTaskNetPool;
-	private Map<String, Net> runningTaskNetPool;
+	private TaskGraph taskGraphObj;
 
 	public TaskManager(Application app) {
 		super(app);
@@ -73,8 +69,6 @@ public final class TaskManager extends Handler {
 	@Override
 	public void onInit() {
 		application.getEventBus().register(this);
-		standbyTaskNetPool = new HashMap<>();
-		runningTaskNetPool = new HashMap<>();
 		logger.fine("init OK");
 	}
 
@@ -97,19 +91,19 @@ public final class TaskManager extends Handler {
 		try {
 			switch (event.getAct()) {
 			case ACT_MANAGEMENT_APPEND: {
-				onAddNewTaskNet(event);
+				onAddNewManagementItem(event);
 				break;
 			}
-			case ACT_EXEC_NET: {
-				onExecTaskNet(event);
+			case ACT_LAUNCH_TASK_GRAPH: {
+				onLaunchTaskGraph(event);
 				break;
 			}
-			case ACT_NODE_STATE_CHANGED: {
-				onTaskNodeStateChanged(event);
+			case ACT_TASK_UNIT_STATE_CHANGED: {
+				onTaskUnitStateChanged(event);
 				break;
 			}
-			case ACT_NET_STATE_CHANGED: {
-				onTaskNetStateChanged(event);
+			case ACT_TASK_GRAPH_STATE_CHANGED: {
+				onTaskGraphStateChanged(event);
 				break;
 			}
 			case ACT_SERV_SHUTDOWN: {
@@ -127,41 +121,40 @@ public final class TaskManager extends Handler {
 
 	/**
 	 * <pre>
-	 * 添加一个新的tasknet实例进入管理对象池
 	 * </pre>
 	 * 
 	 * @param event 事件类实例 
 	 */
-	private void onAddNewTaskNet(HandlerEvent event) {
-		Net taskNet = (Net) event.getParam(DATA_TASK_NET);
+	private void onAddNewManagementItem(HandlerEvent event) {
+		taskGraphObj = (TaskGraph) event.getParam(DATA_TASK_GRAPH);
 		HandlerEvent.Const flg = (HandlerEvent.Const) event.getParam(FLG);
-		if (!event.isEmptyValue(taskNet)) {
-			addNewTaskNet(taskNet);
+		if (!event.isEmptyValue(taskGraphObj)) {
+			taskGraphObj.standby();
 		}
 		if (FLG_AUTO_START == flg) {
-			onExecTaskNet(event);
+			onLaunchTaskGraph(event);
 		}
 	}
 
 	/**
 	 * <pre>
-	 * 启动一个tasknet实例
+	 * 启动一个TaskGraph实例
 	 * </pre>
 	 * 
 	 * @param event 事件类实例 
 	 */
-	private void onExecTaskNet(HandlerEvent event) {
-		Net taskNet = (Net) event.getParam(DATA_TASK_NET);
-		String url = taskNet.getUrl();
-		String instanceId = execTaskNet(url);
-		listOfHeadNodes(instanceId).forEach(node -> {
+	private void onLaunchTaskGraph(HandlerEvent event) {
+		if (taskGraphObj == null) {
+			throw new RuntimeException("TaskGraph实例还没生成阿！老哥！");
+		}
+		taskGraphObj.start();
+		headUnitsOf(taskGraphObj.rootUnit).forEach(unit -> {
 			postMessage(new HandlerEvent()
 					.setSrc(TASK_MANAGER)
 					.setDst(TASK_EXECUTOR)
-					.setAct(ACT_EXEC_NODE)
-					.addParam(DATA_TASK_NET_INSTANCE_ID, instanceId)
-					.addParam(DATA_TASK_URL, node.getUrl())
-					.addParam(DATA_TASK_META, node.getMeta()));
+					.setAct(ACT_LAUNCH_TASK_UNIT)
+					.addParam(DATA_TASK_UNIT_URL, unit.getUrl())
+					.addParam(DATA_TASK_UNIT_COMMAND, unit.getCommand()));
 		});
 	}
 
@@ -173,144 +166,96 @@ public final class TaskManager extends Handler {
 	 * 
 	 * @param event 事件类实例 
 	 */
-	private void onTaskNodeStateChanged(HandlerEvent event) {
+	private void onTaskUnitStateChanged(HandlerEvent event) {
 		// 数据准备
-		String instanceId = (String) event.getParam(DATA_TASK_NET_INSTANCE_ID);
-		String url = (String) event.getParam(DATA_TASK_URL);
-		TaskStatus newState = (TaskStatus) event.getParam(DATA_TASK_NODE_NEW_STATE);
-		logger.info(String.format("Task新状态[%s]%s::%s", newState.toString(), instanceId, url));
-		// 处理对象
-		Optional<Net> targetNetOpt = Optional.ofNullable(runningTaskNetPool.get(instanceId));
-		if (targetNetOpt.isEmpty()) {
-			throw new RuntimeException(String.format("不存在instanceId为%s的运行中的TaskNet对象", instanceId));
+		String unitUrl = (String) event.getParam(DATA_TASK_UNIT_URL);
+		State newState = (State) event.getParam(DATA_TASK_UNIT_NEW_STATE);
+		logger.info(String.format("Unit新状态[%s]::%s", newState.name(), unitUrl));
+		TaskUnit currentUnit = taskGraphObj.updateUnitState(unitUrl, newState);
+		if (currentUnit.parent != null
+				&& Type.MODULE == currentUnit.parent.getType()
+				&& currentUnit.parent.isSuccessed()) {
+			postMessage(new HandlerEvent()
+					.setSrc(TASK_EXECUTOR)
+					.setDst(TASK_MANAGER)
+					.setAct(ACT_TASK_UNIT_STATE_CHANGED)
+					.addParam(DATA_TASK_UNIT_URL, currentUnit.parent.getUrl())
+					.addParam(DATA_TASK_UNIT_NEW_STATE, currentUnit.parent.getState()));
 		}
-		Net targetNet = targetNetOpt.get();
-		Node currentNode = targetNet.updateNodeState(url, newState);
 		// 后继节点状态检查
-		preformSuccessorNode(instanceId, currentNode);
+		tryToLaunchSuccessor(currentUnit);
 		// TaskNet状态检查
-		if (targetNet.isFinished()) {
+		if (taskGraphObj.isComplete()) {
 			postMessage(new HandlerEvent()
 					.setSrc(TASK_MANAGER)
 					.setDst(TASK_MANAGER)
-					.setAct(ACT_NET_STATE_CHANGED)
-					.addParam(DATA_TASK_NET_INSTANCE_ID, instanceId));
+					.setAct(ACT_TASK_GRAPH_STATE_CHANGED)
+					.addParam(DATA_TASK_GRAPH_NEW_STATE, State.SUCCESSED));
 		}
 	}
 
 	/**
 	 * <pre>
-	 * 启动一个指定instanceId的任务集
-	 * 如果指定的任务集不存在则通知其他部件处理结束
 	 * </pre>
 	 * 
 	 * @param event 事件类实例 
 	 */
-	private void onTaskNetStateChanged(HandlerEvent event) {
+	private void onTaskGraphStateChanged(HandlerEvent event) {
 		// 数据准备
-		String instanceId = (String) event.getParam(DATA_TASK_NET_INSTANCE_ID);
-		// 处理对象
-		Optional<Net> targetNetOpt = Optional.ofNullable(runningTaskNetPool.get(instanceId));
-		if (targetNetOpt.isEmpty()) {
-			throw new RuntimeException(String.format("不存在instanceId为%s的运行中的TaskNet对象", instanceId));
-		}
-		Net net = targetNetOpt.get();
-		standbyTaskNetPool.put(net.getUrl(), net);
-		runningTaskNetPool.remove(instanceId);
-		if (runningTaskNetPool.isEmpty()) {
+		State newState = (State) event.getParam(DATA_TASK_GRAPH_NEW_STATE);
+		logger.info(String.format("TaskGraph新状态[%s]::%s", newState.name(), taskGraphObj.rootUnit.getUrl()));
+		taskGraphObj.rootUnit.updateState(newState);
+		if (State.SUCCESSED == taskGraphObj.rootUnit.getState()
+				|| State.ERROR == taskGraphObj.rootUnit.getState()) {
 			finishNoticeFrom(TASK_MANAGER);
 		}
 	}
 
 	/**
 	 * <pre>
-	 * 启动一个任务节点的后续节点的任务
+	 * 启动一个任务单元的后续单元的任务
 	 * </pre>
 	 * 
-	 * @param instanceId  任务集运行期识别ID
-	 * @param currentNode 当前任务节点
+	 * @param currentTaskUnit 当前任务单元
 	 */
-	private void preformSuccessorNode(String instanceId, Node currentNode) {
+	private void tryToLaunchSuccessor(TaskUnit currentTaskUnit) {
 		// 后继节点
-		for (Node node : currentNode.getSuccessors()) {
-			preformSuccessorByType(instanceId, node);
-		}
-		// 父节点为UNIT时,表明当前节点处于一个UNIT中，需要启动的实际是UNIT的后继
-		// 如果UNIT没有全部完成则尝试启动UNIT的后继也不会有效果，效率堪忧所以-〉TODO
-		Node parentNode = currentNode.getParent();
-		if (Meta.VALUE_TYPE_UNIT.equalsIgnoreCase(parentNode.getMeta().getType())) {
-			for (Node node : parentNode.getSuccessors()) {
-				preformSuccessorByType(instanceId, node);
+		for (TaskUnit unit : taskGraphObj.getSuccessorsOf(currentTaskUnit)) {
+			if (State.STANDBY == unit.getState()
+					&& taskGraphObj.isConditionCompleteOf(unit)) {
+				preformSuccessor(unit);
 			}
 		}
 	}
 
 	/**
 	 * <pre>
-	 * 启动一个任务节点的后续节点的任务
+	 * 启动一个任务单元的后续单元的任务
 	 * </pre>
 	 * 
-	 * @param instanceId  任务集运行期识别ID
-	 * @param currentNode 当前任务节点
+	 * @param targetTaskUnit 当前任务单元
 	 */
-	private void preformSuccessorByType(String instanceId, Node node) {
-		if (TaskStatus.STANDBY == node.getStatus() && node.isConditionComplete()) {
-			String nodeType = node.getMeta().getType();
-			// TASK节点
-			if (Meta.VALUE_TYPE_TASK.equalsIgnoreCase(nodeType)) {
+	private void preformSuccessor(TaskUnit targetTaskUnit) {
+		// TASK节点
+		if (Type.TASK == targetTaskUnit.getType()) {
+			postMessage(new HandlerEvent()
+					.setSrc(TASK_MANAGER)
+					.setDst(TASK_EXECUTOR)
+					.setAct(ACT_LAUNCH_TASK_UNIT)
+					.addParam(DATA_TASK_UNIT_URL, targetTaskUnit.getUrl())
+					.addParam(DATA_TASK_UNIT_COMMAND, targetTaskUnit.getCommand()));
+		}
+		// MODULE节点
+		else if (Type.MODULE == targetTaskUnit.getType()) {
+			headUnitsOf(targetTaskUnit).forEach(childUnit -> {
 				postMessage(new HandlerEvent()
 						.setSrc(TASK_MANAGER)
 						.setDst(TASK_EXECUTOR)
-						.setAct(ACT_EXEC_NODE)
-						.addParam(DATA_TASK_NET_INSTANCE_ID, instanceId)
-						.addParam(DATA_TASK_URL, node.getUrl())
-						.addParam(DATA_TASK_META, node.getMeta()));
-			}
-			// UNIT节点
-			else if (Meta.VALUE_TYPE_UNIT.equalsIgnoreCase(nodeType)) {
-				List<Node> children = node.getChildren().stream().filter(child -> child.getPredecessors().isEmpty())
-						.collect(Collectors.toList());
-				children.forEach(child -> {
-					postMessage(new HandlerEvent()
-							.setSrc(TASK_MANAGER)
-							.setDst(TASK_EXECUTOR)
-							.setAct(ACT_EXEC_NODE)
-							.addParam(DATA_TASK_NET_INSTANCE_ID, instanceId)
-							.addParam(DATA_TASK_URL, child.getUrl())
-							.addParam(DATA_TASK_META, child.getMeta()));
-				});
-			}
+						.setAct(ACT_LAUNCH_TASK_UNIT)
+						.addParam(DATA_TASK_UNIT_URL, childUnit.getUrl())
+						.addParam(DATA_TASK_UNIT_COMMAND, childUnit.getCommand()));
+			});;
 		}
-	}
-
-	/**
-	 * <pre>
-	 * </pre>
-	 * 
-	 */
-	private void addNewTaskNet(Net newNet) {
-		newNet.standby();
-		standbyTaskNetPool.put(newNet.getUrl(), newNet);
-	}
-
-	/**
-	 * <pre>
-	 * 启动一个任务集
-	 * </pre>
-	 * 
-	 * @param url 目标任务集识别URL
-	 */
-	private String execTaskNet(String url) {
-		Optional<Net> targetNet = Optional.ofNullable(standbyTaskNetPool.get(url));
-		if (targetNet.isEmpty()) {
-			throw new RuntimeException(String.format("不存在url为%s的TaskNet对象", url));
-		}
-		String instanceId = UUID.randomUUID().toString();
-		Net targetNetValue = targetNet.get();
-		targetNetValue.start();
-		runningTaskNetPool.put(instanceId, targetNetValue);
-		standbyTaskNetPool.remove(url);
-		return instanceId;
 	}
 
 	/**
@@ -318,13 +263,14 @@ public final class TaskManager extends Handler {
 	 * 取得一个任务集的根任务集合
 	 * </pre>
 	 * 
-	 * @param instanceId 任务集运行期识别ID
+	 * @param targetUnit 当前任务单元
 	 */
-	private List<Node> listOfHeadNodes(String instanceId) {
-		Optional<Net> targetNet = Optional.ofNullable(runningTaskNetPool.get(instanceId));
-		if (targetNet.isEmpty()) {
-			throw new RuntimeException(String.format("不存在instanceId为%s的运行中的TaskNet对象", instanceId));
+	private List<TaskUnit> headUnitsOf(TaskUnit targetUnit) {
+		if (Type.ROOT == targetUnit.getType() || Type.MODULE == targetUnit.getType()) {
+			return targetUnit.children.stream().filter(child -> child.getPredecessorsId().isEmpty())
+					.collect(Collectors.toList());
+		} else {
+			return List.of();
 		}
-		return targetNet.get().getHeadNodes();
 	}
 }

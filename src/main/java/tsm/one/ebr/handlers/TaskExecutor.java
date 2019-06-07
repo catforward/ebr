@@ -24,11 +24,10 @@
  */
 package tsm.one.ebr.handlers;
 
-import static tsm.one.ebr.base.Handler.HandlerEvent.Const.ACT_NODE_STATE_CHANGED;
-import static tsm.one.ebr.base.Handler.HandlerEvent.Const.DATA_TASK_META;
-import static tsm.one.ebr.base.Handler.HandlerEvent.Const.DATA_TASK_NET_INSTANCE_ID;
-import static tsm.one.ebr.base.Handler.HandlerEvent.Const.DATA_TASK_NODE_NEW_STATE;
-import static tsm.one.ebr.base.Handler.HandlerEvent.Const.DATA_TASK_URL;
+import static tsm.one.ebr.base.Handler.HandlerEvent.Const.ACT_TASK_UNIT_STATE_CHANGED;
+import static tsm.one.ebr.base.Handler.HandlerEvent.Const.DATA_TASK_UNIT_COMMAND;
+import static tsm.one.ebr.base.Handler.HandlerEvent.Const.DATA_TASK_UNIT_NEW_STATE;
+import static tsm.one.ebr.base.Handler.HandlerEvent.Const.DATA_TASK_UNIT_URL;
 import static tsm.one.ebr.base.HandlerId.TASK_APP;
 import static tsm.one.ebr.base.HandlerId.TASK_EXECUTOR;
 import static tsm.one.ebr.base.HandlerId.TASK_MANAGER;
@@ -45,8 +44,7 @@ import com.google.common.eventbus.Subscribe;
 
 import tsm.one.ebr.base.Application;
 import tsm.one.ebr.base.Handler;
-import tsm.one.ebr.base.Task.Meta;
-import tsm.one.ebr.base.Task.TaskStatus;
+import tsm.one.ebr.base.data.TaskUnit.State;
 import tsm.one.ebr.base.utils.ConfigUtils;
 
 /**
@@ -93,7 +91,7 @@ public final class TaskExecutor extends Handler {
 
 		try {
 			switch (event.getAct()) {
-			case ACT_EXEC_NODE: {
+			case ACT_LAUNCH_TASK_UNIT: {
 				execTask(event);
 				break;
 			}
@@ -115,18 +113,16 @@ public final class TaskExecutor extends Handler {
 	 * 通知接受方程序的最新状态
 	 * </pre>
 	 * 
-	 * @param instanceId 任务集运行期识别ID
-	 * @param url        状态变更的任务URL
-	 * @param newState   任务的最新状态
+	 * @param taskUrl  状态变更的任务URL
+	 * @param newState 任务的最新状态
 	 */
-	void noticeNewState(String instanceId, String url, TaskStatus newState) {
+	void noticeNewState(String taskUrl, State newState) {
 		postMessage(new HandlerEvent()
 				.setSrc(TASK_EXECUTOR)
 				.setDst(TASK_MANAGER)
-				.setAct(ACT_NODE_STATE_CHANGED)
-				.addParam(DATA_TASK_NET_INSTANCE_ID, instanceId)
-				.addParam(DATA_TASK_URL, url)
-				.addParam(DATA_TASK_NODE_NEW_STATE, newState));
+				.setAct(ACT_TASK_UNIT_STATE_CHANGED)
+				.addParam(DATA_TASK_UNIT_URL, taskUrl)
+				.addParam(DATA_TASK_UNIT_NEW_STATE, newState));
 	}
 
 	/**
@@ -137,12 +133,11 @@ public final class TaskExecutor extends Handler {
 	 * @param event 事件类实例 
 	 */
 	private void execTask(HandlerEvent event) {
-		String instanceId = (String) event.getParam(DATA_TASK_NET_INSTANCE_ID);
-		String url = (String) event.getParam(DATA_TASK_URL);
-		Meta meta = (Meta) event.getParam(DATA_TASK_META);
-		noticeNewState(instanceId, url, TaskStatus.RUNNING);
-		logger.info(String.format("Task启动%s::%s", instanceId, url));
-		launchTask(instanceId, url, meta);
+		String taskUrl = (String) event.getParam(DATA_TASK_UNIT_URL);
+		String command = (String) event.getParam(DATA_TASK_UNIT_COMMAND);
+		noticeNewState(taskUrl, State.RUNNING);
+		logger.info(String.format("Task启动%s", taskUrl));
+		execExternalCommand(taskUrl, command);
 	}
 
 	/**
@@ -150,13 +145,12 @@ public final class TaskExecutor extends Handler {
 	 * 启动一个外部程序
 	 * </pre>
 	 * 
-	 * @param instanceId 任务集运行期识别ID
-	 * @param url        状态变更的任务URL
-	 * @param meta       启动对象的元数据
+	 * @param taskUrl     状态变更的任务URL
+	 * @param command     启动对象的元数据
 	 */
-	private void launchTask(String instanceId, String url, Meta meta) {
+	private void execExternalCommand(String taskUrl, String command) {
 		taskExecutor.submit(() -> {
-			TaskWatcher watcher = new TaskWatcher(TaskExecutor.this, instanceId, url, meta);
+			TaskWatcher watcher = new TaskWatcher(TaskExecutor.this, taskUrl, command);
 			watcher.watch();
 		});
 	}
@@ -172,15 +166,13 @@ public final class TaskExecutor extends Handler {
 class TaskWatcher {
 	private final Logger logger = Logger.getLogger(TaskWatcher.class.getName());
 	private final TaskExecutor taskExecutor;
-	private final String taskInstanceId;
 	private final String taskUrl;
-	private final Meta taskMeta;
+	private final String taskCommand;
 
-	TaskWatcher(TaskExecutor executor, String instanceId, String url, Meta meta) {
+	TaskWatcher(TaskExecutor executor, String tUrl, String command) {
 		taskExecutor = executor;
-		taskInstanceId = instanceId;
-		taskUrl = url;
-		taskMeta = meta;
+		taskUrl = tUrl;
+		taskCommand = command;
 	}
 
 	/**
@@ -190,9 +182,8 @@ class TaskWatcher {
 	 * 
 	 */
 	void watch() {
-		String fullCmd = String.format("%s %s", taskMeta.getCommand(), taskMeta.getArgs());
 		try {
-			Process process = Runtime.getRuntime().exec(fullCmd);
+			Process process = Runtime.getRuntime().exec(taskCommand);
 			process.getOutputStream().close();
 
 			try (BufferedReader br = new BufferedReader(
@@ -205,11 +196,11 @@ class TaskWatcher {
 
 			int exitCode = process.waitFor();
 			logger.fine("exitCode = " + exitCode);
-			TaskStatus exitState = (exitCode == 0) ? TaskStatus.SUCCESSED : TaskStatus.ERROR;
-			taskExecutor.noticeNewState(taskInstanceId, taskUrl, exitState);
+			State exitState = (exitCode == 0) ? State.SUCCESSED : State.ERROR;
+			taskExecutor.noticeNewState(taskUrl, exitState);
 		} catch (IOException | InterruptedException e) {
 			e.printStackTrace();
-			taskExecutor.noticeNewState(taskInstanceId, taskUrl, TaskStatus.ERROR);
+			taskExecutor.noticeNewState(taskUrl, State.ERROR);
 		}
 	}
 }

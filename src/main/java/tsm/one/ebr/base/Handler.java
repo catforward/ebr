@@ -96,17 +96,17 @@ public abstract class Handler {
 			ACT_SERV_SHUTDOWN("act_serv_shutdown"),
 			ACT_LOAD_DEF_FILE("act_load_def_file"),
 			ACT_MANAGEMENT_APPEND("act_management_append"),
-			ACT_EXEC_NET("act_exec_net"),
-			ACT_EXEC_NODE("act_exec_node"),
-			ACT_NODE_STATE_CHANGED("act_node_state_changed"),
-			ACT_NET_STATE_CHANGED("act_net_state_changed"),
+			ACT_LAUNCH_TASK_GRAPH("act_launch_task_graph"),
+			ACT_LAUNCH_TASK_UNIT("act_launch_task_unit"),
+			ACT_TASK_UNIT_STATE_CHANGED("act_task_unit_state_changed"),
+			ACT_TASK_GRAPH_STATE_CHANGED("act_task_graph_state_changed"),
 
 			DATA_PATH("data_path"),
-			DATA_TASK_NET("data_task_net"),
-			DATA_TASK_NET_INSTANCE_ID("data_task_net_instance_id"),
-			DATA_TASK_URL("data_task_url"),
-			DATA_TASK_META("data_task_meta"),
-			DATA_TASK_NODE_NEW_STATE("data_task_node_new_state"),
+			DATA_TASK_GRAPH("data_task_graph"),
+			DATA_TASK_GRAPH_NEW_STATE("data_task_graph_new_state"),
+			DATA_TASK_UNIT_URL("data_task_unit_url"),
+			DATA_TASK_UNIT_COMMAND("data_task_unit_command"),
+			DATA_TASK_UNIT_NEW_STATE("data_task_node_new_state"),
 
 			FLG_AUTO_START("flg_auto_start");
 
