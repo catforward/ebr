@@ -20,7 +20,7 @@
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 		<jackson.version>2.9.9</jackson.version>
 		<guava.version>27.1-jre</guava.version>
-		<main.clazz>tsm.one.ebr.Main</main.clazz>
+		<main.clazz>tsm.ebr.Main</main.clazz>
 	</properties>
 
 	<dependencies>

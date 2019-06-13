@@ -1,7 +1,9 @@
-package tsm.one.ebr.thin;
+package tsm.ebr.thin;
 
 import org.junit.Assert;
 import org.junit.Test;
+
+import tsm.ebr.thin.GetOpts;
 
 public class GetOptsTest {
 

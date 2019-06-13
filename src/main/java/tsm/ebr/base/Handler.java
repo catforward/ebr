@@ -22,9 +22,9 @@
  * SOFTWARE.
  * 
  */
-package tsm.one.ebr.base;
+package tsm.ebr.base;
 
-import static tsm.one.ebr.base.Handler.HandlerEvent.Const.ACT_SERV_SHUTDOWN;
+import static tsm.ebr.base.Handler.HandlerEvent.Const.ACT_SERV_SHUTDOWN;
 
 import java.util.HashMap;
 import java.util.Map;

@@ -22,7 +22,7 @@
  * SOFTWARE.
  * 
  */
-package tsm.one.ebr.base.data;
+package tsm.ebr.base.data;
 
 import java.util.ArrayList;
 import java.util.HashMap;

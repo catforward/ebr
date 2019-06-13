@@ -22,7 +22,7 @@
  * SOFTWARE.
  * 
  */
-package tsm.one.ebr.base;
+package tsm.ebr.base;
 
 /**
  * 处理类ID定义

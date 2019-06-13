@@ -22,7 +22,7 @@
  * SOFTWARE.
  * 
  */
-package tsm.one.ebr.base.data;
+package tsm.ebr.base.data;
 
 import java.util.HashMap;
 import java.util.List;
@@ -34,8 +34,8 @@ import com.google.common.graph.ElementOrder;
 import com.google.common.graph.GraphBuilder;
 import com.google.common.graph.MutableGraph;
 
-import tsm.one.ebr.base.data.TaskUnit.State;
-import tsm.one.ebr.base.data.TaskUnit.Type;
+import tsm.ebr.base.data.TaskUnit.State;
+import tsm.ebr.base.data.TaskUnit.Type;
 
 public class TaskFlow {
 	// KEY:TaskUnit的UID

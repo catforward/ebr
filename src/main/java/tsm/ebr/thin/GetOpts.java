@@ -1,4 +1,4 @@
-package tsm.one.ebr.thin;
+package tsm.ebr.thin;
 
 import java.util.ArrayList;
 import java.util.ListIterator;

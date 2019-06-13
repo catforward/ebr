@@ -22,7 +22,7 @@
  * SOFTWARE.
  * 
  */
-package tsm.one.ebr.base.utils;
+package tsm.ebr.base.utils;
 
 import java.io.File;
 import java.io.FileInputStream;

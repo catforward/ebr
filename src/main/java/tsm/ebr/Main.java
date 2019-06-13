@@ -22,19 +22,19 @@
  * SOFTWARE.
  * 
  */
-package tsm.one.ebr;
+package tsm.ebr;
 
-import static tsm.one.ebr.base.HandlerId.TASK_BUILDER;
-import static tsm.one.ebr.base.HandlerId.TASK_EXECUTOR;
-import static tsm.one.ebr.base.HandlerId.TASK_MANAGER;
+import static tsm.ebr.base.HandlerId.TASK_BUILDER;
+import static tsm.ebr.base.HandlerId.TASK_EXECUTOR;
+import static tsm.ebr.base.HandlerId.TASK_MANAGER;
 
-import tsm.one.ebr.base.Application;
-import tsm.one.ebr.base.utils.ConfigUtils;
-import tsm.one.ebr.base.utils.LogUtils;
-import tsm.one.ebr.handlers.TaskBuilder;
-import tsm.one.ebr.handlers.TaskExecutor;
-import tsm.one.ebr.handlers.TaskManager;
-import tsm.one.ebr.thin.GetOpts;
+import tsm.ebr.base.Application;
+import tsm.ebr.base.utils.ConfigUtils;
+import tsm.ebr.base.utils.LogUtils;
+import tsm.ebr.handlers.TaskBuilder;
+import tsm.ebr.handlers.TaskExecutor;
+import tsm.ebr.handlers.TaskManager;
+import tsm.ebr.thin.GetOpts;
 
 /**
  * <pre>
