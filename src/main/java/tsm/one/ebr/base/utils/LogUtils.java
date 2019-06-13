@@ -42,12 +42,17 @@ import java.util.logging.LogManager;
  */
 public final class LogUtils {
 
+	public static void init() throws IOException {
+		String confPath = PathUtils.getConfPath();
+		initJulLogger(confPath);
+	}
+
 	/**
 	 * 初始化jdk内置logger
 	 *
 	 * @param confPath 配置文件所在路径
 	 */
-	public static void initJulLogger(String confPath) throws IOException {
+	private static void initJulLogger(String confPath) throws IOException {
 		LogManager.getLogManager()
 				.readConfiguration(new FileInputStream(confPath + File.separator + "logging.properties"));
 	}

@@ -48,8 +48,9 @@ public class ConfigUtils {
 	 */
 	public static class Item {
 		public final static String KEY_INSTANT_TASK = "ebr.instant.task";
-		public final static String KEY_OUTPUT_EVENTLOG = "ebr.output.event.log";
-		public final static String KEY_EXCUTOR_WORKER_NUM = "ebr.executor.worker.num";
+		public final static String KEY_EXCUTOR_NUM = "ebr.executor.num";
+		public final static String KEY_LOG_INTERNAL_EVENT = "ebr.log.internal.event";
+		public final static String KEY_LOG_INTERNAL_TRACE = "ebr.log.internal.trace";
 	}
 
 	/**
@@ -78,11 +79,18 @@ public class ConfigUtils {
 	}
 
 	/**
+	 * 从初始化全局配置
+	 */
+	public static void init() throws IOException {
+		load(PathUtils.getConfPath());
+	}
+
+	/**
 	 * 从配置文件加载配置属性
 	 *
 	 * @param confPath conf目录路径
 	 */
-	public static void load(String confPath) throws IOException {
+	private static void load(String confPath) throws IOException {
 		ConfigUtils config = ConfigUtils.getInstance();
 		String cfgFilePath = confPath + File.separator + "ebr.properties";
 		config.prop.load(new FileInputStream(cfgFilePath));
@@ -110,5 +118,17 @@ public class ConfigUtils {
 	public static Object getOrDefault(String key, Object defaultValue) {
 		ConfigUtils config = ConfigUtils.getInstance();
 		return config.prop.getOrDefault(key, defaultValue);
+	}
+
+	/**
+	 * 更新属性值
+	 *
+	 * @param key          键名
+	 * @param defaultValue 默认值
+	 * @return 属性值
+	 */
+	public static void update(String key, Object newValue) {
+		ConfigUtils config = ConfigUtils.getInstance();
+		config.prop.put(key, newValue);
 	}
 }

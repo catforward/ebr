@@ -46,7 +46,7 @@ import com.google.common.eventbus.Subscribe;
 
 import tsm.one.ebr.base.Application;
 import tsm.one.ebr.base.Handler;
-import tsm.one.ebr.base.data.TaskGraph;
+import tsm.one.ebr.base.data.TaskFlow;
 import tsm.one.ebr.base.data.TaskUnit;
 import tsm.one.ebr.base.data.TaskUnit.State;
 import tsm.one.ebr.base.data.TaskUnit.Type;
@@ -60,7 +60,7 @@ import tsm.one.ebr.base.data.TaskUnit.Type;
  */
 public final class TaskManager extends Handler {
 	Logger logger = Logger.getLogger(TaskManager.class.getName());
-	private TaskGraph taskGraphObj;
+	private TaskFlow taskGraphObj;
 
 	public TaskManager(Application app) {
 		super(app);
@@ -126,7 +126,7 @@ public final class TaskManager extends Handler {
 	 * @param event 事件类实例 
 	 */
 	private void onAddNewManagementItem(HandlerEvent event) {
-		taskGraphObj = (TaskGraph) event.getParam(DATA_TASK_GRAPH);
+		taskGraphObj = (TaskFlow) event.getParam(DATA_TASK_GRAPH);
 		HandlerEvent.Const flg = (HandlerEvent.Const) event.getParam(FLG);
 		if (!event.isEmptyValue(taskGraphObj)) {
 			taskGraphObj.standby();

@@ -57,7 +57,7 @@ import com.google.common.eventbus.Subscribe;
 
 import tsm.one.ebr.base.Application;
 import tsm.one.ebr.base.Handler;
-import tsm.one.ebr.base.data.TaskGraph;
+import tsm.one.ebr.base.data.TaskFlow;
 import tsm.one.ebr.base.data.TaskUnit;
 import tsm.one.ebr.base.data.TaskUnit.Symbols;
 import tsm.one.ebr.base.data.TaskUnit.Type;
@@ -155,7 +155,7 @@ public class TaskBuilder extends Handler {
 			return;
 		}
 
-		TaskGraph taskGraph = new TaskGraph(unitPool.get(Symbols.KEY_ROOT_UNIT));
+		TaskFlow taskGraph = new TaskFlow(unitPool.get(Symbols.KEY_ROOT_UNIT));
 		try {
 			taskGraph.build(unitPool);
 		} catch (Exception ex) {

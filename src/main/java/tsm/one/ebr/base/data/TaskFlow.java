@@ -37,14 +37,14 @@ import com.google.common.graph.MutableGraph;
 import tsm.one.ebr.base.data.TaskUnit.State;
 import tsm.one.ebr.base.data.TaskUnit.Type;
 
-public class TaskGraph {
+public class TaskFlow {
 	// KEY:TaskUnit的UID
 	private final Map<String, TaskUnit> rawTaskUnitPool;
 	// KEY：ROOT/MODULE的URL
 	public final Map<String, MutableGraph<TaskUnit>> taskGraphPool;
 	public final TaskUnit rootUnit;
 
-	public TaskGraph(TaskUnit unit) {
+	public TaskFlow(TaskUnit unit) {
 		rawTaskUnitPool = new HashMap<>();
 		taskGraphPool = new HashMap<>();
 		rootUnit = unit;

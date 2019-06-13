@@ -65,7 +65,7 @@ public final class TaskExecutor extends Handler {
 	@Override
 	public void onInit() {
 		application.getEventBus().register(this);
-		int tmpNum = Integer.parseInt(ConfigUtils.get(ConfigUtils.Item.KEY_EXCUTOR_WORKER_NUM));
+		int tmpNum = Integer.parseInt(ConfigUtils.get(ConfigUtils.Item.KEY_EXCUTOR_NUM));
 		int workerNum = (tmpNum == 0) ? Runtime.getRuntime().availableProcessors() : tmpNum;
 		taskExecutor = Executors.newFixedThreadPool(workerNum);
 		logger.fine("init OK");

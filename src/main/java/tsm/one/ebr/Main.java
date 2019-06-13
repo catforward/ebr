@@ -31,10 +31,10 @@ import static tsm.one.ebr.base.HandlerId.TASK_MANAGER;
 import tsm.one.ebr.base.Application;
 import tsm.one.ebr.base.utils.ConfigUtils;
 import tsm.one.ebr.base.utils.LogUtils;
-import tsm.one.ebr.base.utils.PathUtils;
 import tsm.one.ebr.handlers.TaskBuilder;
 import tsm.one.ebr.handlers.TaskExecutor;
 import tsm.one.ebr.handlers.TaskManager;
+import tsm.one.ebr.thin.GetOpts;
 
 /**
  * <pre>
@@ -49,16 +49,45 @@ import tsm.one.ebr.handlers.TaskManager;
 public class Main extends Application {
 
 	public static void main(String[] args) throws Exception {
-		new Main().initAndStart();
+		//showArgs(args);
+		new Main().initAndStart(args);
 	}
 
-	public void initAndStart() throws Exception {
+	public void initAndStart(String[] args) throws Exception {
 		// 又不是服务器程序，不处理异常，如果有，那就任其终止程序
-		String confPath = PathUtils.getConfPath();
-		ConfigUtils.load(confPath);
-		LogUtils.initJulLogger(confPath);
+		ConfigUtils.init();
+		mergeCmdOptionsIntoConfig(args);
+		LogUtils.init();
 		init();
 		start();
+	}
+	
+	private void mergeCmdOptionsIntoConfig(String[] args) {
+		GetOpts opts = new GetOpts(args, "t:");
+		int c = -1;
+		try {
+			while ((c = opts.getNextOption()) != -1) {
+				char cc = (char) c;
+				switch (cc) {
+				case 't': {
+					ConfigUtils.update(ConfigUtils.Item.KEY_INSTANT_TASK, opts.getOptionArg());
+					break;
+				}
+				default: {
+					showUsage();
+					break;
+				}
+				}
+			}
+		} catch (IllegalArgumentException ex) {
+			showUsage();
+			ex.printStackTrace();
+		}
+	}
+
+	private void showUsage() {
+		System.out.println("Usage: <path>/jar_file [-t] <name of task define file>");
+		System.exit(1);
 	}
 
 	@Override
@@ -68,4 +97,10 @@ public class Main extends Application {
 		appendHandler(TASK_MANAGER, new TaskManager(this));
 		appendHandler(TASK_BUILDER, new TaskBuilder(this));
 	}
+	
+//	private static void showArgs(String[] args) {
+//		for (int i = 0; i < args.length; ++i) {
+//			System.out.println(String.format("arg[%s]:%s", String.valueOf(i), args[i]));
+//		}
+//	}
 }

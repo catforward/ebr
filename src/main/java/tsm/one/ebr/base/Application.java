@@ -27,7 +27,7 @@ package tsm.one.ebr.base;
 import static tsm.one.ebr.base.Handler.HandlerEvent.Const.ACT;
 import static tsm.one.ebr.base.Handler.HandlerEvent.Const.DST;
 import static tsm.one.ebr.base.Handler.HandlerEvent.Const.SRC;
-import static tsm.one.ebr.base.utils.ConfigUtils.Item.KEY_OUTPUT_EVENTLOG;
+import static tsm.one.ebr.base.utils.ConfigUtils.Item.KEY_LOG_INTERNAL_EVENT;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -154,7 +154,7 @@ public abstract class Application {
 	 */
 	@Subscribe
 	public final void eventLog(HandlerEvent event) {
-		if (Boolean.getBoolean((String) ConfigUtils.getOrDefault(KEY_OUTPUT_EVENTLOG, "false"))) {
+		if (Boolean.getBoolean((String) ConfigUtils.getOrDefault(KEY_LOG_INTERNAL_EVENT, "false"))) {
 			logger.fine(String.format("[act]: %s :: <src>: %s -> <dst>: %s", event.getParam(ACT), event.getParam(SRC),
 					event.getParam(DST)));
 		}
