@@ -49,8 +49,7 @@ public class ConfigUtils {
 	public static class Item {
 		public final static String KEY_INSTANT_TASK = "ebr.instant.task";
 		public final static String KEY_EXCUTOR_NUM = "ebr.executor.num";
-		public final static String KEY_LOG_INTERNAL_EVENT = "ebr.log.internal.event";
-		public final static String KEY_LOG_INTERNAL_TRACE = "ebr.log.internal.trace";
+		public final static String KEY_EVENT_LOG = "ebr.event.log";
 	}
 
 	/**

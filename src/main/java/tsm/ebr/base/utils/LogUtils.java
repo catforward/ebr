@@ -27,7 +27,16 @@ package tsm.ebr.base.utils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.logging.FileHandler;
+import java.util.logging.Formatter;
+import java.util.logging.Level;
 import java.util.logging.LogManager;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 
 /**
  * <pre>
@@ -41,10 +50,25 @@ import java.util.logging.LogManager;
  * @author catforward
  */
 public final class LogUtils {
+	private static Logger errorLogger;
+	private final static String LOG_HEADER = "=========== START ===========";
 
 	public static void init() throws IOException {
-		String confPath = PathUtils.getConfPath();
-		initJulLogger(confPath);
+		initAppLogger();
+		initErrLogger();
+	}
+	
+	public static void dumpException(Exception ex) {
+		if (errorLogger == null) {
+			return;
+		}
+		StringWriter writer = new StringWriter();
+		ex.printStackTrace(new PrintWriter(writer));
+		errorLogger.warning(writer.toString());
+	}
+
+	public static boolean isEventLogEnabled() {
+		return Boolean.valueOf((String) ConfigUtils.getOrDefault(ConfigUtils.Item.KEY_EVENT_LOG, "false"));
 	}
 
 	/**
@@ -52,9 +76,39 @@ public final class LogUtils {
 	 *
 	 * @param confPath 配置文件所在路径
 	 */
-	private static void initJulLogger(String confPath) throws IOException {
+	private static void initAppLogger() throws IOException {
+		String confPath = PathUtils.getConfPath();
 		LogManager.getLogManager()
 				.readConfiguration(new FileInputStream(confPath + File.separator + "logging.properties"));
+		Logger logger = Logger.getLogger("ebr");
+		logger.info(LOG_HEADER);
 	}
 
+	private static void initErrLogger() throws SecurityException, IOException {
+		if (errorLogger != null) {
+			return;
+		}
+		String fileName = PathUtils.getLogPath() + File.separator + "ebr_error.log";
+		errorLogger = Logger.getLogger("ebr.error");
+		errorLogger.setUseParentHandlers(false);
+		FileHandler fileHandler = new FileHandler(fileName, true);
+		fileHandler.setLevel(Level.INFO);
+		fileHandler.setFormatter(new ErrorLogHander());
+		errorLogger.addHandler(fileHandler);
+		errorLogger.info(LOG_HEADER);
+		// LogManager.getLogManager().addLogger(logger);
+	}
+}
+
+class ErrorLogHander extends Formatter {
+	private final ThreadLocal<DateTimeFormatter> dtf = new ThreadLocal<>() {
+		public DateTimeFormatter initialValue() {
+			return DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
+		}
+	};
+
+	@Override
+	public String format(LogRecord record) {
+		return String.format("[%s]: %s\n", LocalDateTime.now().format(dtf.get()), record.getMessage());
+	}
 }

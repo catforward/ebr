@@ -50,6 +50,7 @@ import tsm.ebr.base.data.TaskFlow;
 import tsm.ebr.base.data.TaskUnit;
 import tsm.ebr.base.data.TaskUnit.State;
 import tsm.ebr.base.data.TaskUnit.Type;
+import tsm.ebr.base.utils.LogUtils;
 
 /**
  * <pre>
@@ -59,7 +60,7 @@ import tsm.ebr.base.data.TaskUnit.Type;
  * @author catforward
  */
 public final class TaskManager extends Handler {
-	Logger logger = Logger.getLogger(TaskManager.class.getName());
+	private Logger logger = Logger.getLogger(TaskManager.class.getName());
 	private TaskFlow taskGraphObj;
 
 	public TaskManager(Application app) {
@@ -115,6 +116,7 @@ public final class TaskManager extends Handler {
 			}
 		} catch (Exception ex) {
 			logger.severe(ex.getLocalizedMessage());
+			LogUtils.dumpException(ex);
 			finishNoticeFrom(TASK_MANAGER);
 		}
 	}

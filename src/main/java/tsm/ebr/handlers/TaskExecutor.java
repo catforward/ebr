@@ -46,6 +46,7 @@ import tsm.ebr.base.Application;
 import tsm.ebr.base.Handler;
 import tsm.ebr.base.data.TaskUnit.State;
 import tsm.ebr.base.utils.ConfigUtils;
+import tsm.ebr.base.utils.LogUtils;
 
 /**
  * <pre>
@@ -88,7 +89,6 @@ public final class TaskExecutor extends Handler {
 		if (TASK_APP != event.getDst() && TASK_EXECUTOR != event.getDst()) {
 			return;
 		}
-
 		try {
 			switch (event.getAct()) {
 			case ACT_LAUNCH_TASK_UNIT: {
@@ -199,7 +199,7 @@ class TaskWatcher {
 			State exitState = (exitCode == 0) ? State.SUCCESSED : State.ERROR;
 			taskExecutor.noticeNewState(taskUrl, exitState);
 		} catch (IOException | InterruptedException e) {
-			e.printStackTrace();
+			LogUtils.dumpException(e);
 			taskExecutor.noticeNewState(taskUrl, State.ERROR);
 		}
 	}

@@ -52,6 +52,15 @@ public final class PathUtils {
 	private static String rootPath;
 
 	/**
+	 * 得到EBR的log部署目录
+	 *
+	 * @return String 部署路径
+	 */
+	public static String getLogPath() {
+		return getRootPath() + File.separator + "logs";
+	}
+
+	/**
 	 * 得到EBR的conf部署目录
 	 *
 	 * @return String 部署路径

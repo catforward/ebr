@@ -62,6 +62,7 @@ import tsm.ebr.base.data.TaskUnit;
 import tsm.ebr.base.data.TaskUnit.Symbols;
 import tsm.ebr.base.data.TaskUnit.Type;
 import tsm.ebr.base.utils.ConfigUtils;
+import tsm.ebr.base.utils.LogUtils;
 import tsm.ebr.base.utils.PathUtils;
 
 /**
@@ -132,6 +133,7 @@ public class TaskBuilder extends Handler {
 			}
 		} catch (Exception ex) {
 			logger.severe(ex.getLocalizedMessage());
+			LogUtils.dumpException(ex);
 			finishNoticeFrom(TASK_BUILDER);
 		}
 	}
@@ -217,9 +219,9 @@ class TaskItemBuilder {
 			InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
 			BufferedReader reader = new BufferedReader(isr)) {
 			return parse(initObjectMapper().readTree(reader));
-		} catch (IOException e) {
-			e.printStackTrace();
-			throw e;
+		} catch (IOException ex) {
+			LogUtils.dumpException(ex);
+			throw ex;
 		}
 	}
 

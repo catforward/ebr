@@ -24,11 +24,6 @@
  */
 package tsm.ebr.base;
 
-import static tsm.ebr.base.Handler.HandlerEvent.Const.ACT;
-import static tsm.ebr.base.Handler.HandlerEvent.Const.DST;
-import static tsm.ebr.base.Handler.HandlerEvent.Const.SRC;
-import static tsm.ebr.base.utils.ConfigUtils.Item.KEY_LOG_INTERNAL_EVENT;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -41,7 +36,7 @@ import com.google.common.eventbus.Subscribe;
 
 import tsm.ebr.base.Handler.HandlerEvent;
 import tsm.ebr.base.Handler.HandlerStatus;
-import tsm.ebr.base.utils.ConfigUtils;
+import tsm.ebr.base.utils.LogUtils;
 
 /**
  * <pre>
@@ -114,8 +109,7 @@ public abstract class Application {
 				}
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
-				// TODO
-				e.printStackTrace();
+				LogUtils.dumpException(e);
 			} finally {
 				terminated = willTerminate;
 			}
@@ -154,9 +148,8 @@ public abstract class Application {
 	 */
 	@Subscribe
 	public final void eventLog(HandlerEvent event) {
-		if (Boolean.getBoolean((String) ConfigUtils.getOrDefault(KEY_LOG_INTERNAL_EVENT, "false"))) {
-			logger.fine(String.format("[act]: %s :: <src>: %s -> <dst>: %s", event.getParam(ACT), event.getParam(SRC),
-					event.getParam(DST)));
+		if(LogUtils.isEventLogEnabled()) {
+			logger.info(event.toString());
 		}
 	}
 
@@ -170,5 +163,4 @@ public abstract class Application {
 	public final EventBus getEventBus() {
 		return eventBus;
 	}
-
 }
