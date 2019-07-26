@@ -1,6 +1,6 @@
 {
   "uid": "TASK_MODULE",
-  "desc": "test task module object",
+  "desc": "test task module root object",
   "units": [
     {
       "uid": "T1",

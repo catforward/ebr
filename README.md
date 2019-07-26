@@ -22,15 +22,9 @@ External Program
 
 Procedural flaw
 
-excample like this
+example like this
 
 ![image](https://github.com/catforward/ebr/raw/master/images/sample_task_flow.jpg)
 
 - A target program can be executed only when its predecessors had completely done
 - All successors, which belong target program will be notified when target program is done
-
-TODO:
-
-- [] To handle the exception which occurred at runtime
-- [] Complete unit tests
-- [] To sort out log info
