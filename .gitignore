@@ -1,5 +1,3 @@
 target/
-.settings/
-.classpath
-.ebr.iml
 .idea/
+/ebr.iml
