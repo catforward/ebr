@@ -1,3 +1,27 @@
+/**
+ * MIT License
+ *
+ * Copyright (c) 2019 catforward
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ */
 package tsm.ebr.base;
 
 import tsm.ebr.base.Service.ServiceId;
@@ -30,12 +54,16 @@ public final class Event {
         public final static String EVT_ACT_LOAD_DEF_FILE = "EVT_ACT_LOAD_DEF_FILE";
         public final static String EVT_ACT_TASK_META_CREATED = "EVT_ACT_TASK_META_CREATED";
         public final static String EVT_ACT_LAUNCH_TASK_FLOW = "EVT_ACT_LAUNCH_TASK_FLOW";
+        public final static String EVT_ACT_LAUNCH_TASK_FLOWS = "EVT_ACT_LAUNCH_TASK_FLOWS";
         public final static String EVT_ACT_LAUNCH_TASK_UNIT = "EVT_ACT_LAUNCH_TASK_UNIT";
         public final static String EVT_ACT_LAUNCH_TASK_UNITS = "EVT_ACT_LAUNCH_TASK_UNITS";
         public final static String EVT_ACT_TASK_UNIT_STATE_CHANGED = "EVT_ACT_TASK_UNIT_STATE_CHANGED";
+        public final static String EVT_ACT_ALL_TASK_FINISHED = "EVT_ACT_ALL_TASK_FINISHED";
         /** 服务事件中传送参数的预定义名称 */
         public final static String EVT_DATA_PATH = "EVT_DATA_PATH";
+        public final static String EVT_DATA_META_MAP = "EVT_DATA_META_POOL";
         public final static String EVT_DATA_TASK_FLOW_URL = "EVT_DATA_TASK_FLOW_URL";
+        public final static String EVT_DATA_TASK_FLOW_URL_LIST = "EVT_DATA_TASK_FLOW_URL_LIST";
         public final static String EVT_DATA_TASK_UNIT_URL = "EVT_DATA_TASK_UNIT_URL";
         public final static String EVT_DATA_TASK_UNIT_COMMAND = "EVT_DATA_TASK_UNIT_COMMAND";
         public final static String EVT_DATA_TASK_PERFORMABLE_UNITS_LIST = "EVT_DATA_TASK_PERFORMABLE_UNITS_LIST";

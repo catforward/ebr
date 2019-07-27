@@ -1,3 +1,27 @@
+/**
+ * MIT License
+ *
+ * Copyright (c) 2019 catforward
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ */
 package tsm.ebr.task.manager;
 
 import com.google.common.graph.ElementOrder;
@@ -135,27 +159,17 @@ class Item {
         // 当单元类型为非TASK(MODULE or ROOT)时，记录子任务的完成数
         private AtomicInteger unfinishedCount;
 
-        private Unit(Meta meta) {
+        Unit(Meta meta, Unit uParent) {
             // copy
-            type = meta.type;
-            url = meta.url;
-            uid = (String) meta.raw.get(Symbols.KEY_UID);
-            desc = (String) meta.raw.get(Symbols.KEY_DESC);
-            command = (String) meta.raw.get(Symbols.KEY_COMMAND);
-            // cascade init
-            parent = meta.parent != null ? new Unit(meta.parent) : null;
+            type = Type.valueOf(meta.symbols.get(Symbols.KEY_UNIT_TYPE));
+            url = meta.symbols.get(Symbols.KEY_UNIT_URL);
+            uid = meta.symbols.get(Symbols.KEY_UID);
+            desc = meta.symbols.get(Symbols.KEY_DESC);
+            command = meta.symbols.get(Symbols.KEY_COMMAND);
+            parent = uParent;
             children = new ArrayList<>(meta.children.size());
-            predecessors = new ArrayList<>(meta.predecessors.size());
-            for (Meta child : meta.children) {
-                children.add(new Unit(child));
-            }
-            for (Meta pred : meta.predecessors) {
-                predecessors.add(new Unit(pred));
-            }
-        }
-
-        static Unit copyOf(Meta meta) {
-            return new Unit(meta);
+            predecessors = new ArrayList<>(meta.predecessorUrl.size());
+            unfinishedCount = new AtomicInteger(meta.children.size());
         }
 
         @Override

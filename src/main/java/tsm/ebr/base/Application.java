@@ -87,13 +87,6 @@ public class Application {
     private void finish() {
         eventBus.unregister(_INSTANCE);
         singleEventDispatcher.shutdown();
-//        try {
-//            while (singleEventDispatcher.awaitTermination(1, TimeUnit.SECONDS)) {
-//                logger.info("singleEventDispatcher::awaitTermination");
-//            }
-//        } catch (InterruptedException e) {
-//            LogUtils.dumpError(e);
-//        }
     }
 
     /**
@@ -141,22 +134,21 @@ public class Application {
     private void mainLoop() {
         logger.info("EBR MAIN LOOP START!");
         while (!terminated) {
-            boolean willTerminate = true;
+            boolean shouldTerminated = true;
             try {
                 var entries = servPool.entrySet().iterator();
                 while (entries.hasNext()) {
                     Map.Entry<ServiceId, Service> entry = entries.next();
                     Service service = entry.getValue();
-                    // status checker
-                    if (Service.ServiceStatus.FINISHED != service.status() && willTerminate) {
-                        willTerminate = false;
+                    if (Service.ServiceStatus.FINISHED != service.status() && shouldTerminated) {
+                        shouldTerminated = false;
                     }
                 }
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 LogUtils.dumpError(e);
             } finally {
-                terminated = willTerminate;
+                terminated = shouldTerminated;
             }
         }
         logger.info("EBR MAIN LOOP FINISHED!");
@@ -183,7 +175,8 @@ public class Application {
             // 通知读取定义文件
             eventBus.post(new Event(EVT_ACT_LOAD_DEF_FILE, APP, APP));
             return;
-        } else if (EVT_ACT_SERVICE_SHUTDOWN.equals(event.act)) {
+        } else if (EVT_ACT_SERVICE_SHUTDOWN.equals(event.act)
+            || EVT_ACT_ALL_TASK_FINISHED.equals(event.act)) {
             // 所有Service停止
             servPool.forEach((id, service) -> service.finish());
             return;

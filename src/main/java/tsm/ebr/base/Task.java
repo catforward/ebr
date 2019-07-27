@@ -1,3 +1,27 @@
+/**
+ * MIT License
+ *
+ * Copyright (c) 2019 catforward
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ */
 package tsm.ebr.base;
 
 import java.util.ArrayList;
@@ -18,12 +42,17 @@ public final class Task {
     }
 
     public static class Symbols {
-        public final static String KEY_ROOT_UNIT = "root_unit";
+        // symbols in json
         public final static String KEY_UID = "uid";
         public final static String KEY_DESC = "desc";
         public final static String KEY_COMMAND = "command";
         public final static String KEY_UNITS = "units";
-        public final static String KEY_PREDECESSORS_LIST = "predecessors";
+        public final static String KEY_PREDECESSORS = "predecessors";
+        // symbols in app
+        public final static String KEY_ROOT_UNIT = "KEY_ROOT_UNIT";
+        public final static String KEY_UNIT_URL = "KEY_UNIT_URL";
+        public final static String KEY_UNIT_TYPE = "KEY_UNIT_TYPE";
+        public final static String KEY_PARENT_UNIT_URL = "KEY_PARENT_UNIT_URL";
     }
 
     /**
@@ -32,23 +61,10 @@ public final class Task {
      * </pre>
      */
     public static class Meta {
-        public final HashMap<String, Object> raw;
-        public final ArrayList<Meta> children;
-        public final ArrayList<Meta> predecessors;
-        public final Meta parent;
-        public final String url;
-        public Type type;
-
-        public Meta(String unitId, Meta parentTask) {
-            parent = parentTask;
-            url = (parent == null) ?
-                    String.format("/%s", unitId) :
-                    String.format("%s/%s", parent.url, unitId);
-            children = new ArrayList<>();
-            predecessors = new ArrayList<>();
-            raw = new HashMap<>();
-            raw.put(Symbols.KEY_UID, unitId);
-        }
+        public Meta parent = null;
+        public final ArrayList<Meta> children = new ArrayList<>();
+        public final HashMap<String, String> symbols = new HashMap<>();
+        public final ArrayList<String> predecessorUrl = new ArrayList<>();
     }
 
     public static class PerformableTask {

@@ -1,4 +1,28 @@
-package tsm.ebr.task.persistence;
+/**
+ * MIT License
+ *
+ * Copyright (c) 2019 catforward
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ */
+package tsm.ebr.task.storage;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
@@ -20,13 +44,14 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.logging.Logger;
 
+import static tsm.ebr.base.Event.Symbols.EVT_DATA_META_MAP;
 import static tsm.ebr.base.Task.Symbols.*;
 import static tsm.ebr.utils.ConfigUtils.Item.KEY_INSTANT_TASK;
 
-public class MetaLoadHandler implements IHandler {
-    private final static Logger logger = Logger.getLogger(MetaLoadHandler.class.getCanonicalName());
+public class DefineFileLoadHandler implements IHandler {
+    private final static Logger logger = Logger.getLogger(DefineFileLoadHandler.class.getCanonicalName());
 
-    public MetaLoadHandler() {}
+    public DefineFileLoadHandler() {}
 
     /**
      * @param context 上下文
@@ -35,9 +60,9 @@ public class MetaLoadHandler implements IHandler {
     @Override
     public boolean doHandle(HandlerContext context) {
         String filePath = makeDefineFileFullPath(context);
-        Meta rootMeta = loadTaskMetaFromDefineFile(filePath);
+        Map<String, Meta> urlMetaMap = loadTaskMetaFromDefineFile(filePath);
         context.setNextAction(Symbols.EVT_ACT_TASK_META_CREATED);
-        context.addHandlerResult(KEY_ROOT_UNIT, rootMeta);
+        context.addHandlerResult(EVT_DATA_META_MAP, urlMetaMap);
         return true;
     }
 
@@ -66,7 +91,7 @@ public class MetaLoadHandler implements IHandler {
      *
      * @param filePath Task定义文件的完整路径
      */
-    private Meta loadTaskMetaFromDefineFile(String filePath) {
+    private Map<String, Meta> loadTaskMetaFromDefineFile(String filePath) {
         try (FileInputStream fis = new FileInputStream(filePath);
              InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
              BufferedReader reader = new BufferedReader(isr)) {
@@ -114,13 +139,21 @@ public class MetaLoadHandler implements IHandler {
      * @param jsonRoot Task定义文件转换后的json根节点
      * @return Node
      */
-    private Meta parse(JsonNode jsonRoot) {
+    private Map<String, Meta> parse(JsonNode jsonRoot) {
         HashMap<String, Meta> uidMetaPool = new HashMap<>();
-        createTaskUnitTree(null, jsonRoot, uidMetaPool);
+        createMetaPool(null, jsonRoot, uidMetaPool);
         Meta rootMeta = uidMetaPool.get(KEY_ROOT_UNIT);
         updatePredecessors(rootMeta, uidMetaPool);
-        uidMetaPool.clear();
-        return rootMeta;
+        return makeUrlMetaMap(uidMetaPool);
+    }
+
+    private Map<String, Meta> makeUrlMetaMap(HashMap<String, Meta> uidMetaPool) {
+        HashMap<String, Meta> urlMetaMap = new HashMap<>();
+        uidMetaPool.forEach((uid, meta) -> {
+            urlMetaMap.put(meta.symbols.get(KEY_UNIT_URL), meta);
+        });
+        urlMetaMap.put(KEY_ROOT_UNIT, uidMetaPool.get(KEY_ROOT_UNIT));
+        return  urlMetaMap;
     }
 
     /**
@@ -128,11 +161,11 @@ public class MetaLoadHandler implements IHandler {
      * 创建节点树
      * </pre>
      *
-     * @param parent       父节点
+     * @param mParent       父节点
      * @param jsonNode     当前json节点
      * @param uidMetaPool 所有节点对象池
      */
-    private void createTaskUnitTree(Meta parent, JsonNode jsonNode, Map<String, Meta> uidMetaPool) {
+    private void createMetaPool(Meta mParent, JsonNode jsonNode, Map<String, Meta> uidMetaPool) {
         Optional<JsonNode> optValue = Optional.ofNullable(jsonNode.get(KEY_UID));
         if (optValue.isEmpty()) {
             throw new RuntimeException("没有设置uid元素");
@@ -140,70 +173,72 @@ public class MetaLoadHandler implements IHandler {
         // 使用ID取得或创建Meta
         String uid = optValue.get().asText().trim();
         Meta currentUnit = Optional.ofNullable(uidMetaPool.get(uid)).orElseGet(() -> {
-            Meta newMeta = new Meta(uid, parent);
+            Meta newMeta = new Meta();
             uidMetaPool.put(uid, newMeta);
-            if (newMeta.parent == null) {
-                newMeta.type = Type.ROOT;
+            newMeta.symbols.put(KEY_UID, uid);
+            if (mParent == null) {
+                newMeta.symbols.put(KEY_UNIT_URL, String.format("/%s", uid));
+                newMeta.symbols.put(KEY_UNIT_TYPE, Type.ROOT.name());
                 uidMetaPool.put(KEY_ROOT_UNIT, newMeta);
             } else {
-                parent.children.add(newMeta);
+                newMeta.symbols.put(KEY_UNIT_URL, String.format("%s/%s", mParent.symbols.get(KEY_UNIT_URL), uid));
+                newMeta.symbols.put(KEY_PARENT_UNIT_URL, mParent.symbols.get(KEY_UNIT_URL));
+                newMeta.parent = mParent;
+                mParent.children.add(newMeta);
             }
             return newMeta;
         });
         // 描述
         optValue = Optional.ofNullable(jsonNode.get(KEY_DESC));
         if (optValue.isPresent()) {
-            currentUnit.raw.put(KEY_DESC, optValue.get().asText().trim());
+            currentUnit.symbols.put(KEY_DESC, optValue.get().asText().trim());
         }
         // 命令
         optValue = Optional.ofNullable(jsonNode.get(KEY_COMMAND));
         if (optValue.isPresent()) {
-            currentUnit.raw.put(KEY_COMMAND, optValue.get().asText().trim());
+            currentUnit.symbols.put(KEY_COMMAND, optValue.get().asText().trim());
         }
         // 触发器
-        optValue = Optional.ofNullable(jsonNode.get(KEY_PREDECESSORS_LIST));
+        optValue = Optional.ofNullable(jsonNode.get(KEY_PREDECESSORS));
             if (optValue.isPresent()) {
             JsonNode predecessorsNode = optValue.get();
             int size = predecessorsNode.size();
             if (size != 0) {
-                ArrayList<String> predecessorList = new ArrayList<>(size);
                 for (int idx = 0; idx < size; ++idx) {
-                    predecessorList.add(predecessorsNode.get(idx).asText().trim());
+                    // 暂时放uid
+                    currentUnit.predecessorUrl.add(predecessorsNode.get(idx).asText().trim());
                 }
-                currentUnit.raw.put(KEY_PREDECESSORS_LIST, predecessorList);
             }
         }
         // 子元素
         optValue = Optional.ofNullable(jsonNode.get(KEY_UNITS));
         if (optValue.isPresent()) {
-            if (currentUnit.parent != null && Type.MODULE == currentUnit.parent.type) {
-                throw new RuntimeException("MODULE以下TASK不允许拥有子TASK（只允许一层MODULE）");
-            }
             int size = optValue.get().size();
             for (int idx = 0; idx < size; ++idx) {
-                createTaskUnitTree(currentUnit, optValue.get().get(idx), uidMetaPool);
+                createMetaPool(currentUnit, optValue.get().get(idx), uidMetaPool);
             }
-            // 类型
-            if (Type.ROOT != currentUnit.type) {
-                currentUnit.type = Type.MODULE;
+            if (!Type.ROOT.name().equals(currentUnit.symbols.get(KEY_UNIT_TYPE))) {
+                currentUnit.symbols.put(KEY_UNIT_TYPE, Type.MODULE.name());
             }
         } else {
-            // 类型
-            if (Type.ROOT != currentUnit.type) {
-                currentUnit.type = Type.TASK;
+            if (!Type.ROOT.name().equals(currentUnit.symbols.get(KEY_UNIT_TYPE))) {
+                currentUnit.symbols.put(KEY_UNIT_TYPE, Type.TASK.name());
             }
         }
     }
 
     private void updatePredecessors(Meta meta, Map<String, Meta> uidMetaPool) {
-        List<String> plist = (List<String>) meta.raw.get(KEY_PREDECESSORS_LIST);
-        if (plist != null && !plist.isEmpty()) {
-            for (String pUid : plist) {
+        if (!meta.predecessorUrl.isEmpty()) {
+            ArrayList<String> newUrlList = new ArrayList<>(meta.predecessorUrl.size());
+            for (String pUid : meta.predecessorUrl) {
                 Meta pMeta = uidMetaPool.get(pUid);
                 if (pMeta != null) {
-                    meta.predecessors.add(pMeta);
+                    newUrlList.add(pMeta.symbols.get(KEY_UNIT_URL));
                 }
             }
+            // replace the uid by url
+            meta.predecessorUrl.clear();
+            meta.predecessorUrl.addAll(newUrlList);
         }
         for(Meta child : meta.children) {
             updatePredecessors(child, uidMetaPool);

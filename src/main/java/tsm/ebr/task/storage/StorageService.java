@@ -22,33 +22,31 @@
  * SOFTWARE.
  *
  */
-package tsm.ebr.task.manager;
+package tsm.ebr.task.storage;
 
-import tsm.ebr.base.Event.Symbols;
-import tsm.ebr.base.Handler.IHandler;
-import tsm.ebr.base.Handler.HandlerContext;
-import tsm.ebr.base.Task.State;
+import tsm.ebr.base.Service;
 
-import java.util.logging.Logger;
+import static tsm.ebr.base.Event.Symbols.EVT_ACT_LOAD_DEF_FILE;
 
-public class StateUpdateHandler implements IHandler {
-    private final static Logger logger = Logger.getLogger(StateUpdateHandler.class.getCanonicalName());
+public class StorageService extends Service {
+
+    public StorageService() {
+        super();
+    }
+
     @Override
-    public boolean doHandle(HandlerContext context) {
-        String url = (String) context.getParam(Symbols.EVT_DATA_TASK_UNIT_URL);
-        State state = (State) context.getParam(Symbols.EVT_DATA_TASK_UNIT_NEW_STATE);
-        StateHolder.getUnit(url).updateState(state);
-        // 如果任意一个unit执行错误
-        // 或者顶层flow都完成了
-        // 则通知应用程序退出
-        if (State.ERROR == state) {
-            logger.warning(String.format("[%s]: error end...", url));
-            context.setNoticeAction(Symbols.EVT_ACT_SERVICE_SHUTDOWN);
-            return false;
-        } else if (StateHolder.getRootFlow().isComplete()) {
-            context.setNextAction(Symbols.EVT_ACT_ALL_TASK_FINISHED);
-            return false;
-        }
-        return true;
+    public ServiceId id() {
+        return ServiceId.STORAGE;
+    }
+
+    @Override
+    protected void onInit() {
+        // 从定义文件读取任务定义
+        registerActionHandler(EVT_ACT_LOAD_DEF_FILE, DefineFileLoadHandler.class, MetaValidateHandler.class);
+    }
+
+    @Override
+    protected void onFinish() {
+        unregister(EVT_ACT_LOAD_DEF_FILE);
     }
 }

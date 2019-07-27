@@ -28,8 +28,8 @@ import tsm.ebr.base.Application;
 import tsm.ebr.task.executor.ExecuteService;
 import tsm.ebr.utils.ConfigUtils;
 import tsm.ebr.utils.LogUtils;
-import tsm.ebr.task.manager.StateManageService;
-import tsm.ebr.task.persistence.PersistenceService;
+import tsm.ebr.task.manager.StateManagementService;
+import tsm.ebr.task.storage.StorageService;
 import tsm.ebr.thin.GetOpts;
 
 import java.util.HashMap;
@@ -96,9 +96,9 @@ public class Main {
 
     static void deployServices(Application app) {
         // 在此按需要初始化的顺序来添加处理程序定义
-        app.deployService(TASK_META_PERSISTENCE, new PersistenceService());
-        app.deployService(TASK_STATE_MANAGENT, new StateManageService());
-        app.deployService(TASK_EXECUTOR, new ExecuteService());
+        app.deployService(STORAGE, new StorageService());
+        app.deployService(MANAGEMENT, new StateManagementService());
+        app.deployService(EXECUTOR, new ExecuteService());
     }
 
 //	static void showArgs(String[] args) {

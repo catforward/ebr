@@ -57,9 +57,9 @@ public abstract class Service implements EventReceiver {
      */
     public enum ServiceId {
         APP,
-        TASK_META_PERSISTENCE,
-        TASK_EXECUTOR,
-        TASK_STATE_MANAGENT;
+        STORAGE,
+        EXECUTOR,
+        MANAGEMENT,
     }
 
     /**
@@ -69,7 +69,7 @@ public abstract class Service implements EventReceiver {
      */
     public enum ServiceStatus {
         CREATED(0),
-        INITIALIZED(1),
+        RUNNING(1),
         FINISHED(2);
 
         private int code;
@@ -91,7 +91,7 @@ public abstract class Service implements EventReceiver {
 
     private final Logger logger = Logger.getLogger(Service.class.getCanonicalName());
     // 服务状态
-    protected ServiceStatus serviceStatus;
+    protected volatile ServiceStatus serviceStatus;
     // key: event_act value: handler_chain
     private final Map<String, HandlerChain> actionMap;
     private final HandlerContext context;
@@ -116,7 +116,7 @@ public abstract class Service implements EventReceiver {
      */
     public void init() {
         onInit();
-        serviceStatus = INITIALIZED;
+        serviceStatus = RUNNING;
     }
 
     /**
@@ -192,12 +192,13 @@ public abstract class Service implements EventReceiver {
                 if (!desc.newHandlerInstance().doHandle(context)) {
                     if (context.errorMsg != null) {
                         logger.warning(context.errorMsg);
-                        return false;
+                        throw new RuntimeException(context.errorMsg);
                     } else if (context.nextAction == null) {
-                        logger.warning("unknown error occurred...");
-                        return false;
+                        String msg = String.format("[%s]: unknown error occurred...", desc.handlerClass.getCanonicalName());
+                        logger.warning(msg);
+                        throw new RuntimeException(msg);
                     } else {
-                        logger.info(String.format("Action(%s)处理完成后处理链结束", desc.handlerClass.getName()));
+                        logger.info(String.format("Action(%s)处理完成后处理链结束", desc.handlerClass.getCanonicalName()));
                         break;
                     }
                 }
