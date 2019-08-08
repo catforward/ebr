@@ -1,6 +1,6 @@
 {
   "uid": "TASK_MODULE",
-  "desc": "test task module object",
+  "desc": "test task module root object",
   "units": [
     {
       "uid": "T1",
@@ -25,7 +25,7 @@
         {
           "uid": "T2-3",
           "desc": "test task unit T2-3",
-          "command": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -Command echo 'T2-2 start...';sleep 5;echo 'T2-3 Finished...'",
+          "command": "C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\powershell.exe -Command echo 'T2-3 start...';sleep 5;echo 'T2-3 Finished...'",
           "predecessors": ["T2-1", "T2-2"]
         }
       ]

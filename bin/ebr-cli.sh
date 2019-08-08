@@ -1,16 +1,16 @@
 #!/bin/bash
 
-JAVA_BIN=/usr/bin/java
-JAVA_OPTS="-Xms32m -Xmx64m"
-
 SCRIPT_ROOT=$(cd $(dirname $0); pwd)
-EBR_ROOT=${SCRIPT_ROOT}/..
 APP_NAME=ebr-0.1-all.jar
-APP_PID=${APP_NAME}.pid
-APP_JAR=${EBR_ROOT}/libs/${APP_NAME}
+APP_JAR=${SCRIPT_ROOT}/../libs/${APP_NAME}
+CLI_LOG=${SCRIPT_ROOT}/../logs/cli_${APP_NAME}.log
+CMD_ARGS=$@
+
+JAVA_BIN=/usr/bin/java
+JAVA_OPTS="-Xms32m -Xmx128m -Xlog:gc:${SCRIPT_ROOT}/../logs/gc_${APP_NAME}.log"
 
 usage() {
-	echo "Usage: ebr-cli.sh [start|stop|restart|status]"
+	echo "Usage: ebr-cli.sh [start|stop|restart|status] [jar args]"
 	exit 1
 }
 
@@ -28,7 +28,9 @@ start() {
 	if [ $? -eq 0 ]; then
 		echo "${APP_NAME} is already running. pid=${pid}"
 	else
-		nohup ${JAVA_BIN} ${JAVA_OPTS} -jar ${APP_JAR} > /dev/null 2>&1 &
+	    START_TIME=`date "+%Y-%m-%d %H:%M:%S"`
+	    echo "--------------------- ${START_TIME} ---------------------" >> ${CLI_LOG} 2>&1
+	    nohup ${JAVA_BIN} ${JAVA_OPTS} -jar ${APP_JAR} ${CMD_ARGS[@]:1}  >> ${CLI_LOG} 2>&1 &
 	fi
 }
 

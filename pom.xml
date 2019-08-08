@@ -18,9 +18,9 @@
 		<java.version>11</java.version>
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
-		<jackson.version>2.9.9</jackson.version>
+		<jackson.version>2.9.9.2</jackson.version>
 		<guava.version>27.1-jre</guava.version>
-		<main.clazz>tsm.one.ebr.Main</main.clazz>
+		<main.clazz>tsm.ebr.Main</main.clazz>
 	</properties>
 
 	<dependencies>
@@ -37,7 +37,7 @@
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>3.8.1</version>
+			<version>4.12</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
@@ -66,10 +66,16 @@
 									<mainClass>${main.clazz}</mainClass>
 								</transformer>
 							</transformers>
-							<!--<artifactSet> <excludes> <exclude>classworlds:classworlds</exclude> 
-								<exclude>junit:junit</exclude> <exclude>jmock:*</exclude> <exclude>*:xml-apis</exclude> 
-								<exclude>org.apache.maven:lib:tests</exclude> <exclude>log4j:log4j:jar:</exclude> 
-								</excludes> </artifactSet> -->
+							<artifactSet>
+								<excludes>
+									<exclude>classworlds:classworlds</exclude>
+									<exclude>junit:junit</exclude>
+									<exclude>jmock:*</exclude>
+									<exclude>*:xml-apis</exclude>
+									<exclude>org.apache.maven:lib:tests</exclude>
+									<exclude>log4j:log4j:jar:</exclude>
+								</excludes>
+							</artifactSet>
 						</configuration>
 					</execution>
 				</executions>

@@ -1,18 +1,18 @@
 /**
  * MIT License
- * 
+ *
  * Copyright (c) 2019 catforward
- * 
+ *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
  * in the Software without restriction, including without limitation the rights
  * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
  * copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
- * 
+ *
  * The above copyright notice and this permission notice shall be included in all
  * copies or substantial portions of the Software.
- * 
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -20,30 +20,17 @@
  * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
- * 
+ *
  */
-package tsm.one.ebr.base;
+package tsm.ebr.base;
 
 /**
- * 处理类ID定义
- * 
+ * Global Const Symbols
  * @author catforward
  */
-public enum HandlerId {
-
-	TASK_APP(0),
-	TASK_BUILDER(1),
-	TASK_EXECUTOR(2),
-	TASK_MANAGER(3);
-
-	private int handlerId;
-
-	private HandlerId(int id) {
-		handlerId = id;
-	}
-
-	@Override
-	public String toString() {
-		return String.format("%:%s", name(), String.valueOf(handlerId));
-	}
+public class Const {
+    /** const char symbol for colon */
+    public final static char COLON = ':';
+    /** default initial capacity for the implements of collection */
+    public final static int INIT_CAP = 16;
 }
