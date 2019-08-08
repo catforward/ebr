@@ -24,10 +24,10 @@
  */
 package tsm.ebr.task.manager;
 
+import tsm.ebr.base.Const;
 import tsm.ebr.base.Event.Symbols;
 import tsm.ebr.base.Handler.HandlerContext;
 import tsm.ebr.base.Handler.IHandler;
-import tsm.ebr.base.Task;
 import tsm.ebr.base.Task.Meta;
 import tsm.ebr.base.Task.Type;
 import tsm.ebr.task.manager.Item.Flow;
@@ -41,10 +41,17 @@ import static tsm.ebr.base.Event.Symbols.EVT_DATA_META_MAP;
 import static tsm.ebr.base.Task.Symbols.KEY_ROOT_UNIT;
 import static tsm.ebr.base.Task.Symbols.KEY_UNIT_URL;
 
+/**
+ * 构建模块内数据结构
+ * @author catforward
+ */
 public class ItemBuildHandler implements IHandler {
 
     /**
-     * @param context 上下文
+     * 构建Unit树
+     * 构建TaskFlow对象
+     * 成功时发送启动TaskFlow事件
+     * @param context
      * @return true: succeeded false: failed
      */
     @Override
@@ -60,18 +67,22 @@ public class ItemBuildHandler implements IHandler {
 
     /**
      *
+     * @param context
      * @return root unit
      */
     private Unit createUnitTree(HandlerContext context) {
         Map<String, Meta> urlMetaMap = (Map<String, Meta>) context.getParam(EVT_DATA_META_MAP);
         Meta rootMeta = urlMetaMap.get(KEY_ROOT_UNIT);
-        HashMap<String, Unit> urlUnitMap = new HashMap<>();
+        HashMap<String, Unit> urlUnitMap = new HashMap<>(Const.INIT_CAP);
         createUnit(null, rootMeta, urlUnitMap);
         Unit rootUnit = urlUnitMap.get(KEY_ROOT_UNIT);
         updatePredecessors(rootMeta, urlUnitMap);
         return rootUnit;
     }
 
+    /**
+     *
+     */
     private void createUnit(Unit uParent, Meta meta, Map<String, Unit> urlUnitMap) {
         String url = meta.symbols.get(KEY_UNIT_URL);
         Unit currentUnit = Optional.ofNullable(urlUnitMap.get(url)).orElseGet(() -> {
@@ -89,6 +100,9 @@ public class ItemBuildHandler implements IHandler {
         }
     }
 
+    /**
+     *
+     */
     private void updatePredecessors(Meta meta, Map<String, Unit> urlUnitMap) {
         Unit currentUnit = urlUnitMap.get(meta.symbols.get(KEY_UNIT_URL));
         for (String pUrl : meta.predecessorUrl) {
@@ -100,6 +114,9 @@ public class ItemBuildHandler implements IHandler {
         }
     }
 
+    /**
+     *
+     */
     private void addTaskUnit(Unit unit) {
         StateHolder.addUnit(unit);
         for (Unit child : unit.children) {
@@ -110,6 +127,9 @@ public class ItemBuildHandler implements IHandler {
         }
     }
 
+    /**
+     *
+     */
     private void addTaskFlow(Unit unit) {
         Flow flow = Flow.makeFrom(unit);
         flow.standby();

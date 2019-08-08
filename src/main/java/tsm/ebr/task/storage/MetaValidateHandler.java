@@ -35,6 +35,10 @@ import java.util.logging.Logger;
 import static tsm.ebr.base.Event.Symbols.EVT_DATA_META_MAP;
 import static tsm.ebr.base.Task.Symbols.*;
 
+/**
+ * 验证创建的任务定义对象
+ * @author catforward
+ */
 public class MetaValidateHandler implements IHandler {
     private final static Logger logger = Logger.getLogger(MetaValidateHandler.class.getCanonicalName());
     /**
@@ -49,6 +53,9 @@ public class MetaValidateHandler implements IHandler {
         return validate(context, rootMeta, urlMetaMap);
     }
 
+    /**
+     *
+     */
     private boolean validate(HandlerContext context, Meta meta, Map<String, Meta> urlMetaMap) {
         if (meta == null) {
             context.setErrorMessage("the define of unit is not exist!");
@@ -92,9 +99,11 @@ public class MetaValidateHandler implements IHandler {
         }
         // command
         String command = (String) meta.symbols.get(KEY_COMMAND);
-        if (Type.TASK.name().equals(typeStr) && (command == null || command.isBlank())) {
-            context.setErrorMessage(String.format("[%s]: the define onf command is not exist!", uid));
-            return false;
+        if (Type.TASK.name().equals(typeStr)) {
+            if (command == null || command.isBlank()) {
+                context.setErrorMessage(String.format("[%s]: the define onf command is not exist!", uid));
+                return false;
+            }
         }
         // predecessors
         if (!meta.predecessorUrl.isEmpty()) {

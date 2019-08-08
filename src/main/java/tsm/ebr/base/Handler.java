@@ -24,23 +24,32 @@
  */
 package tsm.ebr.base;
 
-
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
+/**
+ * 业务处理器
+ * @author catforward
+ */
 public class Handler {
 
     public interface IHandler {
         /**
+         * 进行实际处理
+         * 当返回false时表示处理链将被终止
          * @param context 上下文
          * @return true: succeeded false: failed
          */
         boolean doHandle(HandlerContext context);
     }
 
+    /**
+     * 处理器的描述
+     * 用于缓存处理其class对象
+     */
     public static class HandlerDesc {
         final Class<? extends IHandler> handlerClass;
 
@@ -54,9 +63,15 @@ public class Handler {
 
     }
 
+    /**
+     * 处理上下文
+     * 用来保存每一个事件的参数及发送源，发送目的信息
+     */
     public static class HandlerContext {
         private final static Logger logger = Logger.getLogger(HandlerContext.class.getCanonicalName());
+        /** 事件所携带的参数 */
         final HashMap<String, Object> param = new HashMap<>();
+        /** 处理器执行后的处理结果 */
         final HashMap<String, Object> result = new HashMap<>();
         String errorMsg = null;
         String nextAction = null;
@@ -65,6 +80,10 @@ public class Handler {
 
         HandlerContext() {}
 
+        /**
+         * 重置所有数据至初始状态
+         * @param newParam 新的事件所携带的参数
+         */
         void reset(String action, Map<String, Object> newParam) {
             currentAction = action;
             errorMsg = null;
@@ -75,16 +94,18 @@ public class Handler {
             param.putAll(newParam);
         }
 
+        /**
+         * 当有处理链中有多个处理器时
+         * 每个处理器执行前
+         * 合并事件携带的参数
+         * 达到上一个处理器的结果能够作为下一个处理器的参数
+         */
         void mergeParam() {
             param.putAll(result);
         }
 
-        public Object getParam(String key) {
-            return param.get(key);
-        }
-
-        public Object getParam(String key, Object defaultValue) {
-            return param.getOrDefault(key, defaultValue);
+        public Object getParam(String name) {
+            return param.get(name);
         }
 
         public String getCurrentAction() {
@@ -121,8 +142,13 @@ public class Handler {
         }
     }
 
+    /**
+     *
+     */
     static class HandlerChain {
+        /**  */
         final String eventAction;
+        /**  */
         final Map<Class<? extends IHandler>, HandlerDesc> handlerPool;
 
         HandlerChain(String newAct) {

@@ -34,21 +34,29 @@ import java.util.HashMap;
 public final class Task {
 
     public enum State {
-        SUCCEEDED, ERROR, STANDBY, RUNNING;
+        SUCCEEDED,
+        ERROR,
+        STANDBY,
+        RUNNING,
     }
 
     public enum Type {
-        ROOT, TASK, MODULE;
+        ROOT,
+        MODULE,
+        TASK,
     }
 
+    /**
+     * 描述一个任务所需的名称定义
+     */
     public static class Symbols {
-        // symbols in json
+        /** symbols in json file */
         public final static String KEY_UID = "uid";
         public final static String KEY_DESC = "desc";
         public final static String KEY_COMMAND = "command";
         public final static String KEY_UNITS = "units";
         public final static String KEY_PREDECESSORS = "predecessors";
-        // symbols in app
+        /** internal symbols in app */
         public final static String KEY_ROOT_UNIT = "KEY_ROOT_UNIT";
         public final static String KEY_UNIT_URL = "KEY_UNIT_URL";
         public final static String KEY_UNIT_TYPE = "KEY_UNIT_TYPE";
@@ -62,11 +70,14 @@ public final class Task {
      */
     public static class Meta {
         public Meta parent = null;
-        public final ArrayList<Meta> children = new ArrayList<>();
-        public final HashMap<String, String> symbols = new HashMap<>();
-        public final ArrayList<String> predecessorUrl = new ArrayList<>();
+        public final ArrayList<Meta> children = new ArrayList<>(Const.INIT_CAP);
+        public final HashMap<String, String> symbols = new HashMap<>(Const.INIT_CAP);
+        public final ArrayList<String> predecessorUrl = new ArrayList<>(Const.INIT_CAP);
     }
 
+    /**
+     * 可执行任务
+     */
     public static class PerformableTask {
         public final String url;
         public final String command;

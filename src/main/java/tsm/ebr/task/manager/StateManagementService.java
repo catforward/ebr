@@ -25,20 +25,31 @@
 package tsm.ebr.task.manager;
 
 import tsm.ebr.base.Event.Symbols;
-import tsm.ebr.base.Service;
+import tsm.ebr.base.Service.BaseService;
+import tsm.ebr.base.Service.ServiceId;
 
-public class StateManagementService extends Service {
+/**
+ * 任务运行时状态管理模块
+ * @author catforward
+ */
+public class StateManagementService extends BaseService {
 
     public StateManagementService() {
         super();
         StateHolder.init();
     }
 
+    /**
+     *
+     */
     @Override
     public ServiceId id() {
         return ServiceId.MANAGEMENT;
     }
 
+    /**
+     *
+     */
     @Override
     protected void onInit() {
         // 当Meta数据生成后，包装其成为Unit单元树
@@ -55,6 +66,9 @@ public class StateManagementService extends Service {
                 UnitLaunchHandler.class);
     }
 
+    /**
+     *
+     */
     @Override
     protected void onFinish() {
         unregister(Symbols.EVT_ACT_TASK_META_CREATED);

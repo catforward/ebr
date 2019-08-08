@@ -31,8 +31,16 @@ import tsm.ebr.base.Task.State;
 
 import java.util.logging.Logger;
 
+/**
+ * 任务状态更新
+ * @author catforward
+ */
 public class StateUpdateHandler implements IHandler {
     private final static Logger logger = Logger.getLogger(StateUpdateHandler.class.getCanonicalName());
+
+    /**
+     *
+     */
     @Override
     public boolean doHandle(HandlerContext context) {
         String url = (String) context.getParam(Symbols.EVT_DATA_TASK_UNIT_URL);

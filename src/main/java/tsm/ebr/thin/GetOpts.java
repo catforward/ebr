@@ -1,13 +1,45 @@
+/**
+ * MIT License
+ * <p>
+ * Copyright (c) 2019 catforward
+ * <p>
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * <p>
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ * <p>
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 package tsm.ebr.thin;
+
+import tsm.ebr.base.Const;
 
 import java.util.ArrayList;
 import java.util.ListIterator;
 
+/**
+ *
+ * @author catforward
+ */
 public class GetOpts {
-
+	/** */
 	private final String optStr;
+	/** */
 	private final ArrayList<OptArgPair> opts;
+	/** */
 	private final ListIterator<OptArgPair> optIter;
+	/** */
 	private OptArgPair currentPair;
 
 	public GetOpts(String[] args, String optString) {
@@ -79,7 +111,7 @@ public class GetOpts {
 		boolean match = hasOpt(c);
 		if (match) {
 			int idx = optStr.indexOf(c) + 1;
-			if (idx < optStr.length() && ':' == optStr.charAt(idx)) {
+			if (idx < optStr.length() && Const.COLON == optStr.charAt(idx)) {
 				return true;
 			}
 		}
@@ -87,6 +119,9 @@ public class GetOpts {
 	}
 }
 
+/**
+ *
+ */
 class OptArgPair {
 	final char optChar;
 	String optArgVal;

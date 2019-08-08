@@ -36,8 +36,15 @@ import java.util.Set;
 
 import static tsm.ebr.base.Task.Type.MODULE;
 
+/**
+ * 任务启动处理器
+ * @author catforward
+ */
 public class UnitLaunchHandler implements IHandler {
 
+    /**
+     *
+     */
     @Override
     public boolean doHandle(HandlerContext context) {
         String act = context.getCurrentAction();
@@ -53,6 +60,9 @@ public class UnitLaunchHandler implements IHandler {
         return true;
     }
 
+    /**
+     *
+     */
     private void launchUnit(HandlerContext context) {
         String url = (String) context.getParam(Symbols.EVT_DATA_TASK_UNIT_URL);
         ArrayList<PerformableTask> units = searchPerformableUnit(url);
@@ -85,6 +95,9 @@ public class UnitLaunchHandler implements IHandler {
         return pList;
     }
 
+    /**
+     *
+     */
     private void collectPerformableUnit(Flow flow, Set<Unit> units, ArrayList<PerformableTask> pList) {
         for (Unit suc : units) {
             long uCount = flow.getPredecessorsOf(suc).stream().filter(u -> !u.isComplete()).count();

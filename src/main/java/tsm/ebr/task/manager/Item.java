@@ -33,33 +33,22 @@ import tsm.ebr.base.Task.Symbols;
 import tsm.ebr.base.Task.Type;
 
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-
-/**
- * <pre>
- * Unit:任务定义类
- * - 保存定义文件中的基本信息
- * - 保存单元之间的父子关系
- * - 单元类型有以下三种
- *  -- ROOT：最顶层单元，代表包括其子元素在内，构成一个完整的Flow
- *  -- MODULE：有子元素的单元
- *  -- UNIT：最底层单元
- * - 单元有以下状态
- *  -- 成功：外部命令成功
- *  -- 错误：外部命令失败
- *  -- 待机：初始状态
- *  -- 运行：外部命令运行中
- * Flow:任务流定义类
- * - 保存单元间的关系(前驱或后置)
- * </pre>
- *
- * @author catforward
- */
 class Item {
-
+    /**
+     * <pre>
+     * 关系紧密地若干任务组成一组任务流
+     *  主要包含以下元素
+     *  - 代表任务流自身的任务单元
+     *  - 保存任务流中任务单元间的关系图(前驱或后置)
+     * </pre>
+     *
+     * @author catforward
+     */
     static class Flow {
 
         final Unit rootUnit;
@@ -68,6 +57,29 @@ class Item {
         private Flow(Unit unit) {
             rootUnit = unit;
             flowGraph = createEmptyGraph();
+        }
+
+        @Override
+        public String toString() {
+            return rootUnit.toString();
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(rootUnit.hashCode(), flowGraph.hashCode());
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == this) {
+                return true;
+            }
+            if (!(o instanceof Flow)) {
+                return false;
+            }
+            Flow flow = (Flow) o;
+            return Objects.equals(rootUnit, flow.rootUnit) &&
+                    Objects.equals(flowGraph, flow.flowGraph);
         }
 
         static Flow makeFrom(Unit unit) {
@@ -139,9 +151,21 @@ class Item {
 
     /**
      * <pre>
-     *     封装任务定义
-     *     用于管理任务间的关系
+     * Unit:任务定义类
+     * - 保存定义文件中的基本信息
+     * - 保存单元之间的父子关系
+     * - 单元类型有以下三种
+     *  -- ROOT：最顶层单元，子元素包括若干MODULE或TASK
+     *  -- MODULE：若干基本运行单元构成的模块单元
+     *  -- TASK：最基本运行单元
+     * - 单元有以下状态
+     *  -- 成功：外部命令成功
+     *  -- 错误：外部命令失败
+     *  -- 待机：初始状态
+     *  -- 运行：外部命令运行中
      * </pre>
+     *
+     * @author catforward
      */
     static class Unit {
         // 任务基本属性定义
@@ -175,6 +199,32 @@ class Item {
         @Override
         public String toString() {
             return uid;
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(uid, desc, command, url, type);
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o == this) {
+                return true;
+            }
+            if (!(o instanceof Unit)) {
+                return false;
+            }
+            Unit unit = (Unit) o;
+            return Objects.equals(uid, unit.uid) &&
+                    Objects.equals(desc, unit.desc) &&
+                    Objects.equals(command, unit.command) &&
+                    Objects.equals(url, unit.url) &&
+                    Objects.equals(type, unit.type) &&
+                    Objects.equals(parent, unit.parent) &&
+                    Objects.equals(children, unit.children) &&
+                    Objects.equals(predecessors, unit.predecessors) &&
+                    Objects.equals(state, unit.state) &&
+                    Objects.equals(unfinishedCount, unit.unfinishedCount);
         }
 
         /**

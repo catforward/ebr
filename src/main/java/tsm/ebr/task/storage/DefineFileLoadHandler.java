@@ -35,9 +35,9 @@ import tsm.ebr.base.Handler.HandlerContext;
 import tsm.ebr.base.Handler.IHandler;
 import tsm.ebr.base.Task.Meta;
 import tsm.ebr.base.Task.Type;
-import tsm.ebr.utils.ConfigUtils;
-import tsm.ebr.utils.LogUtils;
-import tsm.ebr.utils.PathUtils;
+import tsm.ebr.util.ConfigUtils;
+import tsm.ebr.util.LogUtils;
+import tsm.ebr.util.PathUtils;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -46,8 +46,12 @@ import java.util.logging.Logger;
 
 import static tsm.ebr.base.Event.Symbols.EVT_DATA_META_MAP;
 import static tsm.ebr.base.Task.Symbols.*;
-import static tsm.ebr.utils.ConfigUtils.Item.KEY_INSTANT_TASK;
+import static tsm.ebr.util.ConfigUtils.Item.KEY_INSTANT_TASK;
 
+/**
+ * 从磁盘读取任务流配置文件并构建任务定义树
+ * @author catforward
+ */
 public class DefineFileLoadHandler implements IHandler {
     private final static Logger logger = Logger.getLogger(DefineFileLoadHandler.class.getCanonicalName());
 
@@ -140,15 +144,18 @@ public class DefineFileLoadHandler implements IHandler {
      * @return Node
      */
     private Map<String, Meta> parse(JsonNode jsonRoot) {
-        HashMap<String, Meta> uidMetaPool = new HashMap<>();
+        HashMap<String, Meta> uidMetaPool = new HashMap<>(16);
         createMetaPool(null, jsonRoot, uidMetaPool);
         Meta rootMeta = uidMetaPool.get(KEY_ROOT_UNIT);
         updatePredecessors(rootMeta, uidMetaPool);
         return makeUrlMetaMap(uidMetaPool);
     }
 
+    /**
+     *
+     */
     private Map<String, Meta> makeUrlMetaMap(HashMap<String, Meta> uidMetaPool) {
-        HashMap<String, Meta> urlMetaMap = new HashMap<>();
+        HashMap<String, Meta> urlMetaMap = new HashMap<>(16);
         uidMetaPool.forEach((uid, meta) -> {
             urlMetaMap.put(meta.symbols.get(KEY_UNIT_URL), meta);
         });
@@ -227,6 +234,9 @@ public class DefineFileLoadHandler implements IHandler {
         }
     }
 
+    /**
+     *
+     */
     private void updatePredecessors(Meta meta, Map<String, Meta> uidMetaPool) {
         if (!meta.predecessorUrl.isEmpty()) {
             ArrayList<String> newUrlList = new ArrayList<>(meta.predecessorUrl.size());

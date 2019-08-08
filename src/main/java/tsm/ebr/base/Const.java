@@ -22,36 +22,15 @@
  * SOFTWARE.
  *
  */
-package tsm.ebr.task.storage;
-
-import tsm.ebr.base.Service.BaseService;
-import tsm.ebr.base.Service.ServiceId;
-
-import static tsm.ebr.base.Event.Symbols.EVT_ACT_LOAD_DEF_FILE;
+package tsm.ebr.base;
 
 /**
- * 数据持久化模块
+ * Global Const Symbols
  * @author catforward
  */
-public class StorageService extends BaseService {
-
-    public StorageService() {
-        super();
-    }
-
-    @Override
-    public ServiceId id() {
-        return ServiceId.STORAGE;
-    }
-
-    @Override
-    protected void onInit() {
-        // 从定义文件读取任务定义
-        registerActionHandler(EVT_ACT_LOAD_DEF_FILE, DefineFileLoadHandler.class, MetaValidateHandler.class);
-    }
-
-    @Override
-    protected void onFinish() {
-        unregister(EVT_ACT_LOAD_DEF_FILE);
-    }
+public class Const {
+    /** const char symbol for colon */
+    public final static char COLON = ':';
+    /** default initial capacity for the implements of collection */
+    public final static int INIT_CAP = 16;
 }

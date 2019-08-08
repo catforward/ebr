@@ -25,9 +25,10 @@
 package tsm.ebr;
 
 import tsm.ebr.base.Application;
+import tsm.ebr.base.Const;
 import tsm.ebr.task.executor.ExecuteService;
-import tsm.ebr.utils.ConfigUtils;
-import tsm.ebr.utils.LogUtils;
+import tsm.ebr.util.ConfigUtils;
+import tsm.ebr.util.LogUtils;
 import tsm.ebr.task.manager.StateManagementService;
 import tsm.ebr.task.storage.StorageService;
 import tsm.ebr.thin.GetOpts;
@@ -41,7 +42,7 @@ import static tsm.ebr.base.Service.ServiceId.*;
  * <pre>
  * External Batch Runner
  * 解决以下2个问题为目的
- * - 自动化管理并执行若干个，基于流程的处理程序集
+ * - 自动化管理并执行若干个，可并行执行但有依赖关系的外部程序
  * - 用来学习新API，适应新语法，跟进JDK的版本的更新
  * </pre>
  *
@@ -65,7 +66,7 @@ public class Main {
     }
 
     private Map<String, String> makeOptArgMap(String[] args) {
-        HashMap<String, String> optArg = new HashMap<>();
+        HashMap<String, String> optArg = new HashMap<>(Const.INIT_CAP);
         GetOpts opts = new GetOpts(args, "t:");
         int c = -1;
         try {

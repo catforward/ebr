@@ -22,7 +22,7 @@
  * SOFTWARE.
  *
  */
-package tsm.ebr.utils;
+package tsm.ebr.util;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -101,6 +101,7 @@ public final class LogUtils {
 
 class ErrorLogHander extends Formatter {
     private final ThreadLocal<DateTimeFormatter> dtf = new ThreadLocal<>() {
+        @Override
         public DateTimeFormatter initialValue() {
             return DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS");
         }

@@ -31,12 +31,17 @@ import tsm.ebr.task.manager.Item.Unit;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * 模块内运行时统一管理任务执行状态
+ * @author catforward
+ */
 class StateHolder {
-    private final static StateHolder _INSTANCE = new StateHolder();
-    /* KEY-> url of flow VALUE-> ref of flow */
+    private final static StateHolder INSTANCE = new StateHolder();
+    /**  */
     private final Map<String, Flow> urlFlowMap;
-    /* KEY-> url of unit VALUE-> ref of unit */
+    /**  */
     private final Map<String, Unit> urlUnitMap;
+    /**  */
     private Flow rootFlow;
 
     private StateHolder() {
@@ -45,48 +50,68 @@ class StateHolder {
         rootFlow = null;
     }
 
-
     static StateHolder getInstance() {
-        return _INSTANCE;
+        return INSTANCE;
     }
 
+    /**
+     *
+     */
     static StateHolder addFlow(Flow newTaskFlow) {
-        if (!_INSTANCE.urlFlowMap.containsKey(newTaskFlow.rootUnit.url)) {
-            _INSTANCE.urlFlowMap.put(newTaskFlow.rootUnit.url, newTaskFlow);
+        if (!INSTANCE.urlFlowMap.containsKey(newTaskFlow.rootUnit.url)) {
+            INSTANCE.urlFlowMap.put(newTaskFlow.rootUnit.url, newTaskFlow);
         }
-        if (_INSTANCE.rootFlow == null && Type.ROOT == newTaskFlow.rootUnit.type) {
-            _INSTANCE.rootFlow = newTaskFlow;
+        if (INSTANCE.rootFlow == null && Type.ROOT == newTaskFlow.rootUnit.type) {
+            INSTANCE.rootFlow = newTaskFlow;
         }
-        return _INSTANCE;
+        return INSTANCE;
     }
 
+    /**
+     *
+     */
     static StateHolder addUnit(Unit newUnit) {
-        if (!_INSTANCE.urlUnitMap.containsKey(newUnit.url)) {
-            _INSTANCE.urlUnitMap.put(newUnit.url, newUnit);
+        if (!INSTANCE.urlUnitMap.containsKey(newUnit.url)) {
+            INSTANCE.urlUnitMap.put(newUnit.url, newUnit);
         }
-        return _INSTANCE;
+        return INSTANCE;
     }
 
+    /**
+     *
+     */
     static Flow getRootFlow() {
-        return _INSTANCE.rootFlow;
+        return INSTANCE.rootFlow;
     }
 
+    /**
+     *
+     */
     static Flow getFlow(String url) {
-        return _INSTANCE.urlFlowMap.get(url);
+        return INSTANCE.urlFlowMap.get(url);
     }
 
+    /**
+     *
+     */
     static Unit getUnit(String url) {
-        return _INSTANCE.urlUnitMap.get(url);
+        return INSTANCE.urlUnitMap.get(url);
     }
 
+    /**
+     *
+     */
     static void init() {
         // reset first
         clear();
     }
 
+    /**
+     *
+     */
     static void clear() {
-        _INSTANCE.rootFlow = null;
-        _INSTANCE.urlFlowMap.clear();
-        _INSTANCE.urlUnitMap.clear();
+        INSTANCE.rootFlow = null;
+        INSTANCE.urlFlowMap.clear();
+        INSTANCE.urlUnitMap.clear();
     }
 }

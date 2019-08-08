@@ -27,17 +27,26 @@ package tsm.ebr.base;
 import tsm.ebr.base.Service.ServiceId;
 
 import java.util.Map;
-import java.util.Optional;
 
 /**
  * <pre>
  * 消息体定义
  * </pre>
+ *
  * @author catforward
  */
 public final class Event {
 
+    /**
+     * <pre>
+     * 事件接受者
+     * </pre>
+     */
     interface EventReceiver {
+        /**
+         * 接受事件并处理此事件
+         * @param event 接受的事件对象
+         */
         void receive(Event event);
     }
 
@@ -60,7 +69,6 @@ public final class Event {
         public final static String EVT_ACT_TASK_UNIT_STATE_CHANGED = "EVT_ACT_TASK_UNIT_STATE_CHANGED";
         public final static String EVT_ACT_ALL_TASK_FINISHED = "EVT_ACT_ALL_TASK_FINISHED";
         /** 服务事件中传送参数的预定义名称 */
-        public final static String EVT_DATA_PATH = "EVT_DATA_PATH";
         public final static String EVT_DATA_META_MAP = "EVT_DATA_META_POOL";
         public final static String EVT_DATA_TASK_FLOW_URL = "EVT_DATA_TASK_FLOW_URL";
         public final static String EVT_DATA_TASK_FLOW_URL_LIST = "EVT_DATA_TASK_FLOW_URL_LIST";
@@ -71,10 +79,10 @@ public final class Event {
 
     }
 
+    /** The Action of event */
     public final String act;
     public final ServiceId src;
     public final ServiceId dst;
-    // unmodifiable
     public final Map<String, Object> param;
 
     public Event(String newAct,
@@ -91,26 +99,6 @@ public final class Event {
         src = newSrc;
         dst = newDst;
         param = Map.copyOf(newParam);
-    }
-
-    /**
-     * 获得指定名字的传送参数
-     *
-     * @param name 参数名
-     * @return Object 参数值
-     */
-    public Optional<Object> getParam(String name) {
-        return Optional.ofNullable(param.get(name));
-    }
-
-    /**
-     * 判断消息体中是否包含指定名称的参数
-     *
-     * @param name 参数名
-     * @return boolean true：存在 false：不存在
-     */
-    public boolean hasParam(String name) {
-        return param.containsKey(name);
     }
 
     @Override
