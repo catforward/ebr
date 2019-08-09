@@ -24,7 +24,7 @@
  */
 package tsm.ebr.task.manager;
 
-import tsm.ebr.base.Event.Symbols;
+import tsm.ebr.base.Message.Symbols;
 import tsm.ebr.base.Handler.HandlerContext;
 import tsm.ebr.base.Handler.IHandler;
 import tsm.ebr.base.Task;
@@ -54,15 +54,15 @@ public class FlowLaunchHandler implements IHandler {
     public boolean doHandle(HandlerContext context) {
         String act = context.getCurrentAction();
         switch (act) {
-            case Symbols.EVT_ACT_LAUNCH_TASK_FLOW: {
+            case Symbols.MSG_ACT_LAUNCH_TASK_FLOW: {
                 launchFlow(context);
                 break;
             }
-            case Symbols.EVT_ACT_LAUNCH_TASK_FLOWS: {
+            case Symbols.MSG_ACT_LAUNCH_TASK_FLOWS: {
                 launchFlowList(context);
                 break;
             }
-            case Symbols.EVT_ACT_TASK_UNIT_STATE_CHANGED: {
+            case Symbols.MSG_ACT_TASK_UNIT_STATE_CHANGED: {
                 searchPerformableFlow(context);
                 break;
             }
@@ -80,7 +80,7 @@ public class FlowLaunchHandler implements IHandler {
      * @param context
      */
     private void launchFlow(HandlerContext context) {
-        String url = (String) context.getParam(Symbols.EVT_DATA_TASK_FLOW_URL);
+        String url = (String) context.getParam(Symbols.MSG_DATA_TASK_FLOW_URL);
         Flow flow = StateHolder.getFlow(url);
         Set<Unit> units = flow.getTopLevelUnits();
         ArrayList<PerformableTask> pList = new ArrayList<>(units.size());
@@ -90,8 +90,8 @@ public class FlowLaunchHandler implements IHandler {
             }
         }
         flow.start();
-        context.setNextAction(Symbols.EVT_ACT_LAUNCH_TASK_UNITS);
-        context.addHandlerResult(Symbols.EVT_DATA_TASK_PERFORMABLE_UNITS_LIST, pList);
+        context.setNextAction(Symbols.MSG_ACT_LAUNCH_TASK_UNITS);
+        context.addHandlerResult(Symbols.MSG_DATA_TASK_PERFORMABLE_UNITS_LIST, pList);
     }
 
     /**
@@ -101,7 +101,7 @@ public class FlowLaunchHandler implements IHandler {
      * @param context
      */
     private void launchFlowList(HandlerContext context) {
-        List<String> pUrlList = (List<String>) context.getParam(Symbols.EVT_DATA_TASK_FLOW_URL_LIST);
+        List<String> pUrlList = (List<String>) context.getParam(Symbols.MSG_DATA_TASK_FLOW_URL_LIST);
         ArrayList<PerformableTask> pList = new ArrayList<>();
         for (String url : pUrlList) {
             Flow flow = StateHolder.getFlow(url);
@@ -113,8 +113,8 @@ public class FlowLaunchHandler implements IHandler {
             }
             flow.start();
         }
-        context.setNextAction(Symbols.EVT_ACT_LAUNCH_TASK_UNITS);
-        context.addHandlerResult(Symbols.EVT_DATA_TASK_PERFORMABLE_UNITS_LIST, pList);
+        context.setNextAction(Symbols.MSG_ACT_LAUNCH_TASK_UNITS);
+        context.addHandlerResult(Symbols.MSG_DATA_TASK_PERFORMABLE_UNITS_LIST, pList);
     }
 
     /**
@@ -126,7 +126,7 @@ public class FlowLaunchHandler implements IHandler {
      * @param context
      */
     private void searchPerformableFlow(HandlerContext context) {
-        String url = (String) context.getParam(Symbols.EVT_DATA_TASK_UNIT_URL);
+        String url = (String) context.getParam(Symbols.MSG_DATA_TASK_UNIT_URL);
         ArrayList<String> pUrlList = new ArrayList<>();
         Unit changedUnit = StateHolder.getUnit(url);
         Flow flow = StateHolder.getFlow(changedUnit.parent.url);
@@ -141,8 +141,8 @@ public class FlowLaunchHandler implements IHandler {
                 collectPerformableFlow(flow, sucSet, pUrlList);
             }
         }
-        context.setNextAction(Symbols.EVT_ACT_LAUNCH_TASK_FLOWS);
-        context.addHandlerResult(Symbols.EVT_DATA_TASK_FLOW_URL_LIST, pUrlList);
+        context.setNextAction(Symbols.MSG_ACT_LAUNCH_TASK_FLOWS);
+        context.addHandlerResult(Symbols.MSG_DATA_TASK_FLOW_URL_LIST, pUrlList);
     }
 
     /**

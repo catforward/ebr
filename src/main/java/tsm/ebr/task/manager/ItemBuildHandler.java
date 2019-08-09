@@ -25,7 +25,7 @@
 package tsm.ebr.task.manager;
 
 import tsm.ebr.base.Const;
-import tsm.ebr.base.Event.Symbols;
+import tsm.ebr.base.Message.Symbols;
 import tsm.ebr.base.Handler.HandlerContext;
 import tsm.ebr.base.Handler.IHandler;
 import tsm.ebr.base.Task.Meta;
@@ -37,7 +37,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import static tsm.ebr.base.Event.Symbols.EVT_DATA_META_MAP;
+import static tsm.ebr.base.Message.Symbols.MSG_DATA_META_MAP;
 import static tsm.ebr.base.Task.Symbols.KEY_ROOT_UNIT;
 import static tsm.ebr.base.Task.Symbols.KEY_UNIT_URL;
 
@@ -59,8 +59,8 @@ public class ItemBuildHandler implements IHandler {
         Unit rootUnit = createUnitTree(context);
         addTaskUnit(rootUnit);
         addTaskFlow(rootUnit);
-        context.setNextAction(Symbols.EVT_ACT_LAUNCH_TASK_FLOW);
-        context.addHandlerResult(Symbols.EVT_DATA_TASK_FLOW_URL,
+        context.setNextAction(Symbols.MSG_ACT_LAUNCH_TASK_FLOW);
+        context.addHandlerResult(Symbols.MSG_DATA_TASK_FLOW_URL,
                 StateHolder.getRootFlow().rootUnit.url);
         return true;
     }
@@ -71,7 +71,7 @@ public class ItemBuildHandler implements IHandler {
      * @return root unit
      */
     private Unit createUnitTree(HandlerContext context) {
-        Map<String, Meta> urlMetaMap = (Map<String, Meta>) context.getParam(EVT_DATA_META_MAP);
+        Map<String, Meta> urlMetaMap = (Map<String, Meta>) context.getParam(MSG_DATA_META_MAP);
         Meta rootMeta = urlMetaMap.get(KEY_ROOT_UNIT);
         HashMap<String, Unit> urlUnitMap = new HashMap<>(Const.INIT_CAP);
         createUnit(null, rootMeta, urlUnitMap);

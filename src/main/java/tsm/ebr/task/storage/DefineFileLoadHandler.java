@@ -30,7 +30,7 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import tsm.ebr.base.Event.Symbols;
+import tsm.ebr.base.Message.Symbols;
 import tsm.ebr.base.Handler.HandlerContext;
 import tsm.ebr.base.Handler.IHandler;
 import tsm.ebr.base.Task.Meta;
@@ -44,7 +44,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.logging.Logger;
 
-import static tsm.ebr.base.Event.Symbols.EVT_DATA_META_MAP;
+import static tsm.ebr.base.Message.Symbols.MSG_DATA_META_MAP;
 import static tsm.ebr.base.Task.Symbols.*;
 import static tsm.ebr.util.ConfigUtils.Item.KEY_INSTANT_TASK;
 
@@ -65,8 +65,8 @@ public class DefineFileLoadHandler implements IHandler {
     public boolean doHandle(HandlerContext context) {
         String filePath = makeDefineFileFullPath(context);
         Map<String, Meta> urlMetaMap = loadTaskMetaFromDefineFile(filePath);
-        context.setNextAction(Symbols.EVT_ACT_TASK_META_CREATED);
-        context.addHandlerResult(EVT_DATA_META_MAP, urlMetaMap);
+        context.setNextAction(Symbols.MSG_ACT_TASK_META_CREATED);
+        context.addHandlerResult(MSG_DATA_META_MAP, urlMetaMap);
         return true;
     }
 

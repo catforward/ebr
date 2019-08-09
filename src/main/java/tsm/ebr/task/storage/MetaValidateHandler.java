@@ -32,7 +32,7 @@ import tsm.ebr.base.Task.Type;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import static tsm.ebr.base.Event.Symbols.EVT_DATA_META_MAP;
+import static tsm.ebr.base.Message.Symbols.MSG_DATA_META_MAP;
 import static tsm.ebr.base.Task.Symbols.*;
 
 /**
@@ -48,7 +48,7 @@ public class MetaValidateHandler implements IHandler {
      */
     @Override
     public boolean doHandle(HandlerContext context) {
-        Map<String, Meta> urlMetaMap = (Map<String, Meta>) context.getParam(EVT_DATA_META_MAP);
+        Map<String, Meta> urlMetaMap = (Map<String, Meta>) context.getParam(MSG_DATA_META_MAP);
         Meta rootMeta = urlMetaMap.get(KEY_ROOT_UNIT);
         return validate(context, rootMeta, urlMetaMap);
     }

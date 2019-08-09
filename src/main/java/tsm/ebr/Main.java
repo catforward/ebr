@@ -26,17 +26,17 @@ package tsm.ebr;
 
 import tsm.ebr.base.Application;
 import tsm.ebr.base.Const;
-import tsm.ebr.task.executor.ExecuteService;
+import tsm.ebr.task.executor.ExecuteBroker;
 import tsm.ebr.util.ConfigUtils;
 import tsm.ebr.util.LogUtils;
-import tsm.ebr.task.manager.StateManagementService;
-import tsm.ebr.task.storage.StorageService;
+import tsm.ebr.task.manager.StateManagementBroker;
+import tsm.ebr.task.storage.StorageBroker;
 import tsm.ebr.thin.GetOpts;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static tsm.ebr.base.Service.ServiceId.*;
+import static tsm.ebr.base.Broker.Id.*;
 
 /**
  * <pre>
@@ -97,9 +97,9 @@ public class Main {
 
     static void deployServices(Application app) {
         // 在此按需要初始化的顺序来添加处理程序定义
-        app.deployService(STORAGE, new StorageService());
-        app.deployService(MANAGEMENT, new StateManagementService());
-        app.deployService(EXECUTOR, new ExecuteService());
+        app.deployService(STORAGE, new StorageBroker());
+        app.deployService(MANAGEMENT, new StateManagementBroker());
+        app.deployService(EXECUTOR, new ExecuteBroker());
     }
 
 //	static void showArgs(String[] args) {

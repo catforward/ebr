@@ -24,34 +24,34 @@
  */
 package tsm.ebr.task.storage;
 
-import tsm.ebr.base.Service.BaseService;
-import tsm.ebr.base.Service.ServiceId;
+import tsm.ebr.base.Broker.BaseBroker;
+import tsm.ebr.base.Broker.Id;
 
-import static tsm.ebr.base.Event.Symbols.EVT_ACT_LOAD_DEF_FILE;
+import static tsm.ebr.base.Message.Symbols.MSG_ACT_LOAD_DEF_FILE;
 
 /**
  * 数据持久化模块
  * @author catforward
  */
-public class StorageService extends BaseService {
+public class StorageBroker extends BaseBroker {
 
-    public StorageService() {
+    public StorageBroker() {
         super();
     }
 
     @Override
-    public ServiceId id() {
-        return ServiceId.STORAGE;
+    public Id id() {
+        return Id.STORAGE;
     }
 
     @Override
     protected void onInit() {
         // 从定义文件读取任务定义
-        registerActionHandler(EVT_ACT_LOAD_DEF_FILE, DefineFileLoadHandler.class, MetaValidateHandler.class);
+        registerActionHandler(MSG_ACT_LOAD_DEF_FILE, DefineFileLoadHandler.class, MetaValidateHandler.class);
     }
 
     @Override
     protected void onFinish() {
-        unregister(EVT_ACT_LOAD_DEF_FILE);
+        unregister(MSG_ACT_LOAD_DEF_FILE);
     }
 }

@@ -24,17 +24,17 @@
  */
 package tsm.ebr.task.manager;
 
-import tsm.ebr.base.Event.Symbols;
-import tsm.ebr.base.Service.BaseService;
-import tsm.ebr.base.Service.ServiceId;
+import tsm.ebr.base.Message.Symbols;
+import tsm.ebr.base.Broker.BaseBroker;
+import tsm.ebr.base.Broker.Id;
 
 /**
  * 任务运行时状态管理模块
  * @author catforward
  */
-public class StateManagementService extends BaseService {
+public class StateManagementBroker extends BaseBroker {
 
-    public StateManagementService() {
+    public StateManagementBroker() {
         super();
         StateHolder.init();
     }
@@ -43,8 +43,8 @@ public class StateManagementService extends BaseService {
      *
      */
     @Override
-    public ServiceId id() {
-        return ServiceId.MANAGEMENT;
+    public Id id() {
+        return Id.MANAGEMENT;
     }
 
     /**
@@ -53,15 +53,15 @@ public class StateManagementService extends BaseService {
     @Override
     protected void onInit() {
         // 当Meta数据生成后，包装其成为Unit单元树
-        registerActionHandler(Symbols.EVT_ACT_TASK_META_CREATED,
+        registerActionHandler(Symbols.MSG_ACT_TASK_META_CREATED,
                 ItemBuildHandler.class);
         // 当生成Flow图之后，启动该Flow
-        registerActionHandler(Symbols.EVT_ACT_LAUNCH_TASK_FLOW,
+        registerActionHandler(Symbols.MSG_ACT_LAUNCH_TASK_FLOW,
                 FlowLaunchHandler.class);
-        registerActionHandler(Symbols.EVT_ACT_LAUNCH_TASK_FLOWS,
+        registerActionHandler(Symbols.MSG_ACT_LAUNCH_TASK_FLOWS,
                 FlowLaunchHandler.class);
         // 任务状态变更时，检查其前驱后置以及父节点状态
-        registerActionHandler(Symbols.EVT_ACT_TASK_UNIT_STATE_CHANGED,
+        registerActionHandler(Symbols.MSG_ACT_TASK_UNIT_STATE_CHANGED,
                 StateUpdateHandler.class,
                 UnitLaunchHandler.class);
     }
@@ -71,9 +71,9 @@ public class StateManagementService extends BaseService {
      */
     @Override
     protected void onFinish() {
-        unregister(Symbols.EVT_ACT_TASK_META_CREATED);
-        unregister(Symbols.EVT_ACT_LAUNCH_TASK_FLOW);
-        unregister(Symbols.EVT_ACT_LAUNCH_TASK_FLOWS);
-        unregister(Symbols.EVT_ACT_TASK_UNIT_STATE_CHANGED);
+        unregister(Symbols.MSG_ACT_TASK_META_CREATED);
+        unregister(Symbols.MSG_ACT_LAUNCH_TASK_FLOW);
+        unregister(Symbols.MSG_ACT_LAUNCH_TASK_FLOWS);
+        unregister(Symbols.MSG_ACT_TASK_UNIT_STATE_CHANGED);
     }
 }

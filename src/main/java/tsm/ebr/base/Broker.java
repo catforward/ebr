@@ -23,7 +23,7 @@
  */
 package tsm.ebr.base;
 
-import tsm.ebr.base.Event.EventReceiver;
+import tsm.ebr.base.Message.Receiver;
 import tsm.ebr.base.Handler.HandlerChain;
 import tsm.ebr.base.Handler.HandlerContext;
 import tsm.ebr.base.Handler.HandlerDesc;
@@ -36,8 +36,8 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import static tsm.ebr.base.Application.getEventBus;
-import static tsm.ebr.base.Event.Symbols.EVT_ACT_SERVICE_SHUTDOWN;
-import static tsm.ebr.base.Service.ServiceStatus.*;
+import static tsm.ebr.base.Message.Symbols.MSG_ACT_SERVICE_SHUTDOWN;
+import static tsm.ebr.base.Broker.Status.*;
 
 /**
  * <pre>
@@ -50,12 +50,12 @@ import static tsm.ebr.base.Service.ServiceStatus.*;
  *
  * @author catforward
  */
-public class Service {
+public class Broker {
 
     /**
      * 处理类ID定义
      */
-    public enum ServiceId {
+    public enum Id {
         /** 代表此程序本身，可以看成是广播地址 */
         APP,
         /** 专用于持久化任务定义的服务 */
@@ -71,7 +71,7 @@ public class Service {
      * 处理状态枚举
      * </pre>
      */
-    public enum ServiceStatus {
+    public enum Status {
         /** 服务被创建后的状态 */
         CREATED,
         /** 服务初始化完成后的状态 */
@@ -83,28 +83,28 @@ public class Service {
     /**
      *
      */
-    public static abstract class BaseService implements EventReceiver {
-        private final Logger logger = Logger.getLogger(Service.class.getCanonicalName());
-        /**  */
-        protected volatile ServiceStatus serviceStatus;
-        /**  */
+    public static abstract class BaseBroker implements Receiver {
+        private final Logger logger = Logger.getLogger(Broker.class.getCanonicalName());
+        /** 代理状态 */
+        protected volatile Status brokerStatus;
+        /** 处理器映射 */
         private final Map<String, HandlerChain> actionMap;
-        /**  */
+        /** 处理上下文 */
         private final HandlerContext context;
 
-        protected BaseService() {
+        protected BaseBroker() {
             actionMap = new HashMap<>();
             context = new HandlerContext();
-            serviceStatus = CREATED;
+            brokerStatus = CREATED;
         }
 
         /**
-         * 服务状态
+         * 代理状态
          *
-         * @return ServiceStatus
+         * @return Status
          */
-        public ServiceStatus status() {
-            return serviceStatus;
+        public Status status() {
+            return brokerStatus;
         }
 
         /**
@@ -112,21 +112,24 @@ public class Service {
          */
         public void init() {
             onInit();
-            serviceStatus = RUNNING;
+            brokerStatus = RUNNING;
         }
 
         /**
-         * 服务结束
+         * 代理处理结束
          */
         public void finish() {
             onFinish();
-            serviceStatus = FINISHED;
+            brokerStatus = FINISHED;
         }
 
         /**
+         * 注册一个消息处理器
          *
+         * @param act
+         * @param hndClass
          */
-        protected BaseService registerActionHandler(String act, Class<? extends IHandler>... hndClass) {
+        protected BaseBroker registerActionHandler(String act, Class<? extends IHandler>... hndClass) {
             try {
                 HandlerChain chain = actionMap.get(act);
                 if (hndClass != null && hndClass.length > 0 && chain == null) {
@@ -143,17 +146,21 @@ public class Service {
         }
 
         /**
+         * 注册消息处理器
          *
+         * @param act
          */
-        protected BaseService register(String act) {
+        protected BaseBroker register(String act) {
             actionMap.put(act, null);
             return this;
         }
 
         /**
+         * 注销消息处理器
          *
+         * @param act
          */
-        protected BaseService unregister(String act) {
+        protected BaseBroker unregister(String act) {
             if (actionMap.containsKey(act)) {
                 actionMap.remove(act);
             }
@@ -161,40 +168,44 @@ public class Service {
         }
 
         /**
+         * 接受消息
          *
+         * @param message
          */
         @Override
-        public final void receive(Event event) {
+        public final void receive(Message message) {
             logger.fine("Receive Event Start");
             // 检查自己是否应该接受此事件
-            if (ServiceId.APP != event.dst && id() != event.dst) {
+            if (Id.APP != message.dst && id() != message.dst) {
                 return;
             }
             // 检查自己是否关注此事件
-            if (!actionMap.containsKey(event.act)) {
+            if (!actionMap.containsKey(message.act)) {
                 return;
             }
             // 处理此事件
             try {
-                if (actionMap.get(event.act) == null) {
-                    onEvent(event);
-                } else if (!doHandle(event)) {
-                    logger.warning(String.format("处理[%s]事件失败...", event.act));
+                if (actionMap.get(message.act) == null) {
+                    onEvent(message);
+                } else if (!doHandle(message)) {
+                    logger.warning(String.format("处理[%s]事件失败...", message.act));
                 }
             } catch (Exception ex) {
                 LogUtils.dumpError(ex);
-                notice(EVT_ACT_SERVICE_SHUTDOWN);
+                notice(MSG_ACT_SERVICE_SHUTDOWN);
             }
             logger.fine("Receive Event End");
         }
 
         /**
+         * 消息处理
          *
+         * @param message
          */
-        private boolean doHandle(Event event) {
-            HandlerChain chain = actionMap.get(event.act);
+        private boolean doHandle(Message message) {
+            HandlerChain chain = actionMap.get(message.act);
             logger.fine("Handler Proc Start");
-            context.reset(event.act, event.param);
+            context.reset(message.act, message.param);
             try {
                 for (Map.Entry<Class<? extends IHandler>, HandlerDesc> entry : chain.handlerPool.entrySet()) {
                     context.mergeParam();
@@ -237,7 +248,7 @@ public class Service {
          * @param param
          */
         protected void post(String act, Map<String, Object> param) {
-            getEventBus().post(new Event(act, id(), ServiceId.APP, param));
+            getEventBus().post(new Message(act, id(), Id.APP, param));
         }
 
         /**
@@ -246,8 +257,8 @@ public class Service {
          * @param act
          * @param param
          */
-        protected void send(String act, ServiceId dst, Map<String, Object> param) {
-            getEventBus().post(new Event(act, id(), dst, param));
+        protected void send(String act, Id dst, Map<String, Object> param) {
+            getEventBus().post(new Message(act, id(), dst, param));
         }
 
         /**
@@ -256,7 +267,7 @@ public class Service {
          * @param act
          */
         protected void notice(String act) {
-            getEventBus().post(new Event(act, id(), ServiceId.APP));
+            getEventBus().post(new Message(act, id(), Id.APP));
         }
 
         /**
@@ -264,7 +275,7 @@ public class Service {
          * (子类实现)处理类ID
          * @return  ServiceId
          */
-        public abstract ServiceId id();
+        public abstract Id id();
 
         /**
          * (子类实现)服务初始化
@@ -280,7 +291,7 @@ public class Service {
          * (子类实现)处理事件
          * @@param event 事件
          */
-        protected void onEvent(Event event) {
+        protected void onEvent(Message message) {
         }
     }
 }

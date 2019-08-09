@@ -25,10 +25,10 @@
 package tsm.ebr.task.executor;
 
 import tsm.ebr.base.Const;
-import tsm.ebr.base.Event;
-import tsm.ebr.base.Event.Symbols;
-import tsm.ebr.base.Service.BaseService;
-import tsm.ebr.base.Service.ServiceId;
+import tsm.ebr.base.Message;
+import tsm.ebr.base.Message.Symbols;
+import tsm.ebr.base.Broker.BaseBroker;
+import tsm.ebr.base.Broker.Id;
 import tsm.ebr.base.Task.PerformableTask;
 import tsm.ebr.base.Task.State;
 import tsm.ebr.util.ConfigUtils;
@@ -51,12 +51,12 @@ import java.util.logging.Logger;
  *
  * @author catforward
  */
-public class ExecuteService extends BaseService {
-    private final Logger logger = Logger.getLogger(ExecuteService.class.getCanonicalName());
+public class ExecuteBroker extends BaseBroker {
+    private final Logger logger = Logger.getLogger(ExecuteBroker.class.getCanonicalName());
     /** 执行队列 */
     private final ThreadPoolExecutor taskExecutor;
 
-    public ExecuteService() {
+    public ExecuteBroker() {
         int configNum = Integer.parseInt((String) ConfigUtils.getOrDefault(ConfigUtils.Item.KEY_EXCUTOR_NUM_MAX, "0"));
         int minNum = Runtime.getRuntime().availableProcessors();
         int maxNum = (configNum == 0) ? Runtime.getRuntime().availableProcessors() * 2 : configNum;
@@ -66,28 +66,28 @@ public class ExecuteService extends BaseService {
     }
 
     @Override
-    public ServiceId id() {
-        return ServiceId.EXECUTOR;
+    public Id id() {
+        return Id.EXECUTOR;
     }
 
     @Override
     protected void onInit() {
-        register(Symbols.EVT_ACT_LAUNCH_TASK_UNITS);
-        register(Symbols.EVT_ACT_LAUNCH_TASK_UNIT);
+        register(Symbols.MSG_ACT_LAUNCH_TASK_UNITS);
+        register(Symbols.MSG_ACT_LAUNCH_TASK_UNIT);
     }
 
     @Override
     protected void onFinish() {
-        unregister(Symbols.EVT_ACT_LAUNCH_TASK_UNITS);
-        unregister(Symbols.EVT_ACT_LAUNCH_TASK_UNIT);
+        unregister(Symbols.MSG_ACT_LAUNCH_TASK_UNITS);
+        unregister(Symbols.MSG_ACT_LAUNCH_TASK_UNIT);
         taskExecutor.shutdown();
     }
 
     @Override
-    protected void onEvent(Event event) {
-        switch (event.act) {
-            case Symbols.EVT_ACT_LAUNCH_TASK_UNITS: {
-                List<PerformableTask> uList = (List<PerformableTask>) event.param.get(Symbols.EVT_DATA_TASK_PERFORMABLE_UNITS_LIST);
+    protected void onEvent(Message message) {
+        switch (message.act) {
+            case Symbols.MSG_ACT_LAUNCH_TASK_UNITS: {
+                List<PerformableTask> uList = (List<PerformableTask>) message.param.get(Symbols.MSG_DATA_TASK_PERFORMABLE_UNITS_LIST);
                 ArrayList<String> flowUrl = new ArrayList<>();
                 for (var task : uList) {
                     if (task.command != null && !task.command.isBlank()) {
@@ -99,9 +99,9 @@ public class ExecuteService extends BaseService {
                 prepareLaunchFlows(flowUrl);
                 break;
             }
-            case Symbols.EVT_ACT_LAUNCH_TASK_UNIT: {
-                String url = (String) event.param.get(Symbols.EVT_DATA_TASK_UNIT_URL);
-                String command = (String) event.param.get(Symbols.EVT_DATA_TASK_UNIT_COMMAND);
+            case Symbols.MSG_ACT_LAUNCH_TASK_UNIT: {
+                String url = (String) message.param.get(Symbols.MSG_DATA_TASK_UNIT_URL);
+                String command = (String) message.param.get(Symbols.MSG_DATA_TASK_UNIT_COMMAND);
                 if (command != null && !command.isBlank()) {
                     doLaunch(url, command);
                 } else {
@@ -110,7 +110,7 @@ public class ExecuteService extends BaseService {
                 break;
             }
             default: {
-                throw new RuntimeException(String.format("[%s]:送错地方了老兄...", event.act));
+                throw new RuntimeException(String.format("[%s]:送错地方了老兄...", message.act));
             }
         }
     }
@@ -122,9 +122,9 @@ public class ExecuteService extends BaseService {
      */
     void noticeNewState(String url, State newState) {
         HashMap<String, Object> param = new HashMap<>(Const.INIT_CAP);
-        param.put(Symbols.EVT_DATA_TASK_UNIT_URL, url);
-        param.put(Symbols.EVT_DATA_TASK_UNIT_NEW_STATE, newState);
-        post(Symbols.EVT_ACT_TASK_UNIT_STATE_CHANGED, param);
+        param.put(Symbols.MSG_DATA_TASK_UNIT_URL, url);
+        param.put(Symbols.MSG_DATA_TASK_UNIT_NEW_STATE, newState);
+        post(Symbols.MSG_ACT_TASK_UNIT_STATE_CHANGED, param);
     }
 
     /**
@@ -133,8 +133,8 @@ public class ExecuteService extends BaseService {
      */
     void prepareLaunchFlow(String url) {
         HashMap<String, Object> param = new HashMap<>(Const.INIT_CAP);
-        param.put(Symbols.EVT_DATA_TASK_FLOW_URL, url);
-        post(Symbols.EVT_ACT_LAUNCH_TASK_FLOW, param);
+        param.put(Symbols.MSG_DATA_TASK_FLOW_URL, url);
+        post(Symbols.MSG_ACT_LAUNCH_TASK_FLOW, param);
     }
 
     /**
@@ -144,8 +144,8 @@ public class ExecuteService extends BaseService {
     void prepareLaunchFlows(ArrayList<String> urls) {
         if (!urls.isEmpty()) {
             HashMap<String, Object> param = new HashMap<>(Const.INIT_CAP);
-            param.put(Symbols.EVT_DATA_TASK_FLOW_URL_LIST, urls);
-            post(Symbols.EVT_ACT_LAUNCH_TASK_FLOWS, param);
+            param.put(Symbols.MSG_DATA_TASK_FLOW_URL_LIST, urls);
+            post(Symbols.MSG_ACT_LAUNCH_TASK_FLOWS, param);
         }
     }
 
@@ -158,7 +158,7 @@ public class ExecuteService extends BaseService {
         noticeNewState(url, State.RUNNING);
 		logger.info(String.format("Task启动%s", url));
         taskExecutor.submit(() -> {
-			TaskWatcher watcher = new TaskWatcher(ExecuteService.this, url, command);
+			TaskWatcher watcher = new TaskWatcher(ExecuteBroker.this, url, command);
 			watcher.watch();
 		});
     }
@@ -173,11 +173,11 @@ public class ExecuteService extends BaseService {
  */
 class TaskWatcher {
 	private final Logger logger = Logger.getLogger(TaskWatcher.class.getCanonicalName());
-	private final ExecuteService taskExecutor;
+	private final ExecuteBroker taskExecutor;
 	private final String taskUrl;
 	private final String taskCommand;
 
-	TaskWatcher(ExecuteService executor, String tUrl, String command) {
+	TaskWatcher(ExecuteBroker executor, String tUrl, String command) {
 		taskExecutor = executor;
 		taskUrl = tUrl;
 		taskCommand = command;

@@ -27,8 +27,8 @@ package tsm.ebr.base;
 import com.google.common.eventbus.AsyncEventBus;
 import com.google.common.eventbus.EventBus;
 import com.google.common.eventbus.Subscribe;
-import tsm.ebr.base.Service.BaseService;
-import tsm.ebr.base.Service.ServiceId;
+import tsm.ebr.base.Broker.BaseBroker;
+import tsm.ebr.base.Broker.Id;
 import tsm.ebr.util.LogUtils;
 
 import java.util.LinkedHashMap;
@@ -39,8 +39,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
-import static tsm.ebr.base.Event.Symbols.*;
-import static tsm.ebr.base.Service.ServiceId.APP;
+import static tsm.ebr.base.Message.Symbols.*;
+import static tsm.ebr.base.Broker.Id.APP;
 
 /**
  * <pre>
@@ -63,7 +63,7 @@ public final class Application {
     /** 主线程循环停止标志 */
     private boolean terminated;
     /** 提供具体功能的处理类实例 */
-    private final Map<ServiceId, BaseService> servPool;
+    private final Map<Id, BaseBroker> servPool;
     /** 事件执行线程池 （本应用同一时刻只有1个线程来执行具体处理，不考虑耗时操作的情况，因为没有打算写耗时处理） */
     private final ExecutorService singleEventDispatcher;
     /** 事件总线 */
@@ -121,7 +121,7 @@ public final class Application {
      * @param id    服务类标识ID
      * @param service  处理类实例
      */
-    public void deployService(ServiceId id, BaseService service) {
+    public void deployService(Id id, BaseBroker service) {
         if (id == null || service == null) {
             throw new IllegalArgumentException("argument can not be null...");
         }
@@ -136,7 +136,7 @@ public final class Application {
      * </pre>
      */
     public void run() {
-        eventBus.post(new Event(EVT_ACT_SERVICE_INIT, APP, APP));
+        eventBus.post(new Message(MSG_ACT_SERVICE_INIT, APP, APP));
         mainLoop();
         finish();
     }
@@ -155,9 +155,9 @@ public final class Application {
             try {
                 var entries = servPool.entrySet().iterator();
                 while (entries.hasNext()) {
-                    Map.Entry<ServiceId, BaseService> entry = entries.next();
-                    BaseService service = entry.getValue();
-                    if (Service.ServiceStatus.FINISHED != service.status() && shouldStop) {
+                    Map.Entry<Id, BaseBroker> entry = entries.next();
+                    BaseBroker service = entry.getValue();
+                    if (Broker.Status.FINISHED != service.status() && shouldStop) {
                         shouldStop = false;
                     }
                 }
@@ -176,32 +176,32 @@ public final class Application {
      * 分发事件总线中传递的所有事件信息
      * </pre>
      *
-     * @param event 传递的事件
+     * @param message 传递的事件
      */
     @Subscribe
-    public void dispatchEvent(Event event) {
+    public void dispatchEvent(Message message) {
         if(LogUtils.isEventLogEnabled()) {
-            logger.info(event.toString());
+            logger.info(message.toString());
         }
 
-        if (EVT_ACT_SERVICE_INIT.equals(event.act)) {
+        if (MSG_ACT_SERVICE_INIT.equals(message.act)) {
             servPool.forEach((id, service) -> service.init());
-            eventBus.post(new Event(EVT_ACT_LOAD_DEF_FILE, APP, APP));
+            eventBus.post(new Message(MSG_ACT_LOAD_DEF_FILE, APP, APP));
             return;
-        } else if (EVT_ACT_SERVICE_SHUTDOWN.equals(event.act)
-            || EVT_ACT_ALL_TASK_FINISHED.equals(event.act)) {
+        } else if (MSG_ACT_SERVICE_SHUTDOWN.equals(message.act)
+            || MSG_ACT_ALL_TASK_FINISHED.equals(message.act)) {
             servPool.forEach((id, service) -> service.finish());
             return;
         }
 
-        if (APP == event.dst) {
-            servPool.forEach((id, service) -> service.receive(event));
+        if (APP == message.dst) {
+            servPool.forEach((id, service) -> service.receive(message));
         }
 
         else {
-            BaseService service = servPool.get(event.dst);
+            BaseBroker service = servPool.get(message.dst);
             if (service != null) {
-                service.receive(event);
+                service.receive(message);
             }
         }
     }
