@@ -30,12 +30,14 @@ import tsm.ebr.base.Task.Flow;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.logging.Logger;
 
 /**
  * 模块内运行时统一管理任务执行状态
  * @author catforward
  */
 class StateHolder {
+    private final static Logger logger = Logger.getLogger(StateHolder.class.getCanonicalName());
     private final static StateHolder INSTANCE = new StateHolder();
     /**  */
     private final Map<String, Flow> urlFlowMap;
@@ -64,6 +66,7 @@ class StateHolder {
         if (INSTANCE.rootFlow == null && Type.ROOT == newTaskFlow.rootUnit.type) {
             INSTANCE.rootFlow = newTaskFlow;
         }
+        logger.info(newTaskFlow.toString());
         return INSTANCE;
     }
 

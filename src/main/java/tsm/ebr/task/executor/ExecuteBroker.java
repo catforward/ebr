@@ -24,11 +24,11 @@
  */
 package tsm.ebr.task.executor;
 
+import tsm.ebr.base.Broker.BaseBroker;
+import tsm.ebr.base.Broker.Id;
 import tsm.ebr.base.Const;
 import tsm.ebr.base.Message;
 import tsm.ebr.base.Message.Symbols;
-import tsm.ebr.base.Broker.BaseBroker;
-import tsm.ebr.base.Broker.Id;
 import tsm.ebr.base.Task.PerformableTask;
 import tsm.ebr.base.Task.State;
 import tsm.ebr.util.ConfigUtils;
@@ -156,60 +156,34 @@ public class ExecuteBroker extends BaseBroker {
      */
     private void doLaunch(String url, String command) {
         noticeNewState(url, State.RUNNING);
-		logger.info(String.format("Task启动%s", url));
-        taskExecutor.submit(() -> {
-			TaskWatcher watcher = new TaskWatcher(ExecuteBroker.this, url, command);
-			watcher.watch();
-		});
+        logger.info(String.format("Task启动%s", url));
+
+        Future<State> exitState = taskExecutor.submit(() -> {
+            try {
+                Process process = Runtime.getRuntime().exec(command);
+                process.getOutputStream().close();
+
+                try (BufferedReader br = new BufferedReader(
+                        new InputStreamReader(process.getInputStream(), StandardCharsets.US_ASCII))) {
+                    String line;
+                    while ((line = br.readLine()) != null) {
+                        logger.fine(line);
+                    }
+                }
+
+                int exitCode = process.waitFor();
+                logger.fine("exitCode = " + exitCode);
+                return (exitCode == 0) ? State.SUCCEEDED : State.ERROR;
+            } catch (IOException | InterruptedException e) {
+                LogUtils.dumpError(e);
+                return State.ERROR;
+            }
+        });
+        try {
+            noticeNewState(url, exitState.get());
+        } catch (ExecutionException | InterruptedException ex) {
+            LogUtils.dumpError(ex);
+            noticeNewState(url, State.ERROR);
+        }
     }
-}
-
-/**
- * <pre>
- * 外部程序执行监视处理类
- * </pre>
- *
- * @author catforward
- */
-class TaskWatcher {
-	private final Logger logger = Logger.getLogger(TaskWatcher.class.getCanonicalName());
-	private final ExecuteBroker taskExecutor;
-	private final String taskUrl;
-	private final String taskCommand;
-
-	TaskWatcher(ExecuteBroker executor, String tUrl, String command) {
-		taskExecutor = executor;
-		taskUrl = tUrl;
-		taskCommand = command;
-	}
-
-	/**
-	 * <pre>
-	 * 启动并等待任务执行完成
-	 * </pre>
-	 *
-	 */
-	void watch() {
-		try {
-			Process process = Runtime.getRuntime().exec(taskCommand);
-			process.getOutputStream().close();
-
-			try (BufferedReader br = new BufferedReader(
-					new InputStreamReader(process.getInputStream(), StandardCharsets.US_ASCII))) {
-				String line;
-				while ((line = br.readLine()) != null) {
-					logger.fine(line);
-				}
-			}
-
-			int exitCode = process.waitFor();
-			logger.fine("exitCode = " + exitCode);
-			State exitState = (exitCode == 0) ? State.SUCCEEDED : State.ERROR;
-
-            taskExecutor.noticeNewState(taskUrl, exitState);
-		} catch (IOException | InterruptedException e) {
-			LogUtils.dumpError(e);
-			taskExecutor.noticeNewState(taskUrl, State.ERROR);
-		}
-	}
 }
