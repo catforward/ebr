@@ -24,12 +24,12 @@
  */
 package tsm.ebr.task.manager;
 
-import tsm.ebr.base.Event.Symbols;
 import tsm.ebr.base.Handler.HandlerContext;
 import tsm.ebr.base.Handler.IHandler;
+import tsm.ebr.base.Message.Symbols;
+import tsm.ebr.base.Task.Flow;
 import tsm.ebr.base.Task.PerformableTask;
-import tsm.ebr.task.manager.Item.Flow;
-import tsm.ebr.task.manager.Item.Unit;
+import tsm.ebr.base.Task.Unit;
 
 import java.util.ArrayList;
 import java.util.Set;
@@ -49,7 +49,7 @@ public class UnitLaunchHandler implements IHandler {
     public boolean doHandle(HandlerContext context) {
         String act = context.getCurrentAction();
         switch (act) {
-            case Symbols.EVT_ACT_TASK_UNIT_STATE_CHANGED: {
+            case Symbols.MSG_ACT_TASK_UNIT_STATE_CHANGED: {
                 launchUnit(context);
                 break;
             }
@@ -64,10 +64,10 @@ public class UnitLaunchHandler implements IHandler {
      *
      */
     private void launchUnit(HandlerContext context) {
-        String url = (String) context.getParam(Symbols.EVT_DATA_TASK_UNIT_URL);
+        String url = (String) context.getParam(Symbols.MSG_DATA_TASK_UNIT_URL);
         ArrayList<PerformableTask> units = searchPerformableUnit(url);
-        context.setNextAction(Symbols.EVT_ACT_LAUNCH_TASK_UNITS);
-        context.addHandlerResult(Symbols.EVT_DATA_TASK_PERFORMABLE_UNITS_LIST, units);
+        context.setNextAction(Symbols.MSG_ACT_LAUNCH_TASK_UNITS);
+        context.addHandlerResult(Symbols.MSG_DATA_TASK_PERFORMABLE_UNITS_LIST, units);
     }
 
     /**
