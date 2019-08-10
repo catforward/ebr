@@ -93,7 +93,7 @@ public class Broker {
         private final HandlerContext context;
 
         protected BaseBroker() {
-            actionMap = new HashMap<>();
+            actionMap = new HashMap<>(Const.INIT_CAP);
             context = new HandlerContext();
             brokerStatus = CREATED;
         }

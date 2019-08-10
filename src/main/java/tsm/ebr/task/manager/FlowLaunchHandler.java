@@ -24,19 +24,18 @@
  */
 package tsm.ebr.task.manager;
 
-import tsm.ebr.base.Message.Symbols;
 import tsm.ebr.base.Handler.HandlerContext;
 import tsm.ebr.base.Handler.IHandler;
-import tsm.ebr.base.Task;
+import tsm.ebr.base.Message.Symbols;
+import tsm.ebr.base.Task.Flow;
 import tsm.ebr.base.Task.PerformableTask;
-import tsm.ebr.task.manager.Item.Flow;
-import tsm.ebr.task.manager.Item.Unit;
+import tsm.ebr.base.Task.Type;
+import tsm.ebr.base.Task.Unit;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import static tsm.ebr.base.Task.Type.MODULE;
 
 /**
  * 接受并处理以下事件
@@ -135,7 +134,7 @@ public class FlowLaunchHandler implements IHandler {
         if (!sucSet.isEmpty()) {
             collectPerformableFlow(flow, sucSet, pUrlList);
         } else {
-            if (MODULE == changedUnit.parent.type && changedUnit.parent.isComplete()) {
+            if (Type.MODULE == changedUnit.parent.type && changedUnit.parent.isComplete()) {
                 flow = StateHolder.getFlow(changedUnit.parent.parent.url);
                 sucSet = flow.getSuccessorsOf(changedUnit.parent);
                 collectPerformableFlow(flow, sucSet, pUrlList);
@@ -155,7 +154,7 @@ public class FlowLaunchHandler implements IHandler {
      */
     private void collectPerformableFlow(Flow flow, Set<Unit> units, ArrayList<String> pList) {
         for (Unit suc : units) {
-            if (Task.Type.TASK == suc.type) {
+            if (Type.TASK == suc.type) {
                 continue;
             }
             long uCount = flow.getPredecessorsOf(suc).stream().filter(u -> !u.isComplete()).count();

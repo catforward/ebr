@@ -26,13 +26,13 @@ package tsm.ebr.task.storage;
 
 import tsm.ebr.base.Handler.HandlerContext;
 import tsm.ebr.base.Handler.IHandler;
-import tsm.ebr.base.Task.Meta;
+import tsm.ebr.base.Task.Unit;
 import tsm.ebr.base.Task.Type;
 
 import java.util.Map;
 import java.util.logging.Logger;
 
-import static tsm.ebr.base.Message.Symbols.MSG_DATA_META_MAP;
+import static tsm.ebr.base.Message.Symbols.MSG_DATA_TASK_ROOT_UNIT;
 import static tsm.ebr.base.Task.Symbols.*;
 
 /**
@@ -48,77 +48,58 @@ public class MetaValidateHandler implements IHandler {
      */
     @Override
     public boolean doHandle(HandlerContext context) {
-        Map<String, Meta> urlMetaMap = (Map<String, Meta>) context.getParam(MSG_DATA_META_MAP);
-        Meta rootMeta = urlMetaMap.get(KEY_ROOT_UNIT);
-        return validate(context, rootMeta, urlMetaMap);
+        Unit rootUnit = (Unit) context.getParam(MSG_DATA_TASK_ROOT_UNIT);
+        return validate(context, rootUnit);
     }
 
     /**
      *
      */
-    private boolean validate(HandlerContext context, Meta meta, Map<String, Meta> urlMetaMap) {
-        if (meta == null) {
+    private boolean validate(HandlerContext context, Unit unit) {
+        if (unit == null) {
             context.setErrorMessage("the define of unit is not exist!");
             return false;
         }
 
         // uid
-        String uid = (String) meta.symbols.get(KEY_UID);
-        if (uid == null || uid.isBlank()) {
+        if (unit.uid == null || unit.uid.isBlank()) {
             context.setErrorMessage("the define of uid is not exist!");
             return false;
         }
         // url
-        String url = (String) meta.symbols.get(KEY_UNIT_URL);
-        if (url == null || url.isBlank()) {
-            context.setErrorMessage(String.format("[%s]: url is not exist", uid));
+        if (unit.url == null || unit.url.isBlank()) {
+            context.setErrorMessage(String.format("[%s]: url is not exist", unit.uid));
             return false;
         }
-        if (meta.parent != null) {
-            String target = String.format("%s/%s", meta.parent.symbols.get(KEY_UNIT_URL), uid);
-            if (!url.equals(target)) {
-                context.setErrorMessage(String.format("[%s]: url(%s) is not correct", uid, url));
+        if (unit.parent != null) {
+            String target = String.format("%s/%s", unit.parent.url, unit.uid);
+            if (!unit.url.equals(target)) {
+                context.setErrorMessage(String.format("[%s]: url(%s) is not correct", unit.uid, unit.url));
                 return false;
             }
         }
         // type
-        String typeStr = (String) meta.symbols.get(KEY_UNIT_TYPE);
-        if (!Type.TASK.name().equals(typeStr)
-                && !Type.MODULE.name().equals(typeStr)
-                && !Type.ROOT.name().equals(typeStr)) {
-            context.setErrorMessage(String.format("unknown type (%s)", url));
+        if (Type.TASK != unit.type && Type.MODULE != unit.type && Type.ROOT != unit.type) {
+            context.setErrorMessage(String.format("unknown type (%s)", unit.url));
             return false;
         }
-        if (meta.parent != null) {
-            String pTypeStr = (String) meta.parent.symbols.get(KEY_UNIT_TYPE);
-            if (!Type.TASK.name().equals(typeStr)
-                && Type.MODULE.name().equals(pTypeStr)) {
-                context.setErrorMessage(String.format("[%s]: can not contain any type of module in any non-task unit", uid));
+        if (unit.parent != null) {
+            if (Type.TASK != unit.type && Type.MODULE == unit.parent.type) {
+                context.setErrorMessage(String.format("[%s]: can not contain a module in any non-task unit", unit.uid));
                 return false;
             }
         }
         // command
-        String command = (String) meta.symbols.get(KEY_COMMAND);
-        if (Type.TASK.name().equals(typeStr)) {
-            if (command == null || command.isBlank()) {
-                context.setErrorMessage(String.format("[%s]: the define onf command is not exist!", uid));
+        if (Type.TASK == unit.type) {
+            if (unit.command == null || unit.command.isBlank()) {
+                context.setErrorMessage(String.format("[%s]: the define onf command is not exist!", unit.uid));
                 return false;
             }
         }
-        // predecessors
-        if (!meta.predecessorUrl.isEmpty()) {
-            for (String pUrl : meta.predecessorUrl) {
-                if (!urlMetaMap.containsKey(pUrl)
-                    || urlMetaMap.get(pUrl) == null) {
-                    context.setErrorMessage(String.format("[%s]: the predecessor(%s) is not exist", uid, pUrl));
-                    return false;
-                }
-            }
-        }
         // children
-        if (!meta.children.isEmpty()) {
-            for (Meta child : meta.children) {
-                if (!validate(context, child, urlMetaMap)) {
+        if (!unit.children.isEmpty()) {
+            for (Unit child : unit.children) {
+                if (!validate(context, child)) {
                     return false;
                 }
             }

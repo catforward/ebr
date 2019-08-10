@@ -69,7 +69,7 @@ public final class Message {
         public final static String MSG_ACT_TASK_UNIT_STATE_CHANGED = "MSG_ACT_TASK_UNIT_STATE_CHANGED";
         public final static String MSG_ACT_ALL_TASK_FINISHED = "MSG_ACT_ALL_TASK_FINISHED";
         /** 服务事件中传送参数的预定义名称 */
-        public final static String MSG_DATA_META_MAP = "MSG_DATA_META_MAP";
+        public final static String MSG_DATA_TASK_ROOT_UNIT = "MSG_DATA_TASK_ROOT_UNIT";
         public final static String MSG_DATA_TASK_FLOW_URL = "MSG_DATA_TASK_FLOW_URL";
         public final static String MSG_DATA_TASK_FLOW_URL_LIST = "MSG_DATA_TASK_FLOW_URL_LIST";
         public final static String MSG_DATA_TASK_UNIT_URL = "MSG_DATA_TASK_UNIT_URL";

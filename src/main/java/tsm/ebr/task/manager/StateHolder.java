@@ -25,8 +25,8 @@
 package tsm.ebr.task.manager;
 
 import tsm.ebr.base.Task.Type;
-import tsm.ebr.task.manager.Item.Flow;
-import tsm.ebr.task.manager.Item.Unit;
+import tsm.ebr.base.Task.Unit;
+import tsm.ebr.base.Task.Flow;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;

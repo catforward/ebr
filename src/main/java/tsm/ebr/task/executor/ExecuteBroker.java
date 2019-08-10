@@ -198,7 +198,7 @@ class TaskWatcher {
 					new InputStreamReader(process.getInputStream(), StandardCharsets.US_ASCII))) {
 				String line;
 				while ((line = br.readLine()) != null) {
-					logger.info(line);
+					logger.fine(line);
 				}
 			}
 

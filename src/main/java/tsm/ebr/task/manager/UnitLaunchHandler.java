@@ -24,12 +24,12 @@
  */
 package tsm.ebr.task.manager;
 
-import tsm.ebr.base.Message.Symbols;
 import tsm.ebr.base.Handler.HandlerContext;
 import tsm.ebr.base.Handler.IHandler;
+import tsm.ebr.base.Message.Symbols;
+import tsm.ebr.base.Task.Flow;
 import tsm.ebr.base.Task.PerformableTask;
-import tsm.ebr.task.manager.Item.Flow;
-import tsm.ebr.task.manager.Item.Unit;
+import tsm.ebr.base.Task.Unit;
 
 import java.util.ArrayList;
 import java.util.Set;
