@@ -24,9 +24,8 @@
  */
 package tsm.ebr.base;
 
-import com.google.common.graph.ElementOrder;
-import com.google.common.graph.GraphBuilder;
-import com.google.common.graph.MutableGraph;
+import tsm.ebr.thin.graph.DirectedGraph;
+import tsm.ebr.thin.graph.GraphBuilder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -97,7 +96,7 @@ public final class Task {
     public static class Flow {
 
         public final Unit rootUnit;
-        private final MutableGraph<Unit> flowGraph;
+        private final DirectedGraph<Unit> flowGraph;
 
         private Flow(Unit unit) {
             rootUnit = unit;
@@ -106,7 +105,7 @@ public final class Task {
 
         @Override
         public String toString() {
-            return rootUnit.toString();
+            return rootUnit.toString() + ": " + flowGraph.toString();
         }
 
         @Override
@@ -144,12 +143,12 @@ public final class Task {
 
         public void start() {
             // 所有unit进入standby状态
-            flowGraph.nodes().forEach(unit -> unit.updateState(State.STANDBY));
+            flowGraph.vertexes().forEach(unit -> unit.updateState(State.STANDBY));
             rootUnit.updateState(State.RUNNING);
         }
 
         public Set<Unit> getTopLevelUnits() {
-            return flowGraph.nodes().stream()
+            return flowGraph.vertexes().stream()
                     .filter(unit -> rootUnit.url.equals(unit.parent.url))
                     .collect(Collectors.toSet());
         }
@@ -176,7 +175,7 @@ public final class Task {
         }
 
         private void createTaskGraph(Unit unit) {
-            flowGraph.addNode(unit);
+            flowGraph.addVertex(unit);
             if (!unit.predecessors.isEmpty()) {
                 for (Unit predecessor : unit.predecessors) {
                     flowGraph.putEdge(predecessor, unit);
@@ -184,12 +183,12 @@ public final class Task {
             }
         }
 
-        private MutableGraph<Unit> createEmptyGraph() {
+        private DirectedGraph<Unit> createEmptyGraph() {
             return GraphBuilder.directed() // 指定为有向图
-                    .nodeOrder(ElementOrder.<Unit>insertion()) // 节点按插入顺序输出
+                    //.nodeOrder(ElementOrder.<Unit>insertion()) // 节点按插入顺序输出
                     // (还可以取值无序unordered()、节点类型的自然顺序natural())
                     // .expectedNodeCount(NODE_COUNT) //预期节点数
-                    .allowsSelfLoops(false) // 不允许自环
+                    .setAllowsSelfLoops(false) // 不允许自环
                     .build();
         }
     }
