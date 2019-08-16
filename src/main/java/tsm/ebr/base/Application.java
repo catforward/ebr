@@ -24,11 +24,10 @@
  */
 package tsm.ebr.base;
 
-import com.google.common.eventbus.AsyncEventBus;
-import com.google.common.eventbus.EventBus;
-import com.google.common.eventbus.Subscribe;
 import tsm.ebr.base.Broker.BaseBroker;
 import tsm.ebr.base.Broker.Id;
+import tsm.ebr.thin.bus.AsyncMessageBus;
+import tsm.ebr.thin.bus.MessageSubscriber;
 import tsm.ebr.util.LogUtils;
 
 import java.util.LinkedHashMap;
@@ -57,7 +56,7 @@ import static tsm.ebr.base.Broker.Id.APP;
  *
  * @author catforward
  */
-public final class Application {
+public final class Application implements MessageSubscriber<Message> {
 
     private final static Logger logger = Logger.getLogger(Application.class.getCanonicalName());
     /** 主线程循环停止标志 */
@@ -67,7 +66,7 @@ public final class Application {
     /** 事件执行线程池 （本应用同一时刻只有1个线程来执行具体处理，不考虑耗时操作的情况，因为没有打算写耗时处理） */
     private final ExecutorService singleEventDispatcher;
     /** 事件总线 */
-    private final EventBus eventBus;
+    private final AsyncMessageBus messageBus;
     /** 单例 */
     private final static Application INSTANCE = new Application();
 
@@ -79,7 +78,7 @@ public final class Application {
         servPool = new LinkedHashMap<>(Const.INIT_CAP);
         singleEventDispatcher = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS,
                                 new LinkedBlockingQueue<Runnable>(1024), new ThreadPoolExecutor.AbortPolicy());
-        eventBus = new AsyncEventBus("EBR_EVENT_BUS", singleEventDispatcher);
+        messageBus = new AsyncMessageBus("EBR_EVENT_BUS", singleEventDispatcher);
     }
 
     /**
@@ -88,7 +87,7 @@ public final class Application {
      * </pre>
      */
     public static Application init() {
-        INSTANCE.eventBus.register(INSTANCE);
+        INSTANCE.messageBus.subscribe(Message.class, INSTANCE);
         return INSTANCE;
     }
 
@@ -98,7 +97,7 @@ public final class Application {
      * </pre>
      */
     private void finish() {
-        eventBus.unregister(INSTANCE);
+        messageBus.unsubscribe(INSTANCE);
         singleEventDispatcher.shutdown();
     }
 
@@ -109,8 +108,8 @@ public final class Application {
      *
      * @return EventBus 事件总线实例
      */
-    static EventBus getEventBus() {
-        return INSTANCE.eventBus;
+    static AsyncMessageBus getMessageBus() {
+        return INSTANCE.messageBus;
     }
 
     /**
@@ -136,7 +135,7 @@ public final class Application {
      * </pre>
      */
     public void run() {
-        eventBus.post(new Message(MSG_ACT_SERVICE_INIT, APP, APP));
+        messageBus.post(new Message(MSG_ACT_SERVICE_INIT, APP, APP));
         mainLoop();
         finish();
     }
@@ -172,24 +171,22 @@ public final class Application {
     }
 
     /**
-     * <pre>
-     * 分发事件总线中传递的所有事件信息
-     * </pre>
+     * 接受消息
      *
-     * @param message 传递的事件
+     * @param message 消息体
      */
-    @Subscribe
-    public void dispatchEvent(Message message) {
+    @Override
+    public void onMessage(Message message) {
         if(LogUtils.isEventLogEnabled()) {
             logger.info(message.toString());
         }
 
         if (MSG_ACT_SERVICE_INIT.equals(message.act)) {
             servPool.forEach((id, service) -> service.init());
-            eventBus.post(new Message(MSG_ACT_LOAD_DEF_FILE, APP, APP));
+            messageBus.post(new Message(MSG_ACT_LOAD_DEF_FILE, APP, APP));
             return;
         } else if (MSG_ACT_SERVICE_SHUTDOWN.equals(message.act)
-            || MSG_ACT_ALL_TASK_FINISHED.equals(message.act)) {
+                || MSG_ACT_ALL_TASK_FINISHED.equals(message.act)) {
             servPool.forEach((id, service) -> service.finish());
             return;
         }

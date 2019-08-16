@@ -38,8 +38,8 @@ import java.net.URLDecoder;
  *     |-- conf/
  *     |     |-- log.properties
  *     |-- def/
- *     |     |-- tasks_win.json
- *     |     |-- tasks_linux.json
+ *     |     |-- tasks_win.xml
+ *     |     |-- tasks_linux.xml
  * </pre>
  *
  * @author catforward

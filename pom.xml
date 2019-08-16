@@ -18,22 +18,10 @@
 		<java.version>11</java.version>
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
-		<jackson.version>2.9.9.2</jackson.version>
-		<guava.version>27.1-jre</guava.version>
 		<main.clazz>tsm.ebr.Main</main.clazz>
 	</properties>
 
 	<dependencies>
-		<dependency>
-			<groupId>com.google.guava</groupId>
-			<artifactId>guava</artifactId>
-			<version>${guava.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.fasterxml.jackson.core</groupId>
-			<artifactId>jackson-databind</artifactId>
-			<version>${jackson.version}</version>
-		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
@@ -70,6 +58,7 @@
 								<excludes>
 									<exclude>classworlds:classworlds</exclude>
 									<exclude>junit:junit</exclude>
+									<exclude>*Test</exclude>
 									<exclude>jmock:*</exclude>
 									<exclude>*:xml-apis</exclude>
 									<exclude>org.apache.maven:lib:tests</exclude>

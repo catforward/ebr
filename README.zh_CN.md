@@ -8,7 +8,6 @@
 依赖
 
 - Jackson：JSON解析
-- Guava：EventBus
 
 制作这个小工具主要为了达成以下目标
 

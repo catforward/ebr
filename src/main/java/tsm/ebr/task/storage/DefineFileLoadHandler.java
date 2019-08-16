@@ -24,24 +24,22 @@
  */
 package tsm.ebr.task.storage;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import tsm.ebr.base.Const;
-import tsm.ebr.base.Message.Symbols;
 import tsm.ebr.base.Handler.HandlerContext;
 import tsm.ebr.base.Handler.IHandler;
-import tsm.ebr.base.Task.Unit;
+import tsm.ebr.base.Message.Symbols;
 import tsm.ebr.base.Task.Type;
+import tsm.ebr.base.Task.Unit;
 import tsm.ebr.util.ConfigUtils;
-import tsm.ebr.util.LogUtils;
 import tsm.ebr.util.PathUtils;
 
-import java.io.*;
-import java.nio.charset.StandardCharsets;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.File;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -97,43 +95,13 @@ public class DefineFileLoadHandler implements IHandler {
      * @param filePath Task定义文件的完整路径
      */
     private Unit loadTaskMetaFromDefineFile(String filePath) {
-        try (FileInputStream fis = new FileInputStream(filePath);
-             InputStreamReader isr = new InputStreamReader(fis, StandardCharsets.UTF_8);
-             BufferedReader reader = new BufferedReader(isr)) {
-            return parse(initObjectMapper().readTree(reader));
-        } catch (IOException ex) {
-            LogUtils.dumpError(ex);
+        try {
+            DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            Document document = documentBuilder.parse(filePath);
+            return parse(document);
+        } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
-    }
-
-    /**
-     * <pre>
-     * 初始化JSON解析器
-     * </pre>
-     *
-     * @return ObjectMapper
-     */
-    private ObjectMapper initObjectMapper() {
-        return new ObjectMapper()
-                // 如果为空则不输出
-                // objectMapper.setSerializationInclusion(JsonInclude.Include.NON_EMPTY);
-                // 对于空的对象转json的时候不抛出错误
-                .disable(SerializationFeature.FAIL_ON_EMPTY_BEANS)
-                // 禁用序列化日期为timestamps
-                .disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
-                // 禁用遇到未知属性抛出异常
-                .disable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
-                // 视空字符传为null
-                // objectMapper.enable(DeserializationFeature.ACCEPT_EMPTY_STRING_AS_NULL_OBJECT);
-                // 允许注释
-                .configure(JsonParser.Feature.ALLOW_COMMENTS, true)
-                // 允许属性名称没有引号
-                .configure(JsonParser.Feature.ALLOW_UNQUOTED_FIELD_NAMES, true)
-                // 允许单引号
-                .configure(JsonParser.Feature.ALLOW_SINGLE_QUOTES, true)
-                // 取消对非ASCII字符的转码
-                .configure(JsonGenerator.Feature.ESCAPE_NON_ASCII, false);
     }
 
     /**
@@ -141,29 +109,17 @@ public class DefineFileLoadHandler implements IHandler {
      * 创建一个任务节点树
      * </pre>
      *
-     * @param jsonRoot Task定义文件转换后的json根节点
+     * @param node Task定义文件转换后的json根节点
      * @return Node
      */
-    private Unit parse(JsonNode jsonRoot) {
+    private Unit parse(Node node) {
         HashMap<String, Unit> uidUnitPool = new HashMap<>(Const.INIT_CAP);
         HashMap<String, List<String>> urlPredecessorIdMap = new HashMap<>(Const.INIT_CAP);
-        createMetaPool(null, jsonRoot, uidUnitPool, urlPredecessorIdMap);
+        createMetaPool(null, node, uidUnitPool, urlPredecessorIdMap);
         Unit rootUnit = uidUnitPool.get(KEY_ROOT_UNIT);
         updatePredecessors(rootUnit, uidUnitPool, urlPredecessorIdMap);
         return rootUnit;
     }
-
-    /**
-     *
-     */
-//    private Map<String, Unit> makeUrlMetaMap(HashMap<String, Unit> uidUnitPool) {
-//        HashMap<String, Unit> urlUnitMap = new HashMap<>(Const.INIT_CAP);
-//        uidUnitPool.forEach((uid, unit) -> {
-//            urlUnitMap.put(unit.url, unit);
-//        });
-//        urlUnitMap.put(KEY_ROOT_UNIT, uidUnitPool.get(KEY_ROOT_UNIT));
-//        return  urlUnitMap;
-//    }
 
     /**
      * <pre>
@@ -171,70 +127,73 @@ public class DefineFileLoadHandler implements IHandler {
      * </pre>
      *
      * @param mParent       父节点
-     * @param jsonNode     当前json节点
+     * @param node     当前节点
      * @param uidUnitPool 所有节点对象池
      */
-    private void createMetaPool(Unit mParent, JsonNode jsonNode,
+    private void createMetaPool(Unit mParent, Node node,
                                 Map<String, Unit> uidUnitPool,
                                 Map<String, List<String>> urlPredecessorIdMap) {
-        Optional<JsonNode> optValue = Optional.ofNullable(jsonNode.get(KEY_UID));
-        if (optValue.isEmpty()) {
-            throw new RuntimeException("没有设置uid元素");
-        }
-        // 使用ID取得或创建Meta
-        String uid = optValue.get().asText().trim();
-        Unit currentUnit = Optional.ofNullable(uidUnitPool.get(uid)).orElseGet(() -> {
-            Unit newUnit = new Unit(uid, mParent);
-            uidUnitPool.put(uid, newUnit);
-            if (newUnit.parent == null) {
-                newUnit.url = String.format("/%s", uid);
-                newUnit.type = Type.ROOT;
-                uidUnitPool.put(KEY_ROOT_UNIT, newUnit);
-            } else {
-                newUnit.url = String.format("%s/%s", mParent.url, uid);
-                mParent.children.add(newUnit);
+        Unit currentUnit = null;
+        // attributes
+        if (node.hasAttributes() && Node.ELEMENT_NODE == node.getNodeType()) {
+            NamedNodeMap map = node.getAttributes();
+            Optional<Node> optValue = Optional.ofNullable(map.getNamedItem(ATTR_ID));
+            if (optValue.isEmpty()) {
+                throw new RuntimeException("没有设置uid元素");
             }
-            return newUnit;
-        });
-        // 描述
-        optValue = Optional.ofNullable(jsonNode.get(KEY_DESC));
-        if (optValue.isPresent()) {
-            currentUnit.desc = optValue.get().asText().trim();
-        }
-        // 命令
-        optValue = Optional.ofNullable(jsonNode.get(KEY_COMMAND));
-        if (optValue.isPresent()) {
-            currentUnit.command = optValue.get().asText().trim();
-        }
-        // 触发器
-        optValue = Optional.ofNullable(jsonNode.get(KEY_PREDECESSORS));
-        if (optValue.isPresent()) {
-            JsonNode predecessorsNode = optValue.get();
-            int size = predecessorsNode.size();
-            if (size != 0) {
-                List<String> pIds = urlPredecessorIdMap.get(currentUnit.url);
-                if (pIds == null) {
-                    pIds = new ArrayList<>(Const.INIT_CAP);
-                    urlPredecessorIdMap.put(currentUnit.url, pIds);
+            // 使用ID取得或创建Meta
+            String uid = optValue.get().getNodeValue().trim();
+            currentUnit = Optional.ofNullable(uidUnitPool.get(uid)).orElseGet(() -> {
+                Unit newUnit = new Unit(uid, mParent);
+                uidUnitPool.put(uid, newUnit);
+                if (newUnit.parent == null) {
+                    newUnit.url = String.format("/%s", uid);
+                    newUnit.type = Type.ROOT;
+                    uidUnitPool.put(KEY_ROOT_UNIT, newUnit);
+                } else {
+                    newUnit.url = String.format("%s/%s", mParent.url, uid);
+                    mParent.children.add(newUnit);
                 }
-                for (int idx = 0; idx < size; ++idx) {
-                    pIds.add(predecessorsNode.get(idx).asText().trim());
+                return newUnit;
+            });
+            // 描述
+            optValue = Optional.ofNullable(map.getNamedItem(ATTR_DESC));
+            if (optValue.isPresent()) {
+                currentUnit.desc = optValue.get().getNodeValue().trim();
+            }
+            // 命令
+            optValue = Optional.ofNullable(map.getNamedItem(ATTR_COMMAND));
+            if (optValue.isPresent()) {
+                currentUnit.command = optValue.get().getNodeValue().trim();
+            }
+            // 触发器
+            optValue = Optional.ofNullable(map.getNamedItem(ATTR_PREDECESSORS));
+            if (optValue.isPresent()) {
+                StringTokenizer tokenizer = new StringTokenizer(optValue.get().getNodeValue().trim(), ",", false);
+                if (tokenizer.countTokens() != 0) {
+                    List<String> pIds = urlPredecessorIdMap.get(currentUnit.url);
+                    if (pIds == null) {
+                        pIds = new ArrayList<>(Const.INIT_CAP);
+                        urlPredecessorIdMap.put(currentUnit.url, pIds);
+                    }
+                    while (tokenizer.hasMoreElements()) {
+                        pIds.add(tokenizer.nextToken().trim());
+                    }
                 }
             }
         }
         // 子元素
-        optValue = Optional.ofNullable(jsonNode.get(KEY_UNITS));
-        if (optValue.isPresent()) {
-            int size = optValue.get().size();
-            for (int idx = 0; idx < size; ++idx) {
-                createMetaPool(currentUnit, optValue.get().get(idx),
-                                uidUnitPool, urlPredecessorIdMap);
+        NodeList nodeList = node.getChildNodes();
+        int len = nodeList.getLength();
+        if (len != 0) {
+            for (int i = 0; i < len; i++) {
+                createMetaPool(currentUnit, nodeList.item(i), uidUnitPool, urlPredecessorIdMap);
             }
-            if (Type.ROOT != currentUnit.type) {
+            if (currentUnit != null && Type.ROOT != currentUnit.type) {
                 currentUnit.type = Type.MODULE;
             }
         } else {
-            if (Type.ROOT != currentUnit.type) {
+            if (currentUnit != null && Type.ROOT != currentUnit.type) {
                 currentUnit.type = Type.TASK;
             }
         }
@@ -251,7 +210,7 @@ public class DefineFileLoadHandler implements IHandler {
             pIds.forEach(id -> {
                 Unit pUnit = uidUnitPool.get(id);
                 if (pUnit != null) {
-                    unit.predecessors.add(pUnit);
+                    unit.preconditions.add(pUnit);
                 }
             });
         }
