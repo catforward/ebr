@@ -2,6 +2,8 @@ package tsm.ebr.thin.graph;
 
 import java.util.Objects;
 
+import static tsm.ebr.util.MiscUtils.checkNotNull;
+
 /**
  * 有向边
  * @author catforward
@@ -11,9 +13,8 @@ class DirectedEdge<V> {
     final V vertexTo;
 
     DirectedEdge(V vertexFrom, V vertexTo) {
-        if (vertexFrom == null || vertexTo == null) {
-            throw new NullPointerException();
-        }
+        checkNotNull(vertexFrom);
+        checkNotNull(vertexTo);
         if (vertexFrom.equals(vertexTo)) {
             throw new IllegalArgumentException("起点和终点不能相等");
         }

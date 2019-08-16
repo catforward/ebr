@@ -2,7 +2,11 @@ package tsm.ebr.thin.graph;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.CopyOnWriteArraySet;
 
 /**
  * 有序图
@@ -13,16 +17,20 @@ import java.util.Set;
  */
 public class DirectedGraphImpl<V> implements DirectedGraph<V> {
     private static class EdgeSet<V> {
-        final HashSet<DirectedEdge<V>> in = new HashSet<>();
-        final HashSet<DirectedEdge<V>> out = new HashSet<>();
+        final Set<DirectedEdge<V>> in = new CopyOnWriteArraySet<>();
+        final Set<DirectedEdge<V>> out = new CopyOnWriteArraySet<>();
     }
     /** 顶点和边集合的映射 */
-    private final HashMap<V, EdgeSet<V>> vertexEdgesMap;
+    private final Map<V, EdgeSet<V>> vertexEdgesMap;
     private final GraphBuilder builder;
 
     DirectedGraphImpl(GraphBuilder builder) {
         this.builder = builder;
-        this.vertexEdgesMap = new HashMap<>();
+        //if (this.builder.insertionOrder) {
+        //    this.vertexEdgesMap = new ConcurrentSkipListMap<>(); //FIXME
+        //} else {
+            this.vertexEdgesMap = new ConcurrentHashMap<>();
+        //}
     }
 
     @Override
@@ -44,7 +52,7 @@ public class DirectedGraphImpl<V> implements DirectedGraph<V> {
      */
     @Override
     public Set<V> vertexes() {
-        return vertexEdgesMap.keySet();
+        return Set.copyOf(vertexEdgesMap.keySet());
     }
 
     /**
@@ -67,7 +75,7 @@ public class DirectedGraphImpl<V> implements DirectedGraph<V> {
                 }
             });
         }
-        return set;
+        return Set.copyOf(set);
     }
 
     /**
@@ -85,7 +93,7 @@ public class DirectedGraphImpl<V> implements DirectedGraph<V> {
                 set.add(directedEdge.source());
             });
         }
-        return set;
+        return Set.copyOf(set);
     }
 
     /**
@@ -103,7 +111,7 @@ public class DirectedGraphImpl<V> implements DirectedGraph<V> {
                 set.add(directedEdge.target());
             });
         }
-        return set;
+        return Set.copyOf(set);
     }
 
     /**
@@ -165,21 +173,21 @@ public class DirectedGraphImpl<V> implements DirectedGraph<V> {
     @Override
     public boolean putEdge(V from, V to) {
         DirectedEdge<V> edge = new DirectedEdge<>(from, to);
-        EdgeSet<V> edgeSet = vertexEdgesMap.getOrDefault(from, null);
-        if (edgeSet == null) {
-            edgeSet = new EdgeSet<>();
-            edgeSet.out.add(edge);
-            vertexEdgesMap.put(from, edgeSet);
-        } else {
-            edgeSet.out.add(edge);
+        EdgeSet<V> fromEdgeSet = vertexEdgesMap.getOrDefault(from, null);
+        EdgeSet<V> toEdgeSet = vertexEdgesMap.getOrDefault(to, null);
+        if (fromEdgeSet == null) {
+            fromEdgeSet = new EdgeSet<>();
+            vertexEdgesMap.put(from, fromEdgeSet);
         }
-        edgeSet = vertexEdgesMap.getOrDefault(to, null);
-        if (edgeSet == null) {
-            edgeSet = new EdgeSet<>();
-            edgeSet.in.add(edge);
-            vertexEdgesMap.put(to, edgeSet);
+        if (toEdgeSet == null) {
+            toEdgeSet = new EdgeSet<>();
+            vertexEdgesMap.put(to, toEdgeSet);
+        }
+        if (toEdgeSet.out.contains(new DirectedEdge<>(to, from))) {
+           return false;
         } else {
-            edgeSet.in.add(edge);
+            fromEdgeSet.out.add(edge);
+            toEdgeSet.in.add(edge);
         }
         if (!this.builder.allowsSelfLoops) {
             selfLoopsCheck();

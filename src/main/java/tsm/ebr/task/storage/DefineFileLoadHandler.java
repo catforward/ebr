@@ -251,7 +251,7 @@ public class DefineFileLoadHandler implements IHandler {
             pIds.forEach(id -> {
                 Unit pUnit = uidUnitPool.get(id);
                 if (pUnit != null) {
-                    unit.predecessors.add(pUnit);
+                    unit.preconditions.add(pUnit);
                 }
             });
         }

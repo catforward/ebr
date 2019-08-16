@@ -8,7 +8,6 @@
 使用したライブラリ
 
 - Jackson：JSON解析
-- Guava：EventBus機能
 
 下記（主な）目標を持ってこのツールを開発した
 

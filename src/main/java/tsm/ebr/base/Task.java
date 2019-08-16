@@ -28,7 +28,6 @@ import tsm.ebr.thin.graph.DirectedGraph;
 import tsm.ebr.thin.graph.GraphBuilder;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -176,8 +175,8 @@ public final class Task {
 
         private void createTaskGraph(Unit unit) {
             flowGraph.addVertex(unit);
-            if (!unit.predecessors.isEmpty()) {
-                for (Unit predecessor : unit.predecessors) {
+            if (!unit.preconditions.isEmpty()) {
+                for (Unit predecessor : unit.preconditions) {
                     flowGraph.putEdge(predecessor, unit);
                 }
             }
@@ -188,6 +187,7 @@ public final class Task {
                     //.nodeOrder(ElementOrder.<Unit>insertion()) // 节点按插入顺序输出
                     // (还可以取值无序unordered()、节点类型的自然顺序natural())
                     // .expectedNodeCount(NODE_COUNT) //预期节点数
+                    //.setInsertionOrder(true)
                     .setAllowsSelfLoops(false) // 不允许自环
                     .build();
         }
@@ -221,7 +221,7 @@ public final class Task {
         // 任务间的关系定义
         public final Unit parent;
         public final ArrayList<Unit> children;
-        public final ArrayList<Unit> predecessors;
+        public final ArrayList<Unit> preconditions;
         // 任务状态
         private State state;
         // 当单元类型为非TASK(MODULE or ROOT)时，记录子任务的完成数
@@ -231,7 +231,7 @@ public final class Task {
             uid = newUid;
             parent = uParent;
             children = new ArrayList<>(Const.INIT_CAP);
-            predecessors = new ArrayList<>(Const.INIT_CAP);
+            preconditions = new ArrayList<>(Const.INIT_CAP);
             unfinishedCount = new AtomicInteger();
         }
 
@@ -261,7 +261,7 @@ public final class Task {
                     Objects.equals(type, unit.type) &&
                     Objects.equals(parent, unit.parent) &&
                     Objects.equals(children, unit.children) &&
-                    Objects.equals(predecessors, unit.predecessors) &&
+                    Objects.equals(preconditions, unit.preconditions) &&
                     Objects.equals(state, unit.state) &&
                     Objects.equals(unfinishedCount, unit.unfinishedCount);
         }
