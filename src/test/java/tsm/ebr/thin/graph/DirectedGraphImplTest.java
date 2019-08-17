@@ -12,7 +12,8 @@ public class DirectedGraphImplTest {
      */
     @Test
     public void  DirectedGraphImpl_Test01() {
-        DirectedGraph<Integer> graph = GraphBuilder.directed().setAllowsSelfLoops(false).build();
+        DirectedGraph<Integer> graph = GraphBuilder.directed()
+                .setAllowsSelfLoops(false).setInsertionOrder(true).build();
         graph.addVertex(1);
         graph.addVertex(2);
         graph.addVertex(3);
@@ -25,6 +26,8 @@ public class DirectedGraphImplTest {
         graph.putEdge(3,5);
         Assert.assertTrue(graph.containsVertex(3));
         Assert.assertFalse(graph.containsVertex(10));
+        Assert.assertTrue(graph.vertexes().size() == 5);
+        Assert.assertTrue(graph.edges().size() == 5);
     }
 
     /**
@@ -61,6 +64,8 @@ public class DirectedGraphImplTest {
         Assert.assertTrue(graph.containsVertex(4));
         Assert.assertTrue(graph.containsEdge(1,4));
         Assert.assertTrue(graph.containsEdge(2,3));
+        Assert.assertTrue(graph.vertexes().size() == 4);
+        Assert.assertTrue(graph.edges().size() == 2);
     }
 
     /**
@@ -84,6 +89,8 @@ public class DirectedGraphImplTest {
         Assert.assertTrue(graph.containsEdge(1,4));
         Assert.assertTrue(graph.containsEdge(2,4));
         Assert.assertFalse(graph.containsEdge(2,3));
+        Assert.assertTrue(graph.vertexes().size() == 3);
+        Assert.assertTrue(graph.edges().size() == 2);
     }
 
     /**
@@ -107,6 +114,8 @@ public class DirectedGraphImplTest {
         Assert.assertTrue(graph.containsEdge(1,4));
         Assert.assertFalse(graph.containsEdge(2,3));
         Assert.assertTrue(graph.containsEdge(2,4));
+        Assert.assertTrue(graph.vertexes().size() == 4);
+        Assert.assertTrue(graph.edges().size() == 2);
     }
 
     /**
@@ -126,6 +135,51 @@ public class DirectedGraphImplTest {
         Assert.assertFalse(graph.removeVertex(10));
         Assert.assertFalse(graph.containsEdge(10,3));
         Assert.assertFalse(graph.removeEdge(10,3));
+        Assert.assertTrue(graph.vertexes().size() == 4);
+        Assert.assertTrue(graph.edges().size() == 3);
+    }
+
+    /**
+     * 测试重复添加顶点和边
+     */
+    @Test
+    public void  DirectedGraphImpl_Test07() {
+        DirectedGraph<Integer> graph = GraphBuilder.directed().setAllowsSelfLoops(false).build();
+        graph.addVertex(1);
+        graph.addVertex(2);
+        graph.addVertex(3);
+        graph.addVertex(4);
+        graph.addVertex(3);
+        graph.putEdge(1,4);
+        graph.putEdge(2,3);
+        graph.putEdge(2,3);
+        graph.putEdge(2,4);
+        Assert.assertTrue(graph.vertexes().size() == 4);
+        Assert.assertTrue(graph.edges().size() == 3);
+    }
+
+    /**
+     * 测试重复删除顶点和边
+     */
+    @Test
+    public void  DirectedGraphImpl_Test08() {
+        DirectedGraph<Integer> graph = GraphBuilder.directed().setAllowsSelfLoops(false).build();
+        graph.addVertex(1);
+        graph.addVertex(2);
+        graph.addVertex(3);
+        graph.addVertex(4);
+        graph.putEdge(1,4);
+        graph.putEdge(2,3);
+        graph.putEdge(2,4);
+        Assert.assertTrue(graph.vertexes().size() == 4);
+        Assert.assertTrue(graph.edges().size() == 3);
+        graph.removeVertex(2);
+        Assert.assertTrue(graph.vertexes().size() == 3);
+        Assert.assertTrue(graph.edges().size() == 1);
+        graph.removeVertex(2);
+        graph.removeEdge(2,3);
+        Assert.assertTrue(graph.vertexes().size() == 3);
+        Assert.assertTrue(graph.edges().size() == 1);
     }
 
     /**
@@ -172,6 +226,25 @@ public class DirectedGraphImplTest {
             selfLoop = true;
         }
         Assert.assertFalse(selfLoop);
+    }
+
+    /**
+     * 测试出现无向边
+     */
+    @Test
+    public void  DirectedGraphImpl_Test12() {
+        DirectedGraph<Integer> graph = GraphBuilder.directed().setAllowsSelfLoops(false).build();
+        graph.addVertex(1);
+        graph.addVertex(2);
+        graph.addVertex(3);
+        graph.addVertex(4);
+        graph.addVertex(5);
+        graph.putEdge(1,4);
+        graph.putEdge(2,3);
+        graph.putEdge(4,3);
+        graph.putEdge(3,2);
+        Assert.assertTrue(graph.vertexes().size() == 5);
+        Assert.assertTrue(graph.edges().size() == 3);
     }
 
     /**

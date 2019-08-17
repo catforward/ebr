@@ -35,7 +35,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import static tsm.ebr.base.Application.getEventBus;
+import static tsm.ebr.base.Application.getMessageBus;
 import static tsm.ebr.base.Message.Symbols.MSG_ACT_SERVICE_SHUTDOWN;
 import static tsm.ebr.base.Broker.Status.*;
 
@@ -186,7 +186,7 @@ public class Broker {
             // 处理此事件
             try {
                 if (actionMap.get(message.act) == null) {
-                    onEvent(message);
+                    onMessage(message);
                 } else if (!doHandle(message)) {
                     logger.warning(String.format("处理[%s]事件失败...", message.act));
                 }
@@ -248,7 +248,7 @@ public class Broker {
          * @param param
          */
         protected void post(String act, Map<String, Object> param) {
-            getEventBus().post(new Message(act, id(), Id.APP, param));
+            getMessageBus().post(new Message(act, id(), Id.APP, param));
         }
 
         /**
@@ -258,7 +258,7 @@ public class Broker {
          * @param param
          */
         protected void send(String act, Id dst, Map<String, Object> param) {
-            getEventBus().post(new Message(act, id(), dst, param));
+            getMessageBus().post(new Message(act, id(), dst, param));
         }
 
         /**
@@ -267,7 +267,7 @@ public class Broker {
          * @param act
          */
         protected void notice(String act) {
-            getEventBus().post(new Message(act, id(), Id.APP));
+            getMessageBus().post(new Message(act, id(), Id.APP));
         }
 
         /**
@@ -291,7 +291,7 @@ public class Broker {
          * (子类实现)处理事件
          * @@param event 事件
          */
-        protected void onEvent(Message message) {
+        protected void onMessage(Message message) {
         }
     }
 }

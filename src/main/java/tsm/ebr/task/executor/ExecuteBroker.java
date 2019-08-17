@@ -84,7 +84,7 @@ public class ExecuteBroker extends BaseBroker {
     }
 
     @Override
-    protected void onEvent(Message message) {
+    protected void onMessage(Message message) {
         switch (message.act) {
             case Symbols.MSG_ACT_LAUNCH_TASK_UNITS: {
                 List<PerformableTask> uList = (List<PerformableTask>) message.param.get(Symbols.MSG_DATA_TASK_PERFORMABLE_UNITS_LIST);

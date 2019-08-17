@@ -8,7 +8,6 @@ Development Environment
 Dependency
 
 - Jackson：Analyzing JSON data 
-- Guava：Using the EventBus module
 
 Motivation
 
