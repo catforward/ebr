@@ -65,8 +65,13 @@ public final class Application implements MessageSubscriber<Message> {
     private final Map<Id, BaseBroker> servPool;
     /** 事件执行线程池 （本应用同一时刻只有1个线程来执行具体处理，不考虑耗时操作的情况，因为没有打算写耗时处理） */
     private final ExecutorService singleEventDispatcher;
+<<<<<<< .mine
     /** 消息总线 */
     private final AsyncMessageBus messageBus;
+=======
+    /** 事件总线 */
+    private final AsyncMessageBus messageBus;
+>>>>>>> .theirs
     /** 单例 */
     private final static Application INSTANCE = new Application();
 
@@ -80,7 +85,11 @@ public final class Application implements MessageSubscriber<Message> {
         servPool = new LinkedHashMap<>(Const.INIT_CAP);
         singleEventDispatcher = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS,
                                 new LinkedBlockingQueue<Runnable>(1024), new ThreadPoolExecutor.AbortPolicy());
+<<<<<<< .mine
         messageBus = new AsyncMessageBus("EBR_MSG_BUS", singleEventDispatcher);
+=======
+        messageBus = new AsyncMessageBus("EBR_EVENT_BUS", singleEventDispatcher);
+>>>>>>> .theirs
     }
 
     /**
@@ -173,9 +182,15 @@ public final class Application implements MessageSubscriber<Message> {
     }
 
     /**
+<<<<<<< .mine
      * <pre>
      * 接受消息
      * </pre>
+=======
+     * 接受消息
+
+
+>>>>>>> .theirs
      *
      * @param message 消息体
      */
