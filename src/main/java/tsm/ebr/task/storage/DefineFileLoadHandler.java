@@ -48,7 +48,9 @@ import static tsm.ebr.base.Task.Symbols.*;
 import static tsm.ebr.util.ConfigUtils.Item.KEY_INSTANT_TASK;
 
 /**
+ * <pre>
  * 从磁盘读取任务流配置文件并构建任务定义树
+ * </pre>
  * @author catforward
  */
 public class DefineFileLoadHandler implements IHandler {
@@ -200,7 +202,13 @@ public class DefineFileLoadHandler implements IHandler {
     }
 
     /**
+     * <pre>
+     * 更新任务单元间的前驱条件关系
+     * </pre>
      *
+     * @param unit
+     * @param uidUnitPool
+     * @param urlPredecessorIdMap
      */
     private void updatePredecessors(Unit unit,
                                     Map<String, Unit> uidUnitPool,

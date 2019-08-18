@@ -37,20 +37,19 @@ import java.util.Set;
 import static tsm.ebr.base.Task.Type.MODULE;
 
 /**
+ * <pre>
  * 任务启动处理器
+ * </pre>
  * @author catforward
  */
 public class UnitLaunchHandler implements IHandler {
 
-    /**
-     *
-     */
     @Override
     public boolean doHandle(HandlerContext context) {
         String act = context.getCurrentAction();
         switch (act) {
             case Symbols.MSG_ACT_TASK_UNIT_STATE_CHANGED: {
-                launchUnit(context);
+                launchUnits(context);
                 break;
             }
             default: {
@@ -61,9 +60,12 @@ public class UnitLaunchHandler implements IHandler {
     }
 
     /**
-     *
+     * <pre>
+     * 启动一个或多个任务单元
+     * </pre>
+     * @param context
      */
-    private void launchUnit(HandlerContext context) {
+    private void launchUnits(HandlerContext context) {
         String url = (String) context.getParam(Symbols.MSG_DATA_TASK_UNIT_URL);
         ArrayList<PerformableTask> units = searchPerformableUnit(url);
         context.setNextAction(Symbols.MSG_ACT_LAUNCH_TASK_UNITS);
@@ -96,7 +98,10 @@ public class UnitLaunchHandler implements IHandler {
     }
 
     /**
-     *
+     * 查找给出的任务单元中前提条件满足可以启动的对象
+     * @param flow
+     * @param units
+     * @param pList
      */
     private void collectPerformableUnit(Flow flow, Set<Unit> units, ArrayList<PerformableTask> pList) {
         for (Unit suc : units) {

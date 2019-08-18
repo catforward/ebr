@@ -34,26 +34,37 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
+ * <pre>
  * 跨模块使用的公共数据结构以及常量定义
+ * </pre>
  * @author catforward
  */
 public final class Task {
 
     public enum State {
+        /** 任务执行成功时 */
         SUCCEEDED,
+        /** 任务执行异常时 */
         ERROR,
+        /** 任务待机时 */
         STANDBY,
+        /** 任务执行时 */
         RUNNING,
     }
 
     public enum Type {
+        /** 任务流类型，可包含子任务或子模块 */
         ROOT,
+        /** 模块类型，不能拥有命令属性 */
         MODULE,
+        /** 任务类型，不能拥有子任务 */
         TASK,
     }
 
     /**
+     * <pre>
      * 描述一个任务所需的名称定义
+     * </pre>
      */
     public static class Symbols {
         /** symbols in json file */
@@ -66,7 +77,9 @@ public final class Task {
     }
 
     /**
+     * <pre>
      * 可执行任务
+     * </pre>
      */
     public static class PerformableTask {
         public final String url;

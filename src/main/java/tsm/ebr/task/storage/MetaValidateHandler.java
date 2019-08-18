@@ -26,23 +26,25 @@ package tsm.ebr.task.storage;
 
 import tsm.ebr.base.Handler.HandlerContext;
 import tsm.ebr.base.Handler.IHandler;
-import tsm.ebr.base.Task.Unit;
 import tsm.ebr.base.Task.Type;
+import tsm.ebr.base.Task.Unit;
 
-import java.util.Map;
 import java.util.logging.Logger;
 
 import static tsm.ebr.base.Message.Symbols.MSG_DATA_TASK_ROOT_UNIT;
-import static tsm.ebr.base.Task.Symbols.*;
 
 /**
+ * <pre>
  * 验证创建的任务定义对象
+ * </pre>
  * @author catforward
  */
 public class MetaValidateHandler implements IHandler {
     private final static Logger logger = Logger.getLogger(MetaValidateHandler.class.getCanonicalName());
     /**
+     * <pre>
      * handle this event
+     * </pre>
      * @param context context of this event
      * @return true: succeeded false: failed
      */
@@ -53,7 +55,12 @@ public class MetaValidateHandler implements IHandler {
     }
 
     /**
-     *
+     * <pre>
+     * 验证生成的任务单元的基本结构是否正确
+     * </pre>
+     * @param context
+     * @param unit
+     * @return boolean
      */
     private boolean validate(HandlerContext context, Unit unit) {
         if (unit == null) {

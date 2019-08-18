@@ -7,7 +7,7 @@
 
 依赖
 
-- Jackson：JSON解析
+- 无
 
 制作这个小工具主要为了达成以下目标
 
@@ -23,6 +23,4 @@
 
 ![image](https://github.com/catforward/ebr/raw/master/images/sample_task_flow.jpg)
 
-- 前驱：每个程序可以有零到若干个前驱程序，当前驱程序全部正常结束后方可执行
-- 后继：每个程序可以有零到若干个后继程序，当程序结束后通知后继程序检查各自的启动条件
 

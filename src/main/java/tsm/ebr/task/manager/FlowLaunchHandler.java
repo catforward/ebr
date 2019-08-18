@@ -38,6 +38,7 @@ import java.util.Set;
 
 
 /**
+ * <pre>
  * 接受并处理以下事件
  * - 启动taskflow事件
  *  -- 找到此taskflow中的顶层task并通知启动服务
@@ -45,6 +46,7 @@ import java.util.Set;
  *  -- 循环taskflow的url列表找出所有的顶层task并通知启动服务
  * - task单元的状态改变
  *  -- 根据状态变更的task的url找出接下来需要被启动的task并通知启动服务
+ * </pre>
  * @author catforward
  */
 public class FlowLaunchHandler implements IHandler {
@@ -73,8 +75,10 @@ public class FlowLaunchHandler implements IHandler {
     }
 
     /**
+     * <pre>
      * 找到指定的taskflow的顶层task单元
      * 通过发送事件通知启动服务
+     * </pre>
      *
      * @param context
      */
@@ -94,8 +98,10 @@ public class FlowLaunchHandler implements IHandler {
     }
 
     /**
+     * <pre>
      * 找到指定的若干个taskflow的所有顶层task单元
      * 通过发送事件通知启动服务
+     * </pre>
      *
      * @param context
      */
@@ -117,11 +123,13 @@ public class FlowLaunchHandler implements IHandler {
     }
 
     /**
+     * <pre>
      * 查找顺序
      * 1.查找出此url的直接后集结点
      * 2.针对1的结果，检查每个后继节点的前提节点是否完成， 都完成了就加入待启动列表
      * 3.如果1没有找到任何直接的后继节点，则检查此url所在父节点是否为非TASK节点
      * 4.针对3的结果，如果父节点完成了则检索出父节点的直接后继节点，重复1的处理
+     * </pre>
      * @param context
      */
     private void searchPerformableFlow(HandlerContext context) {
@@ -145,9 +153,11 @@ public class FlowLaunchHandler implements IHandler {
     }
 
     /**
+     * <pre>
      * 循环针对每一个单元查找符合以下条件的才可以被作为待启动的taskflow
      * 1. 处理对象的类型必须是ROOT或MODULE（类型不等于TYPE）
      * 2. 处理对象的前驱节点必须全部正常结束
+     * </pre>
      * @param flow
      * @param units
      * @param pList

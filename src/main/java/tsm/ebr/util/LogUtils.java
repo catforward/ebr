@@ -24,19 +24,10 @@
  */
 package tsm.ebr.util;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.logging.FileHandler;
-import java.util.logging.Formatter;
-import java.util.logging.Level;
-import java.util.logging.LogManager;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
+import java.util.logging.*;
 
 /**
  * <pre>
@@ -72,8 +63,9 @@ public final class LogUtils {
     }
 
     /**
+     * <pre>
      * 初始化jdk内置logger
-     *
+     * </pre>
      */
     private static void initAppLogger() throws IOException {
         String confPath = PathUtils.getConfPath();

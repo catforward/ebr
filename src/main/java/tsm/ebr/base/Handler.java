@@ -31,15 +31,19 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 /**
+ * <pre>
  * 业务处理器
+ * </pre>
  * @author catforward
  */
 public class Handler {
 
     public interface IHandler {
         /**
+         * <pre>
          * 进行实际处理
          * 当返回false时表示处理链将被终止
+         * </pre>
          * @param context 上下文
          * @return true: succeeded false: failed
          */
@@ -47,8 +51,10 @@ public class Handler {
     }
 
     /**
+     * <pre>
      * 处理器的描述
      * 用于缓存处理其class对象
+     * </pre>
      */
     public static class HandlerDesc {
         final Class<? extends IHandler> handlerClass;
@@ -64,8 +70,10 @@ public class Handler {
     }
 
     /**
+     * <pre>
      * 处理上下文
      * 用来保存每一个事件的参数及发送源，发送目的信息
+     * </pre>
      */
     public static class HandlerContext {
         private final static Logger logger = Logger.getLogger(HandlerContext.class.getCanonicalName());
@@ -81,7 +89,9 @@ public class Handler {
         HandlerContext() {}
 
         /**
+         * <pre>
          * 重置所有数据至初始状态
+         * </pre>
          * @param newParam 新的事件所携带的参数
          */
         void reset(String action, Map<String, Object> newParam) {
@@ -95,10 +105,12 @@ public class Handler {
         }
 
         /**
+         * <pre>
          * 当有处理链中有多个处理器时
          * 每个处理器执行前
          * 合并事件携带的参数
          * 达到上一个处理器的结果能够作为下一个处理器的参数
+         * </pre>
          */
         void mergeParam() {
             param.putAll(result);
@@ -143,16 +155,17 @@ public class Handler {
     }
 
     /**
-     *
+     * <pre>
+     * 处理链
+     * </pre>
      */
     static class HandlerChain {
         /**  */
-        final String eventAction;
-        /**  */
         final Map<Class<? extends IHandler>, HandlerDesc> handlerPool;
+        final String action;
 
         HandlerChain(String newAct) {
-            eventAction = newAct;
+            action = newAct;
             handlerPool = new LinkedHashMap<>();
         }
 

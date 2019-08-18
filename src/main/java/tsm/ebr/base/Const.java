@@ -25,7 +25,9 @@
 package tsm.ebr.base;
 
 /**
+ * <pre>
  * Global Const Symbols
+ * </pre>
  * @author catforward
  */
 public class Const {

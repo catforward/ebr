@@ -34,15 +34,19 @@ import tsm.ebr.base.Task.Unit;
 import static tsm.ebr.base.Message.Symbols.MSG_DATA_TASK_ROOT_UNIT;
 
 /**
+ * <pre>
  * 构建模块内数据结构
+ * </pre>
  * @author catforward
  */
 public class ItemBuildHandler implements IHandler {
 
     /**
+     * <pre>
      * 构建Unit树
      * 构建TaskFlow对象
      * 成功时发送启动TaskFlow事件
+     * </pre>
      * @param context
      * @return true: succeeded false: failed
      */
@@ -57,9 +61,6 @@ public class ItemBuildHandler implements IHandler {
         return true;
     }
 
-    /**
-     *
-     */
     private void addTaskUnit(Unit unit) {
         StateHolder.addUnit(unit);
         for (Unit child : unit.children) {
@@ -70,9 +71,6 @@ public class ItemBuildHandler implements IHandler {
         }
     }
 
-    /**
-     *
-     */
     private void addTaskFlow(Unit unit) {
         Flow flow = Flow.makeFrom(unit);
         flow.standby();

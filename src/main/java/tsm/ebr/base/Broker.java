@@ -23,11 +23,11 @@
  */
 package tsm.ebr.base;
 
-import tsm.ebr.base.Message.Receiver;
 import tsm.ebr.base.Handler.HandlerChain;
 import tsm.ebr.base.Handler.HandlerContext;
 import tsm.ebr.base.Handler.HandlerDesc;
 import tsm.ebr.base.Handler.IHandler;
+import tsm.ebr.base.Message.Receiver;
 import tsm.ebr.util.LogUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -36,8 +36,8 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import static tsm.ebr.base.Application.getMessageBus;
-import static tsm.ebr.base.Message.Symbols.MSG_ACT_SERVICE_SHUTDOWN;
 import static tsm.ebr.base.Broker.Status.*;
+import static tsm.ebr.base.Message.Symbols.MSG_ACT_SERVICE_SHUTDOWN;
 
 /**
  * <pre>
@@ -53,7 +53,9 @@ import static tsm.ebr.base.Broker.Status.*;
 public class Broker {
 
     /**
+     * <pre>
      * 处理类ID定义
+     * </pre>
      */
     public enum Id {
         /** 代表此程序本身，可以看成是广播地址 */
@@ -80,9 +82,6 @@ public class Broker {
         FINISHED,
     }
 
-    /**
-     *
-     */
     public static abstract class BaseBroker implements Receiver {
         private final Logger logger = Logger.getLogger(Broker.class.getCanonicalName());
         /** 代理状态 */
@@ -98,33 +97,24 @@ public class Broker {
             brokerStatus = CREATED;
         }
 
-        /**
-         * 代理状态
-         *
-         * @return Status
-         */
         public Status status() {
             return brokerStatus;
         }
 
-        /**
-         * 服务初始化
-         */
         public void init() {
             onInit();
             brokerStatus = RUNNING;
         }
 
-        /**
-         * 代理处理结束
-         */
         public void finish() {
             onFinish();
             brokerStatus = FINISHED;
         }
 
         /**
+         * <pre>
          * 注册一个消息处理器
+         * </pre>
          *
          * @param act
          * @param hndClass
@@ -146,7 +136,9 @@ public class Broker {
         }
 
         /**
+         * <pre>
          * 注册消息处理器
+         * </pre>
          *
          * @param act
          */
@@ -156,7 +148,9 @@ public class Broker {
         }
 
         /**
+         * <pre>
          * 注销消息处理器
+         * </pre>
          *
          * @param act
          */
@@ -168,7 +162,9 @@ public class Broker {
         }
 
         /**
+         * <pre>
          * 接受消息
+         * </pre>
          *
          * @param message
          */
@@ -198,7 +194,9 @@ public class Broker {
         }
 
         /**
+         * <pre>
          * 消息处理
+         * </pre>
          *
          * @param message
          */
@@ -233,7 +231,7 @@ public class Broker {
                 notice(context.noticeAction);
 
             } else if (context.nextAction == null && context.result.isEmpty()) {
-                throw new RuntimeException(String.format("Action(%s)'的处理结果不能为空", chain.eventAction));
+                throw new RuntimeException(String.format("Action(%s)'的处理结果不能为空", chain.action));
             } else {
                 post(context.nextAction, Map.copyOf(context.result));
             }
@@ -242,7 +240,9 @@ public class Broker {
         }
 
         /**
+         * <pre>
          * 发送消息
+         * </pre>
          *
          * @param act
          * @param param
@@ -252,7 +252,9 @@ public class Broker {
         }
 
         /**
+         * <pre>
          * 发送消息
+         * </pre>
          *
          * @param act
          * @param param
@@ -262,7 +264,9 @@ public class Broker {
         }
 
         /**
+         * <pre>
          * 发送程序结束的消息广播
+         * </pre>
          *
          * @param act
          */
@@ -271,24 +275,32 @@ public class Broker {
         }
 
         /**
+         * <pre>
          * 返回服务的识别ＩＤ
          * (子类实现)处理类ID
+         * </pre>
          * @return  ServiceId
          */
         public abstract Id id();
 
         /**
+         * <pre>
          * (子类实现)服务初始化
+         * </pre>
          */
         protected abstract void onInit();
 
         /**
+         * <pre>
          * (子类实现)服务结束
+         * </pre>
          */
         protected abstract void onFinish();
 
         /**
+         * <pre>
          * (子类实现)处理事件
+         * </pre>
          * @@param event 事件
          */
         protected void onMessage(Message message) {
