@@ -29,17 +29,19 @@ import java.util.ArrayList;
 import java.util.ListIterator;
 
 /**
- *
+ * <pre>
+ * 命令行参数解析
+ * </pre>
  * @author catforward
  */
 public class GetOpts {
-	/** */
+	/** 定义的参数格式 */
 	private final String optStr;
-	/** */
+	/** 解析出来的参数及参数值集合 */
 	private final ArrayList<OptArgPair> opts;
-	/** */
+	/** 参数集合迭代器 */
 	private final ListIterator<OptArgPair> optIter;
-	/** */
+	/** 解析中参数及参数值 */
 	private OptArgPair currentPair;
 
 	public GetOpts(String[] args, String optString) {
@@ -119,9 +121,6 @@ public class GetOpts {
 	}
 }
 
-/**
- *
- */
 class OptArgPair {
 	final char optChar;
 	String optArgVal;

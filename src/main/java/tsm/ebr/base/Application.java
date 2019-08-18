@@ -38,8 +38,8 @@ import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
-import static tsm.ebr.base.Message.Symbols.*;
 import static tsm.ebr.base.Broker.Id.APP;
+import static tsm.ebr.base.Message.Symbols.*;
 
 /**
  * <pre>
@@ -65,20 +65,22 @@ public final class Application implements MessageSubscriber<Message> {
     private final Map<Id, BaseBroker> servPool;
     /** 事件执行线程池 （本应用同一时刻只有1个线程来执行具体处理，不考虑耗时操作的情况，因为没有打算写耗时处理） */
     private final ExecutorService singleEventDispatcher;
-    /** 事件总线 */
+    /** 消息总线 */
     private final AsyncMessageBus messageBus;
     /** 单例 */
     private final static Application INSTANCE = new Application();
 
     /**
+     * <pre>
      * 初始化所有资源
+     * </pre>
      */
     private Application() {
         terminated = false;
         servPool = new LinkedHashMap<>(Const.INIT_CAP);
         singleEventDispatcher = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS,
                                 new LinkedBlockingQueue<Runnable>(1024), new ThreadPoolExecutor.AbortPolicy());
-        messageBus = new AsyncMessageBus("EBR_EVENT_BUS", singleEventDispatcher);
+        messageBus = new AsyncMessageBus("EBR_MSG_BUS", singleEventDispatcher);
     }
 
     /**
@@ -103,10 +105,10 @@ public final class Application implements MessageSubscriber<Message> {
 
     /**
      * <pre>
-     * 取得事件总线实例
+     * 取得消息总线实例
      * </pre>
      *
-     * @return EventBus 事件总线实例
+     * @return AsyncMessageBus 消息总线实例
      */
     static AsyncMessageBus getMessageBus() {
         return INSTANCE.messageBus;
@@ -171,7 +173,9 @@ public final class Application implements MessageSubscriber<Message> {
     }
 
     /**
+     * <pre>
      * 接受消息
+     * </pre>
      *
      * @param message 消息体
      */
@@ -193,9 +197,7 @@ public final class Application implements MessageSubscriber<Message> {
 
         if (APP == message.dst) {
             servPool.forEach((id, service) -> service.receive(message));
-        }
-
-        else {
+        } else {
             BaseBroker service = servPool.get(message.dst);
             if (service != null) {
                 service.receive(message);

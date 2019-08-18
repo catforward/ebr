@@ -116,7 +116,9 @@ public class ExecuteBroker extends BaseBroker {
     }
 
     /**
+     * <pre>
      * 通知其他服务一个Task的新状态
+     * </pre>
      * @param url task的识别url
      * @param newState task的新状态
      */
@@ -128,7 +130,9 @@ public class ExecuteBroker extends BaseBroker {
     }
 
     /**
+     * <pre>
      * 通知其他服务启动一个TaskFlow对象
+     * </pre>
      * @param url taskflow的识别url
      */
     void prepareLaunchFlow(String url) {
@@ -138,7 +142,9 @@ public class ExecuteBroker extends BaseBroker {
     }
 
     /**
+     * <pre>
      * 通知其他服务启动若干个TaskFlow对象
+     * </pre>
      * @param urls taskflow的识别url列表
      */
     void prepareLaunchFlows(ArrayList<String> urls) {
@@ -150,7 +156,9 @@ public class ExecuteBroker extends BaseBroker {
     }
 
     /**
+     * <pre>
      * 启动一个Task
+     * </pre>
      * @param url task的识别url
      * @param command task的可执行外部命令
      */

@@ -34,43 +34,52 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 /**
+ * <pre>
  * 跨模块使用的公共数据结构以及常量定义
+ * </pre>
  * @author catforward
  */
 public final class Task {
 
     public enum State {
+        /** 任务执行成功时 */
         SUCCEEDED,
+        /** 任务执行异常时 */
         ERROR,
+        /** 任务待机时 */
         STANDBY,
+        /** 任务执行时 */
         RUNNING,
     }
 
     public enum Type {
+        /** 任务流类型，可包含子任务或子模块 */
         ROOT,
+        /** 模块类型，不能拥有命令属性 */
         MODULE,
+        /** 任务类型，不能拥有子任务 */
         TASK,
     }
 
     /**
+     * <pre>
      * 描述一个任务所需的名称定义
+     * </pre>
      */
     public static class Symbols {
         /** symbols in json file */
-        public final static String KEY_UID = "uid";
-        public final static String KEY_DESC = "desc";
-        public final static String KEY_COMMAND = "command";
-        public final static String KEY_UNITS = "units";
-        public final static String KEY_PREDECESSORS = "predecessors";
+        public final static String ATTR_ID = "id";
+        public final static String ATTR_DESC = "desc";
+        public final static String ATTR_PREDECESSORS = "predecessors";
+        public final static String ATTR_COMMAND = "command";
         /** internal symbols in app */
         public final static String KEY_ROOT_UNIT = "KEY_ROOT_UNIT";
-        public final static String KEY_UNIT_URL = "KEY_UNIT_URL";
-        public final static String KEY_UNIT_TYPE = "KEY_UNIT_TYPE";
-        public final static String KEY_PARENT_UNIT_URL = "KEY_PARENT_UNIT_URL";
     }
 
     /**
+     * <pre>
      * 可执行任务
+     * </pre>
      */
     public static class PerformableTask {
         public final String url;

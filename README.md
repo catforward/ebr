@@ -7,7 +7,7 @@ Development Environment
 
 Dependency
 
-- Jackson：Analyzing JSON data 
+- None
 
 Motivation
 
@@ -17,13 +17,12 @@ Motivation
 External Program
 
 - A script program (ex. shell script, windows bat, python script ...)
-- Executable programs which had no GUI mode
+- Executable programs without GUI
 
-Procedural flaw
+Parallel Task Flow
 
 example like this
 
 ![image](https://github.com/catforward/ebr/raw/master/images/sample_task_flow.jpg)
 
-- A target program can be executed only when its predecessors had completely done
-- All successors, which belong target program will be notified when target program is done
+- A target program can be executed only when it's predecessors had completely done

@@ -24,23 +24,22 @@
  */
 package tsm.ebr.task.manager;
 
-import tsm.ebr.base.Message.Symbols;
-import tsm.ebr.base.Handler.IHandler;
 import tsm.ebr.base.Handler.HandlerContext;
+import tsm.ebr.base.Handler.IHandler;
+import tsm.ebr.base.Message.Symbols;
 import tsm.ebr.base.Task.State;
 
 import java.util.logging.Logger;
 
 /**
+ * <pre>
  * 任务状态更新
+ * </pre>
  * @author catforward
  */
 public class StateUpdateHandler implements IHandler {
     private final static Logger logger = Logger.getLogger(StateUpdateHandler.class.getCanonicalName());
 
-    /**
-     *
-     */
     @Override
     public boolean doHandle(HandlerContext context) {
         String url = (String) context.getParam(Symbols.MSG_DATA_TASK_UNIT_URL);

@@ -30,7 +30,9 @@ import tsm.ebr.base.Broker.Id;
 import static tsm.ebr.base.Message.Symbols.MSG_ACT_LOAD_DEF_FILE;
 
 /**
+ * <pre>
  * 数据持久化模块
+ * </pre>
  * @author catforward
  */
 public class StorageBroker extends BaseBroker {

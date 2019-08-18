@@ -24,12 +24,14 @@
  */
 package tsm.ebr.task.manager;
 
-import tsm.ebr.base.Message.Symbols;
 import tsm.ebr.base.Broker.BaseBroker;
 import tsm.ebr.base.Broker.Id;
+import tsm.ebr.base.Message.Symbols;
 
 /**
+ * <pre>
  * 任务运行时状态管理模块
+ * </pre>
  * @author catforward
  */
 public class StateManagementBroker extends BaseBroker {
@@ -39,17 +41,11 @@ public class StateManagementBroker extends BaseBroker {
         StateHolder.init();
     }
 
-    /**
-     *
-     */
     @Override
     public Id id() {
         return Id.MANAGEMENT;
     }
 
-    /**
-     *
-     */
     @Override
     protected void onInit() {
         // 当Meta数据生成后，包装其成为Unit单元树
@@ -66,9 +62,6 @@ public class StateManagementBroker extends BaseBroker {
                 UnitLaunchHandler.class);
     }
 
-    /**
-     *
-     */
     @Override
     protected void onFinish() {
         unregister(Symbols.MSG_ACT_TASK_META_CREATED);

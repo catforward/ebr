@@ -45,7 +45,9 @@ import java.util.Properties;
 public class ConfigUtils {
 
     /**
+     * <pre>
      * 配置文件中使用的键名
+     * </pre>
      */
     public static class Item {
         public final static String KEY_INSTANT_TASK = "ebr.instant.task";
@@ -64,7 +66,9 @@ public class ConfigUtils {
     private Properties prop = new Properties();
 
     /**
+     * <pre>
      * 取得配置类实例
+     * </pre>
      *
      * @return 配置类实例
      */
@@ -73,20 +77,26 @@ public class ConfigUtils {
     }
 
     /**
+     * <pre>
      * 属性类构造函数
+     * </pre>
      */
     private ConfigUtils() {
     }
 
     /**
+     * <pre>
      * 从初始化全局配置
+     * </pre>
      */
     public static void init() throws IOException {
         load(PathUtils.getConfPath());
     }
 
     /**
+     * <pre>
      * 从配置文件加载配置属性
+     * </pre>
      *
      * @param confPath conf目录路径
      */
@@ -107,7 +117,9 @@ public class ConfigUtils {
     }
 
     /**
+     * <pre>
      * 获取属性
+     * </pre>
      *
      * @param key 键名
      * @return 字符型值
@@ -119,7 +131,9 @@ public class ConfigUtils {
     }
 
     /**
+     * <pre>
      * 获取属性，当不存在指定属性时返回调用者给出的默认值
+     * </pre>
      *
      * @param key          键名
      * @param defaultValue 默认值

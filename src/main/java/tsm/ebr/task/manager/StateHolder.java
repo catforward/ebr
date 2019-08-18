@@ -24,26 +24,28 @@
  */
 package tsm.ebr.task.manager;
 
+import tsm.ebr.base.Task.Flow;
 import tsm.ebr.base.Task.Type;
 import tsm.ebr.base.Task.Unit;
-import tsm.ebr.base.Task.Flow;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
 /**
+ * <pre>
  * 模块内运行时统一管理任务执行状态
+ * </pre>
  * @author catforward
  */
 class StateHolder {
     private final static Logger logger = Logger.getLogger(StateHolder.class.getCanonicalName());
     private final static StateHolder INSTANCE = new StateHolder();
-    /**  */
+    /** 任务流集合 */
     private final Map<String, Flow> urlFlowMap;
-    /**  */
+    /** 任务单元集合 */
     private final Map<String, Unit> urlUnitMap;
-    /**  */
+    /** 根任务流 */
     private Flow rootFlow;
 
     private StateHolder() {
@@ -57,7 +59,11 @@ class StateHolder {
     }
 
     /**
-     *
+     * <pre>
+     * 添加一个任务流
+     * </pre>
+     * @param newTaskFlow
+     * @return
      */
     static StateHolder addFlow(Flow newTaskFlow) {
         if (!INSTANCE.urlFlowMap.containsKey(newTaskFlow.rootUnit.url)) {
@@ -71,7 +77,11 @@ class StateHolder {
     }
 
     /**
-     *
+     * <pre>
+     * 添加一个任务单元
+     * </pre>
+     * @param newUnit
+     * @return
      */
     static StateHolder addUnit(Unit newUnit) {
         if (!INSTANCE.urlUnitMap.containsKey(newUnit.url)) {
@@ -80,38 +90,23 @@ class StateHolder {
         return INSTANCE;
     }
 
-    /**
-     *
-     */
     static Flow getRootFlow() {
         return INSTANCE.rootFlow;
     }
 
-    /**
-     *
-     */
     static Flow getFlow(String url) {
         return INSTANCE.urlFlowMap.get(url);
     }
 
-    /**
-     *
-     */
     static Unit getUnit(String url) {
         return INSTANCE.urlUnitMap.get(url);
     }
 
-    /**
-     *
-     */
     static void init() {
         // reset first
         clear();
     }
 
-    /**
-     *
-     */
     static void clear() {
         INSTANCE.rootFlow = null;
         INSTANCE.urlFlowMap.clear();

@@ -1,0 +1,21 @@
+<flow id="TASK_FLOW" desc="root object if test task flow">
+    <task id="T1" desc="test task unit T1"
+          command="/nuc/opt/ebr-cli_lt/bin/sleep.sh T1 5"/>
+
+    <module id="T2" desc="test task unit T2" predecessors="T1">
+        <task id="T2-1" desc="test task unit T2-1"
+              command="/nuc/opt/ebr-cli_lt/bin/sleep.sh T2-1 10"/>
+
+        <task id="T2-2" desc="test task unit T2-2"
+              command="/nuc/opt/ebr-cli_lt/bin/sleep.sh T2-2 5"/>
+
+        <task id="T2-3" desc="test task unit T2-3" predecessors="T2-1,T2-2"
+              command="/nuc/opt/ebr-cli_lt/bin/sleep.sh T2-3 5"/>
+    </module>
+
+    <task id="T3" desc="test task unit T3" predecessors="T1,T2"
+          command="/nuc/opt/ebr-cli_lt/bin/sleep.sh T3 5"/>
+
+    <task id="T4" desc="test task unit T4" predecessors="T1"
+          command="/nuc/opt/ebr-cli_lt/bin/sleep.sh T4 10"/>
+</flow>

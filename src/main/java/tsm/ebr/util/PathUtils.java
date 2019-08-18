@@ -38,8 +38,8 @@ import java.net.URLDecoder;
  *     |-- conf/
  *     |     |-- log.properties
  *     |-- def/
- *     |     |-- tasks_win.json
- *     |     |-- tasks_linux.json
+ *     |     |-- tasks_win.xml
+ *     |     |-- tasks_linux.xml
  * </pre>
  *
  * @author catforward
@@ -52,7 +52,9 @@ public final class PathUtils {
     private static String rootPath;
 
     /**
+     * <pre>
      * 得到EBR的log部署目录
+     * </pre>
      *
      * @return String 部署路径
      */
@@ -61,7 +63,9 @@ public final class PathUtils {
     }
 
     /**
+     * <pre>
      * 得到EBR的conf部署目录
+     * </pre>
      *
      * @return String 部署路径
      */
@@ -70,7 +74,9 @@ public final class PathUtils {
     }
 
     /**
+     * <pre>
      * 得到EBR的def部署目录
+     * </pre>
      *
      * @return String 部署路径
      */
@@ -79,7 +85,9 @@ public final class PathUtils {
     }
 
     /**
+     * <pre>
      * 取得EBR的部署路径
+     * </pre>
      *
      * @return String 部署路径
      */
@@ -91,9 +99,8 @@ public final class PathUtils {
 
         try {
             File jarFile = new File(getJarPath());
-            rootPath = URLDecoder.decode(jarFile.getParentFile() // jar所在目录
-                    .getParentFile() // jar父路径
-                    .getAbsolutePath(), "UTF8");
+            rootPath = URLDecoder.decode(jarFile.getParentFile()
+                    .getParentFile().getAbsolutePath(), "UTF8");
             return rootPath;
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException("取得EBR的部署路径失败...", e);
@@ -101,7 +108,9 @@ public final class PathUtils {
     }
 
     /**
+     * <pre>
      * 取得EBR的JAR文件部署路径
+     * </pre>
      *
      * @return String 部署路径
      */
