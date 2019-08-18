@@ -180,7 +180,6 @@ public class DirectedGraphImplTest {
     }
 
     /**
-<<<<<<< .mine
      * <pre>
      * 测试重复添加顶点和边
      * </pre>
@@ -229,56 +228,6 @@ public class DirectedGraphImplTest {
 
     /**
      * <pre>
-=======
-     * 测试重复添加顶点和边
-     */
-    @Test
-    public void  DirectedGraphImpl_Test07() {
-        DirectedGraph<Integer> graph = GraphBuilder.directed().setAllowsSelfLoops(false).build();
-        graph.addVertex(1);
-        graph.addVertex(2);
-        graph.addVertex(3);
-        graph.addVertex(4);
-        graph.addVertex(3);
-        graph.putEdge(1,4);
-        graph.putEdge(2,3);
-        graph.putEdge(2,3);
-        graph.putEdge(2,4);
-        Assert.assertTrue(graph.vertexes().size() == 4);
-        Assert.assertTrue(graph.edges().size() == 3);
-    }
-
-    /**
-     * 测试重复删除顶点和边
-     */
-    @Test
-    public void  DirectedGraphImpl_Test08() {
-        DirectedGraph<Integer> graph = GraphBuilder.directed().setAllowsSelfLoops(false).build();
-        graph.addVertex(1);
-        graph.addVertex(2);
-        graph.addVertex(3);
-        graph.addVertex(4);
-        graph.putEdge(1,4);
-        graph.putEdge(2,3);
-        graph.putEdge(2,4);
-        Assert.assertTrue(graph.vertexes().size() == 4);
-        Assert.assertTrue(graph.edges().size() == 3);
-        graph.removeVertex(2);
-        Assert.assertTrue(graph.vertexes().size() == 3);
-        Assert.assertTrue(graph.edges().size() == 1);
-        graph.removeVertex(2);
-        graph.removeEdge(2,3);
-        Assert.assertTrue(graph.vertexes().size() == 3);
-        Assert.assertTrue(graph.edges().size() == 1);
-    }
-
-    /**
-
-
-
-
-
->>>>>>> .theirs
      * 测试出现自环
      * </pre>
      */
@@ -328,7 +277,6 @@ public class DirectedGraphImplTest {
     }
 
     /**
-<<<<<<< .mine
      * <pre>
      * 测试出现无向边
      * </pre>
@@ -351,30 +299,6 @@ public class DirectedGraphImplTest {
 
     /**
      * <pre>
-=======
-     * 测试出现无向边
-     */
-    @Test
-    public void  DirectedGraphImpl_Test12() {
-        DirectedGraph<Integer> graph = GraphBuilder.directed().setAllowsSelfLoops(false).build();
-        graph.addVertex(1);
-        graph.addVertex(2);
-        graph.addVertex(3);
-        graph.addVertex(4);
-        graph.addVertex(5);
-        graph.putEdge(1,4);
-        graph.putEdge(2,3);
-        graph.putEdge(4,3);
-        graph.putEdge(3,2);
-        Assert.assertTrue(graph.vertexes().size() == 5);
-        Assert.assertTrue(graph.edges().size() == 3);
-    }
-
-    /**
-
-
-
->>>>>>> .theirs
      * 测试取得前驱节点
      * </pre>
      */

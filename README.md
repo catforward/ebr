@@ -7,11 +7,7 @@ Development Environment
 
 Dependency
 
-<<<<<<< .mine
 - None
-=======
-- Jackson：Analyzing JSON data 
->>>>>>> .theirs
 
 Motivation
 

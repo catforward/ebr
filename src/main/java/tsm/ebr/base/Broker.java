@@ -35,13 +35,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
-<<<<<<< .mine
 import static tsm.ebr.base.Application.getMessageBus;
 import static tsm.ebr.base.Broker.Status.*;
-=======
-import static tsm.ebr.base.Application.getMessageBus;
-
->>>>>>> .theirs
 import static tsm.ebr.base.Message.Symbols.MSG_ACT_SERVICE_SHUTDOWN;
 
 /**
