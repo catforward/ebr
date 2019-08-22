@@ -41,7 +41,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 /**
@@ -165,8 +167,7 @@ public class ExecuteBroker extends BaseBroker {
     private void doLaunch(String url, String command) {
         noticeNewState(url, State.RUNNING);
         logger.info(String.format("Task启动%s", url));
-
-        Future<State> exitState = taskExecutor.submit(() -> {
+        taskExecutor.submit(() -> {
             try {
                 Process process = Runtime.getRuntime().exec(command);
                 process.getOutputStream().close();
@@ -181,17 +182,12 @@ public class ExecuteBroker extends BaseBroker {
 
                 int exitCode = process.waitFor();
                 logger.fine("exitCode = " + exitCode);
-                return (exitCode == 0) ? State.SUCCEEDED : State.ERROR;
+                State exitState = (exitCode == 0) ? State.SUCCEEDED : State.ERROR;
+                noticeNewState(url, exitState);
             } catch (IOException | InterruptedException e) {
                 LogUtils.dumpError(e);
-                return State.ERROR;
+                noticeNewState(url, State.ERROR);
             }
         });
-        try {
-            noticeNewState(url, exitState.get());
-        } catch (ExecutionException | InterruptedException ex) {
-            LogUtils.dumpError(ex);
-            noticeNewState(url, State.ERROR);
-        }
     }
 }
