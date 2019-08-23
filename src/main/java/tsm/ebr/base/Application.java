@@ -28,14 +28,12 @@ import tsm.ebr.base.Broker.BaseBroker;
 import tsm.ebr.base.Broker.Id;
 import tsm.ebr.thin.bus.AsyncMessageBus;
 import tsm.ebr.thin.bus.MessageSubscriber;
+import tsm.ebr.util.ConfigUtils;
 import tsm.ebr.util.LogUtils;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.logging.Logger;
 
 import static tsm.ebr.base.Broker.Id.APP;
@@ -65,6 +63,8 @@ public final class Application implements MessageSubscriber<Message> {
     private final Map<Id, BaseBroker> servPool;
     /** 事件执行线程池 （本应用同一时刻只有1个线程来执行具体处理，不考虑耗时操作的情况，因为没有打算写耗时处理） */
     private final ExecutorService singleEventDispatcher;
+    /** 执行队列 */
+    private final ExecutorService workerExecutor;
     /** 消息总线 */
     private final AsyncMessageBus messageBus;
     /** 单例 */
@@ -81,6 +81,12 @@ public final class Application implements MessageSubscriber<Message> {
         singleEventDispatcher = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS,
                                 new LinkedBlockingQueue<Runnable>(1024), new ThreadPoolExecutor.AbortPolicy());
         messageBus = new AsyncMessageBus("EBR_MSG_BUS", singleEventDispatcher);
+        // workerThreadPool
+        int configNum = Integer.parseInt((String) ConfigUtils.getOrDefault(ConfigUtils.Item.KEY_EXCUTOR_NUM_MAX, "0"));
+        int minNum = Runtime.getRuntime().availableProcessors();
+        int maxNum = (configNum == 0) ? minNum * 2 : configNum;
+        workerExecutor = new ThreadPoolExecutor(minNum, maxNum, 0L, TimeUnit.MILLISECONDS,
+                        new LinkedBlockingQueue<Runnable>());
     }
 
     /**
@@ -101,6 +107,18 @@ public final class Application implements MessageSubscriber<Message> {
     private void finish() {
         messageBus.unsubscribe(INSTANCE);
         singleEventDispatcher.shutdown();
+        workerExecutor.shutdown();
+    }
+
+    /**
+     * <pre>
+     * 取得Application实例
+     * </pre>
+     *
+     * @return Application Application实例
+     */
+    static Application getInstance() {
+        return INSTANCE;
     }
 
     /**
@@ -112,6 +130,18 @@ public final class Application implements MessageSubscriber<Message> {
      */
     static AsyncMessageBus getMessageBus() {
         return INSTANCE.messageBus;
+    }
+
+    /**
+     * <pre>
+     * 将一个任务提交至worker线程池排队执行
+     * </pre>
+     *
+     * @param task    任务
+     * @return Future 执行结果
+     */
+    public Future<?> deployTask(Runnable task) {
+        return workerExecutor.submit(task);
     }
 
     /**
