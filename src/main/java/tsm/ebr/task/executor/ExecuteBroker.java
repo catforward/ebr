@@ -31,7 +31,6 @@ import tsm.ebr.base.Message;
 import tsm.ebr.base.Message.Symbols;
 import tsm.ebr.base.Task.PerformableTask;
 import tsm.ebr.base.Task.State;
-import tsm.ebr.util.ConfigUtils;
 import tsm.ebr.util.LogUtils;
 
 import java.io.BufferedReader;
@@ -41,9 +40,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 /**
@@ -55,16 +51,8 @@ import java.util.logging.Logger;
  */
 public class ExecuteBroker extends BaseBroker {
     private final Logger logger = Logger.getLogger(ExecuteBroker.class.getCanonicalName());
-    /** 执行队列 */
-    private final ThreadPoolExecutor taskExecutor;
 
     public ExecuteBroker() {
-        int configNum = Integer.parseInt((String) ConfigUtils.getOrDefault(ConfigUtils.Item.KEY_EXCUTOR_NUM_MAX, "0"));
-        int minNum = Runtime.getRuntime().availableProcessors();
-        int maxNum = (configNum == 0) ? Runtime.getRuntime().availableProcessors() * 2 : configNum;
-        taskExecutor = new ThreadPoolExecutor(minNum, maxNum,
-                0L, TimeUnit.MILLISECONDS,
-                new LinkedBlockingQueue<Runnable>());
     }
 
     @Override
@@ -82,7 +70,6 @@ public class ExecuteBroker extends BaseBroker {
     protected void onFinish() {
         unregister(Symbols.MSG_ACT_LAUNCH_TASK_UNITS);
         unregister(Symbols.MSG_ACT_LAUNCH_TASK_UNIT);
-        taskExecutor.shutdown();
     }
 
     @Override
@@ -167,7 +154,7 @@ public class ExecuteBroker extends BaseBroker {
     private void doLaunch(String url, String command) {
         noticeNewState(url, State.RUNNING);
         logger.info(String.format("Task启动%s", url));
-        taskExecutor.submit(() -> {
+        deployTask(() -> {
             try {
                 Process process = Runtime.getRuntime().exec(command);
                 process.getOutputStream().close();

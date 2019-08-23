@@ -33,6 +33,7 @@ import tsm.ebr.util.LogUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Future;
 import java.util.logging.Logger;
 
 import static tsm.ebr.base.Application.getMessageBus;
@@ -249,6 +250,18 @@ public class Broker {
          */
         protected void post(String act, Map<String, Object> param) {
             getMessageBus().post(new Message(act, id(), Id.APP, param));
+        }
+
+        /**
+         * <pre>
+         * 将一个任务提交至worker线程池排队执行
+         * </pre>
+         *
+         * @param task    任务
+         * @return Future 执行结果
+         */
+        protected Future<?> deployTask(Runnable task) {
+            return Application.getInstance().deployTask(task);
         }
 
         /**
