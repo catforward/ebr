@@ -45,7 +45,7 @@
 							<goal>shade</goal>
 						</goals>
 						<configuration>
-							<outputFile>${project.build.directory}/${project.artifactId}-all.jar
+							<outputFile>${project.basedir}/libs/${project.artifactId}-all.jar
 							</outputFile>
 							<minimizeJar>false</minimizeJar>
 							<transformers>
