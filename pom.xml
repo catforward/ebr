@@ -5,7 +5,7 @@
 
 	<groupId>tsm.one</groupId>
 	<artifactId>ebr</artifactId>
-	<version>1.0</version>
+	<version>1.1</version>
 	<packaging>jar</packaging>
 
 	<name>EBR</name>
@@ -45,7 +45,7 @@
 							<goal>shade</goal>
 						</goals>
 						<configuration>
-							<outputFile>${project.build.directory}/${project.artifactId}-${project.version}-all.jar
+							<outputFile>${project.build.directory}/${project.artifactId}-all.jar
 							</outputFile>
 							<minimizeJar>false</minimizeJar>
 							<transformers>
