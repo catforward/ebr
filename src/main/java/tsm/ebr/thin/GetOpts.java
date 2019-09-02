@@ -1,25 +1,25 @@
-/**
- * MIT License
- * <p>
- * Copyright (c) 2019 catforward
- * <p>
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- * <p>
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- * <p>
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+/*
+  MIT License
+  <p>
+  Copyright (c) 2019 catforward
+  <p>
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+  <p>
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+  <p>
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.
  */
 package tsm.ebr.thin;
 
@@ -37,19 +37,17 @@ import java.util.ListIterator;
 public class GetOpts {
 	/** 定义的参数格式 */
 	private final String optStr;
-	/** 解析出来的参数及参数值集合 */
-	private final ArrayList<OptArgPair> opts;
 	/** 参数集合迭代器 */
-	private final ListIterator<OptArgPair> optIter;
+	private final ListIterator<OptArgPair> optArgPairListIterator;
 	/** 解析中参数及参数值 */
 	private OptArgPair currentPair;
 
 	public GetOpts(String[] args, String optString) {
 		optStr = optString;
-		opts = new ArrayList<>();
+		/* 解析出来的参数及参数值集合 */
+		ArrayList<OptArgPair> opts = new ArrayList<>();
 
-		for (int i = 0; i < args.length; i++) {
-			String token = args[i];
+		for (String token : args) {
 			if ("-".equals(token) || token.startsWith("--")) {
 				break;
 			}
@@ -83,12 +81,12 @@ public class GetOpts {
 			}
 		}
 
-		optIter = opts.listIterator();
+		optArgPairListIterator = opts.listIterator();
 	}
 
 	public int getNextOption() throws IllegalArgumentException {
-		if (optIter.hasNext()) {
-			currentPair = optIter.next();
+		if (optArgPairListIterator.hasNext()) {
+			currentPair = optArgPairListIterator.next();
 			if (!hasOpt(currentPair.optChar)) {
 				throw new IllegalArgumentException(
 						String.format("unknown option : -%s", String.valueOf(currentPair.optChar)));
@@ -96,7 +94,7 @@ public class GetOpts {
 				throw new IllegalArgumentException(
 						String.format("should have an argument : -%s", String.valueOf(currentPair.optChar)));
 			}
-			return (int) currentPair.optChar;
+			return currentPair.optChar;
 		}
 		return -1;
 	}
@@ -113,9 +111,7 @@ public class GetOpts {
 		boolean match = hasOpt(c);
 		if (match) {
 			int idx = optStr.indexOf(c) + 1;
-			if (idx < optStr.length() && Const.COLON == optStr.charAt(idx)) {
-				return true;
-			}
+			return idx < optStr.length() && Const.COLON == optStr.charAt(idx);
 		}
 		return false;
 	}

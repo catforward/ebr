@@ -1,26 +1,26 @@
-/**
- * MIT License
- *
- * Copyright (c) 2019 catforward
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- *
+/*
+  MIT License
+
+  Copyright (c) 2019 catforward
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.
+
  */
 package tsm.ebr.thin.graph;
 
@@ -92,16 +92,8 @@ public class DirectedGraphImpl<V> implements DirectedGraph<V> {
     public Set<DirectedEdge<V>> edges() {
         HashSet<DirectedEdge<V>> set = new HashSet<>();
         for (EdgeSet<V> edgeSet : this.vertexEdgesMap.values()) {
-            edgeSet.in.forEach(vDirectedEdge -> {
-                if (!set.contains(vDirectedEdge)) {
-                    set.add(vDirectedEdge);
-                }
-            });
-            edgeSet.out.forEach(vDirectedEdge -> {
-                if (!set.contains(vDirectedEdge)) {
-                    set.add(vDirectedEdge);
-                }
-            });
+            set.addAll(edgeSet.in);
+            set.addAll(edgeSet.out);
         }
         return Set.copyOf(set);
     }
@@ -119,9 +111,7 @@ public class DirectedGraphImpl<V> implements DirectedGraph<V> {
         HashSet<V> set = new HashSet<>();
         EdgeSet<V> edgeSet = vertexEdgesMap.getOrDefault(vertex, null);
         if (edgeSet != null) {
-            edgeSet.in.forEach(directedEdge -> {
-                set.add(directedEdge.source());
-            });
+            edgeSet.in.forEach(directedEdge -> set.add(directedEdge.source()));
         }
         return Set.copyOf(set);
     }
@@ -139,9 +129,7 @@ public class DirectedGraphImpl<V> implements DirectedGraph<V> {
         HashSet<V> set = new HashSet<>();
         EdgeSet<V> edgeSet = vertexEdgesMap.getOrDefault(vertex, null);
         if (edgeSet != null) {
-            edgeSet.out.forEach(directedEdge -> {
-                set.add(directedEdge.target());
-            });
+            edgeSet.out.forEach(directedEdge -> set.add(directedEdge.target()));
         }
         return Set.copyOf(set);
     }
@@ -303,7 +291,7 @@ public class DirectedGraphImpl<V> implements DirectedGraph<V> {
      */
     private void selfLoopsCheck() {
         for (var entry : this.vertexEdgesMap.entrySet()) {
-            DFSCheck(entry.getKey(), entry.getValue());
+            doSelfLoopsCheck(entry.getKey(), entry.getValue());
         }
     }
 
@@ -315,12 +303,12 @@ public class DirectedGraphImpl<V> implements DirectedGraph<V> {
      * @param edgeSet　需要检查的边集合
      * @throws IllegalArgumentException 当某条边的终点等于起始顶点时视为发生自环
      */
-    private void DFSCheck(V vertex, EdgeSet<V> edgeSet) {
+    private void doSelfLoopsCheck(V vertex, EdgeSet<V> edgeSet) {
         for (DirectedEdge<V> edge : edgeSet.out) {
             if (vertex.equals(edge.target())) {
                 throw new IllegalArgumentException("self loop");
             } else {
-                DFSCheck(vertex, this.vertexEdgesMap.get(edge.target()));
+                doSelfLoopsCheck(vertex, this.vertexEdgesMap.get(edge.target()));
             }
         }
     }

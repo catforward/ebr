@@ -1,26 +1,26 @@
-/**
- * MIT License
- *
- * Copyright (c) 2019 catforward
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- *
+/*
+  MIT License
+
+  Copyright (c) 2019 catforward
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.
+
  */
 package tsm.ebr.task.manager;
 
@@ -40,10 +40,10 @@ import java.util.Set;
 /**
  * <pre>
  * 接受并处理以下事件
- * - 启动taskflow事件
- *  -- 找到此taskflow中的顶层task并通知启动服务
- * - 启动若干个taskflow事件
- *  -- 循环taskflow的url列表找出所有的顶层task并通知启动服务
+ * - 启动flow事件
+ *  -- 找到此flow中的顶层task并通知启动服务
+ * - 启动若干个flow事件
+ *  -- 循环flow的url列表找出所有的顶层task并通知启动服务
  * - task单元的状态改变
  *  -- 根据状态变更的task的url找出接下来需要被启动的task并通知启动服务
  * </pre>
@@ -76,7 +76,7 @@ public class FlowLaunchHandler implements IHandler {
 
     /**
      * <pre>
-     * 找到指定的taskflow的顶层task单元
+     * 找到指定的flow的顶层task单元
      * 通过发送事件通知启动服务
      * </pre>
      *
@@ -88,7 +88,7 @@ public class FlowLaunchHandler implements IHandler {
         Set<Unit> units = flow.getTopLevelUnits();
         ArrayList<PerformableTask> pList = new ArrayList<>(units.size());
         for (Unit unit : units) {
-            if (flow.getPredecessorsOf(unit).stream().filter(u -> !u.isComplete()).count() == 0) {
+            if (flow.getPredecessorsOf(unit).stream().allMatch(Unit::isComplete)) {
                 pList.add(new PerformableTask(unit.url, unit.command));
             }
         }
@@ -99,7 +99,7 @@ public class FlowLaunchHandler implements IHandler {
 
     /**
      * <pre>
-     * 找到指定的若干个taskflow的所有顶层task单元
+     * 找到指定的若干个flow的所有顶层task单元
      * 通过发送事件通知启动服务
      * </pre>
      *
@@ -112,7 +112,7 @@ public class FlowLaunchHandler implements IHandler {
             Flow flow = StateHolder.getFlow(url);
             Set<Unit> units = flow.getTopLevelUnits();
             for (Unit unit : units) {
-                if (flow.getPredecessorsOf(unit).stream().filter(u -> !u.isComplete()).count() == 0) {
+                if (flow.getPredecessorsOf(unit).stream().allMatch(Unit::isComplete)) {
                     pList.add(new PerformableTask(unit.url, unit.command));
                 }
             }
@@ -154,7 +154,7 @@ public class FlowLaunchHandler implements IHandler {
 
     /**
      * <pre>
-     * 循环针对每一个单元查找符合以下条件的才可以被作为待启动的taskflow
+     * 循环针对每一个单元查找符合以下条件的才可以被作为待启动的flow
      * 1. 处理对象的类型必须是ROOT或MODULE（类型不等于TYPE）
      * 2. 处理对象的前驱节点必须全部正常结束
      * </pre>

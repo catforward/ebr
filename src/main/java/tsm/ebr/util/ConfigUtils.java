@@ -1,26 +1,26 @@
-/**
- * MIT License
- *
- * Copyright (c) 2019 catforward
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- *
+/*
+  MIT License
+
+  Copyright (c) 2019 catforward
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.
+
  */
 package tsm.ebr.util;
 
@@ -51,19 +51,19 @@ public class ConfigUtils {
      */
     public static class Item {
         public final static String KEY_INSTANT_TASK = "ebr.instant.task";
-        public final static String KEY_EXCUTOR_NUM_MAX = "ebr.executor.num.max";
+        public final static String EBR_EXECUTOR_NUM_MAX = "ebr.executor.num.max";
         public final static String KEY_EVENT_LOG = "ebr.event.log";
     }
 
     /**
      * 配置类实例
      */
-    private static ConfigUtils ourInstance = new ConfigUtils();
+    private static final ConfigUtils INSTANCE = new ConfigUtils();
 
     /**
      * 属性类实例
      */
-    private Properties prop = new Properties();
+    private final Properties prop = new Properties();
 
     /**
      * <pre>
@@ -73,7 +73,7 @@ public class ConfigUtils {
      * @return 配置类实例
      */
     public static ConfigUtils getInstance() {
-        return ourInstance;
+        return INSTANCE;
     }
 
     /**
@@ -109,9 +109,7 @@ public class ConfigUtils {
     public static void merge(Map<String, String> values) {
         ConfigUtils config = ConfigUtils.getInstance();
         for (Map.Entry<String, String> entry : values.entrySet()) {
-            if (config.prop.containsKey(entry.getKey())) {
-                config.prop.remove(entry.getKey());
-            }
+            config.prop.remove(entry.getKey());
             config.prop.put(entry.getKey(), entry.getValue());
         }
     }

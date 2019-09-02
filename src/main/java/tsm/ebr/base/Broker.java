@@ -1,25 +1,25 @@
-/**
- * MIT License
- * <p>
- * Copyright (c) 2019 catforward
- * <p>
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- * <p>
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- * <p>
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+/*
+  MIT License
+  <p>
+  Copyright (c) 2019 catforward
+  <p>
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+  <p>
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+  <p>
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.
  */
 package tsm.ebr.base;
 
@@ -33,12 +33,13 @@ import tsm.ebr.util.LogUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Future;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 import static tsm.ebr.base.Application.getMessageBus;
-import static tsm.ebr.base.Broker.Status.*;
 import static tsm.ebr.base.Message.Symbols.MSG_ACT_SERVICE_SHUTDOWN;
+import static tsm.ebr.base.Task.State;
 
 /**
  * <pre>
@@ -86,7 +87,7 @@ public class Broker {
     public static abstract class BaseBroker implements Receiver {
         private final Logger logger = Logger.getLogger(Broker.class.getCanonicalName());
         /** 代理状态 */
-        protected volatile Status brokerStatus;
+        volatile Status brokerStatus;
         /** 处理器映射 */
         private final Map<String, HandlerChain> actionMap;
         /** 处理上下文 */
@@ -95,21 +96,21 @@ public class Broker {
         protected BaseBroker() {
             actionMap = new HashMap<>(Const.INIT_CAP);
             context = new HandlerContext();
-            brokerStatus = CREATED;
+            brokerStatus = Status.CREATED;
         }
 
-        public Status status() {
+        Status status() {
             return brokerStatus;
         }
 
-        public void init() {
+        void init() {
             onInit();
-            brokerStatus = RUNNING;
+            brokerStatus = Status.RUNNING;
         }
 
-        public void finish() {
+        void finish() {
             onFinish();
-            brokerStatus = FINISHED;
+            brokerStatus = Status.FINISHED;
         }
 
         /**
@@ -120,7 +121,8 @@ public class Broker {
          * @param act
          * @param hndClass
          */
-        protected BaseBroker registerActionHandler(String act, Class<? extends IHandler>... hndClass) {
+        @SafeVarargs
+        protected final void registerActionHandler(String act, Class<? extends IHandler>... hndClass) {
             try {
                 HandlerChain chain = actionMap.get(act);
                 if (hndClass != null && hndClass.length > 0 && chain == null) {
@@ -133,7 +135,6 @@ public class Broker {
             } catch (SecurityException e) {
                 throw new RuntimeException(e);
             }
-            return this;
         }
 
         /**
@@ -143,9 +144,8 @@ public class Broker {
          *
          * @param act
          */
-        protected BaseBroker register(String act) {
+        protected void register(String act) {
             actionMap.put(act, null);
-            return this;
         }
 
         /**
@@ -155,11 +155,8 @@ public class Broker {
          *
          * @param act
          */
-        protected BaseBroker unregister(String act) {
-            if (actionMap.containsKey(act)) {
-                actionMap.remove(act);
-            }
-            return this;
+        protected void unregister(String act) {
+            actionMap.remove(act);
         }
 
         /**
@@ -199,11 +196,10 @@ public class Broker {
          * 消息处理
          * </pre>
          *
-         * @param message
+         * @param message dispatched message
          */
         private boolean doHandle(Message message) {
             HandlerChain chain = actionMap.get(message.act);
-            logger.fine("Handler Proc Start");
             context.reset(message.act, message.param);
             try {
                 for (Map.Entry<Class<? extends IHandler>, HandlerDesc> entry : chain.handlerPool.entrySet()) {
@@ -236,7 +232,6 @@ public class Broker {
             } else {
                 post(context.nextAction, Map.copyOf(context.result));
             }
-            logger.fine("Handler Proc End");
             return true;
         }
 
@@ -260,8 +255,8 @@ public class Broker {
          * @param task    任务
          * @return Future 执行结果
          */
-        protected Future<?> deployTask(Runnable task) {
-            return Application.getInstance().deployTask(task);
+        protected CompletableFuture<State> deployTaskAsync(Supplier<State> task) {
+            return Application.getInstance().deployTaskAsync(task);
         }
 
         /**
@@ -283,7 +278,7 @@ public class Broker {
          *
          * @param act
          */
-        protected void notice(String act) {
+        void notice(String act) {
             getMessageBus().post(new Message(act, id(), Id.APP));
         }
 
@@ -294,7 +289,7 @@ public class Broker {
          * </pre>
          * @return  ServiceId
          */
-        public abstract Id id();
+        protected abstract Id id();
 
         /**
          * <pre>
@@ -314,7 +309,7 @@ public class Broker {
          * <pre>
          * (子类实现)处理事件
          * </pre>
-         * @@param event 事件
+         * @param message 事件
          */
         protected void onMessage(Message message) {
         }

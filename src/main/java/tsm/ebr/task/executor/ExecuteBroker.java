@@ -1,26 +1,26 @@
-/**
- * MIT License
- *
- * Copyright (c) 2019 catforward
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- *
+/*
+  MIT License
+
+  Copyright (c) 2019 catforward
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.
+
  */
 package tsm.ebr.task.executor;
 
@@ -40,6 +40,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.logging.Logger;
 
 /**
@@ -111,7 +112,7 @@ public class ExecuteBroker extends BaseBroker {
      * @param url task的识别url
      * @param newState task的新状态
      */
-    void noticeNewState(String url, State newState) {
+    private void noticeNewState(String url, State newState) {
         HashMap<String, Object> param = new HashMap<>(Const.INIT_CAP);
         param.put(Symbols.MSG_DATA_TASK_UNIT_URL, url);
         param.put(Symbols.MSG_DATA_TASK_UNIT_NEW_STATE, newState);
@@ -122,9 +123,9 @@ public class ExecuteBroker extends BaseBroker {
      * <pre>
      * 通知其他服务启动一个TaskFlow对象
      * </pre>
-     * @param url taskflow的识别url
+     * @param url 识别url
      */
-    void prepareLaunchFlow(String url) {
+    private void prepareLaunchFlow(String url) {
         HashMap<String, Object> param = new HashMap<>(Const.INIT_CAP);
         param.put(Symbols.MSG_DATA_TASK_FLOW_URL, url);
         post(Symbols.MSG_ACT_LAUNCH_TASK_FLOW, param);
@@ -134,9 +135,9 @@ public class ExecuteBroker extends BaseBroker {
      * <pre>
      * 通知其他服务启动若干个TaskFlow对象
      * </pre>
-     * @param urls taskflow的识别url列表
+     * @param urls url列表
      */
-    void prepareLaunchFlows(ArrayList<String> urls) {
+    private void prepareLaunchFlows(ArrayList<String> urls) {
         if (!urls.isEmpty()) {
             HashMap<String, Object> param = new HashMap<>(Const.INIT_CAP);
             param.put(Symbols.MSG_DATA_TASK_FLOW_URL_LIST, urls);
@@ -154,7 +155,7 @@ public class ExecuteBroker extends BaseBroker {
     private void doLaunch(String url, String command) {
         noticeNewState(url, State.RUNNING);
         logger.info(String.format("Task启动%s", url));
-        deployTask(() -> {
+        CompletableFuture<State> future = deployTaskAsync(() -> {
             try {
                 Process process = Runtime.getRuntime().exec(command);
                 process.getOutputStream().close();
@@ -168,13 +169,14 @@ public class ExecuteBroker extends BaseBroker {
                 }
 
                 int exitCode = process.waitFor();
-                logger.fine("exitCode = " + exitCode);
-                State exitState = (exitCode == 0) ? State.SUCCEEDED : State.ERROR;
-                noticeNewState(url, exitState);
+                logger.info(String.format("url = %s exitCode = %s", url, exitCode));
+                return (exitCode == 0) ? State.SUCCEEDED : State.ERROR;
             } catch (IOException | InterruptedException e) {
                 LogUtils.dumpError(e);
-                noticeNewState(url, State.ERROR);
+                return State.ERROR;
             }
         });
+
+        future.whenComplete((retValue, exception) -> noticeNewState(url, retValue));
     }
 }
