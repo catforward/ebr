@@ -1,26 +1,26 @@
-/**
- * MIT License
- *
- * Copyright (c) 2019 catforward
- *
- * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
- * furnished to do so, subject to the following conditions:
- *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
- *
- * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
- * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
- * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
- *
+/*
+  MIT License
+
+  Copyright (c) 2019 catforward
+
+  Permission is hereby granted, free of charge, to any person obtaining a copy
+  of this software and associated documentation files (the "Software"), to deal
+  in the Software without restriction, including without limitation the rights
+  to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+  copies of the Software, and to permit persons to whom the Software is
+  furnished to do so, subject to the following conditions:
+
+  The above copyright notice and this permission notice shall be included in all
+  copies or substantial portions of the Software.
+
+  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+  IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+  FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+  AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+  LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  SOFTWARE.
+
  */
 package tsm.ebr.base;
 
@@ -34,10 +34,12 @@ import tsm.ebr.util.LogUtils;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.*;
+import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 import static tsm.ebr.base.Broker.Id.APP;
 import static tsm.ebr.base.Message.Symbols.*;
+import static tsm.ebr.base.Task.State;
 
 /**
  * <pre>
@@ -60,7 +62,7 @@ public final class Application implements MessageSubscriber<Message> {
     /** 主线程循环停止标志 */
     private boolean terminated;
     /** 提供具体功能的处理类实例 */
-    private final Map<Id, BaseBroker> servPool;
+    private final Map<Id, BaseBroker> servicePool;
     /** 事件执行线程池 （本应用同一时刻只有1个线程来执行具体处理，不考虑耗时操作的情况，因为没有打算写耗时处理） */
     private final ExecutorService singleEventDispatcher;
     /** 执行队列 */
@@ -77,16 +79,16 @@ public final class Application implements MessageSubscriber<Message> {
      */
     private Application() {
         terminated = false;
-        servPool = new LinkedHashMap<>(Const.INIT_CAP);
+        servicePool = new LinkedHashMap<>(Const.INIT_CAP);
         singleEventDispatcher = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS,
-                                new LinkedBlockingQueue<Runnable>(1024), new ThreadPoolExecutor.AbortPolicy());
-        messageBus = new AsyncMessageBus("EBR_MSG_BUS", singleEventDispatcher);
+                                new LinkedBlockingQueue<>(1024), new ThreadPoolExecutor.AbortPolicy());
+        messageBus = new AsyncMessageBus(singleEventDispatcher);
         // workerThreadPool
-        int configNum = Integer.parseInt((String) ConfigUtils.getOrDefault(ConfigUtils.Item.KEY_EXCUTOR_NUM_MAX, "0"));
+        int configNum = Integer.parseInt((String) ConfigUtils.getOrDefault(ConfigUtils.Item.EBR_EXECUTOR_NUM_MAX, "0"));
         int minNum = Runtime.getRuntime().availableProcessors();
         int maxNum = (configNum == 0) ? minNum * 2 : configNum;
         workerExecutor = new ThreadPoolExecutor(minNum, maxNum, 0L, TimeUnit.MILLISECONDS,
-                        new LinkedBlockingQueue<Runnable>());
+                        new LinkedBlockingQueue<>());
     }
 
     /**
@@ -140,8 +142,8 @@ public final class Application implements MessageSubscriber<Message> {
      * @param task    任务
      * @return Future 执行结果
      */
-    public Future<?> deployTask(Runnable task) {
-        return workerExecutor.submit(task);
+    public CompletableFuture<State> deployTaskAsync(Supplier<State> task) {
+        return CompletableFuture.supplyAsync(task, INSTANCE.workerExecutor);
     }
 
     /**
@@ -156,8 +158,8 @@ public final class Application implements MessageSubscriber<Message> {
         if (id == null || service == null) {
             throw new IllegalArgumentException("argument can not be null...");
         }
-        if (!servPool.containsKey(id)) {
-            servPool.put(id, service);
+        if (!servicePool.containsKey(id)) {
+            servicePool.put(id, service);
         }
     }
 
@@ -184,9 +186,7 @@ public final class Application implements MessageSubscriber<Message> {
         while (!terminated) {
             boolean shouldStop = true;
             try {
-                var entries = servPool.entrySet().iterator();
-                while (entries.hasNext()) {
-                    Map.Entry<Id, BaseBroker> entry = entries.next();
+                for (Map.Entry<Id, BaseBroker> entry : servicePool.entrySet()) {
                     BaseBroker service = entry.getValue();
                     if (Broker.Status.FINISHED != service.status() && shouldStop) {
                         shouldStop = false;
@@ -216,19 +216,19 @@ public final class Application implements MessageSubscriber<Message> {
         }
 
         if (MSG_ACT_SERVICE_INIT.equals(message.act)) {
-            servPool.forEach((id, service) -> service.init());
+            servicePool.forEach((id, service) -> service.init());
             messageBus.post(new Message(MSG_ACT_LOAD_DEF_FILE, APP, APP));
             return;
         } else if (MSG_ACT_SERVICE_SHUTDOWN.equals(message.act)
                 || MSG_ACT_ALL_TASK_FINISHED.equals(message.act)) {
-            servPool.forEach((id, service) -> service.finish());
+            servicePool.forEach((id, service) -> service.finish());
             return;
         }
 
         if (APP == message.dst) {
-            servPool.forEach((id, service) -> service.receive(message));
+            servicePool.forEach((id, service) -> service.receive(message));
         } else {
-            BaseBroker service = servPool.get(message.dst);
+            BaseBroker service = servicePool.get(message.dst);
             if (service != null) {
                 service.receive(message);
             }

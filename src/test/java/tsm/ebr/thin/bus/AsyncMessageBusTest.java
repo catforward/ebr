@@ -61,7 +61,7 @@ public class AsyncMessageBusTest extends TestCase implements MessageSubscriber<M
         super.setUp();
         result = new HashMap<>();
         executor = new FakeExecutor();
-        bus = new AsyncMessageBus("TEST", executor);
+        bus = new AsyncMessageBus(executor);
     }
 
     @Override

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 SCRIPT_ROOT=$(cd $(dirname $0); pwd)
-APP_NAME=ebr-0.1-all.jar
+APP_NAME=ebr-all.jar
 APP_JAR=${SCRIPT_ROOT}/../libs/${APP_NAME}
 CLI_LOG=${SCRIPT_ROOT}/../logs/cli_${APP_NAME}.log
 CMD_ARGS=$@
