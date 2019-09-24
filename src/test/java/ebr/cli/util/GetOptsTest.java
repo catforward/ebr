@@ -22,10 +22,11 @@
  * SOFTWARE.
  *
  */
-package tsm.ebr.thin;
+package ebr.cli.util;
 
 import org.junit.Assert;
 import org.junit.Test;
+import tsm.ebr.thin.GetOpts;
 
 /**
  * 命令行参数测试
@@ -38,7 +39,7 @@ public class GetOptsTest {
 		StringBuilder actual = new StringBuilder();
 		String expected = "ttest.sod24hhvl";
 		String[] args = {"-t", "test.so", "-d", "24h", "-hvl"};
-		GetOpts opt = new GetOpts(args, "d:t:hvl");
+		tsm.ebr.thin.GetOpts opt = new tsm.ebr.thin.GetOpts(args, "d:t:hvl");
 		int c = -1;
 		while ((c = opt.getNextOption()) != -1) {
 			char cc = (char)c;
@@ -66,7 +67,7 @@ public class GetOptsTest {
 		StringBuilder actual = new StringBuilder();
 		String expected = "";
 		String[] args = {"-", "test.so", "-d", "24h", "-h"};
-		GetOpts opt = new GetOpts(args, "d:t:h");
+		tsm.ebr.thin.GetOpts opt = new tsm.ebr.thin.GetOpts(args, "d:t:h");
 		int c = -1;
 		while ((c = opt.getNextOption()) != -1) {
 			char cc = (char)c;
@@ -92,7 +93,7 @@ public class GetOptsTest {
 		StringBuilder actual = new StringBuilder();
 		String expected = "";
 		String[] args = {"--t", "test.so", "-d", "24h", "-h"};
-		GetOpts opt = new GetOpts(args, "d:t:h");
+		tsm.ebr.thin.GetOpts opt = new tsm.ebr.thin.GetOpts(args, "d:t:h");
 		int c = -1;
 		while ((c = opt.getNextOption()) != -1) {
 			char cc = (char)c;
@@ -118,7 +119,7 @@ public class GetOptsTest {
 		StringBuilder actual = new StringBuilder();
 		String expected = "ttest.soshould have an argument : -d";
 		String[] args = { "-t", "test.so", "-d", "-h" };
-		GetOpts opt = new GetOpts(args, "d:t:h");
+		tsm.ebr.thin.GetOpts opt = new tsm.ebr.thin.GetOpts(args, "d:t:h");
 		int c = -1;
 		try {
 			while ((c = opt.getNextOption()) != -1) {
@@ -149,7 +150,7 @@ public class GetOptsTest {
 		StringBuilder actual = new StringBuilder();
 		String expected = "ttest.sounknown option : -v";
 		String[] args = { "-t", "test.so", "-v", "-h" };
-		GetOpts opt = new GetOpts(args, "d:t:h");
+		tsm.ebr.thin.GetOpts opt = new tsm.ebr.thin.GetOpts(args, "d:t:h");
 		int c = -1;
 		try {
 			while ((c = opt.getNextOption()) != -1) {
@@ -180,7 +181,7 @@ public class GetOptsTest {
 		StringBuilder actual = new StringBuilder();
 		String expected = "ttest.soh";
 		String[] args = { "-t", "test.so", "-h", "22" };
-		GetOpts opt = new GetOpts(args, "d:t:h");
+		tsm.ebr.thin.GetOpts opt = new tsm.ebr.thin.GetOpts(args, "d:t:h");
 		int c = -1;
 		try {
 			while ((c = opt.getNextOption()) != -1) {
@@ -211,7 +212,7 @@ public class GetOptsTest {
 		StringBuilder actual = new StringBuilder();
 		String expected = "";
 		String[] args = {"t", "test.so", "-d", "24h", "-hvl"};
-		GetOpts opt = new GetOpts(args, "d:t:hvl");
+		tsm.ebr.thin.GetOpts opt = new GetOpts(args, "d:t:hvl");
 		int c = -1;
 		while ((c = opt.getNextOption()) != -1) {
 			char cc = (char)c;

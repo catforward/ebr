@@ -22,11 +22,13 @@
  * SOFTWARE.
  *
  */
-package tsm.ebr.thin.bus;
+package ebr.core.util.bus;
 
 import junit.framework.TestCase;
 import tsm.ebr.base.Broker;
 import tsm.ebr.base.Message;
+import tsm.ebr.thin.bus.AsyncMessageBus;
+import tsm.ebr.thin.bus.MessageSubscriber;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -37,7 +39,7 @@ import java.util.concurrent.Executor;
  * Forked form The TestCase from Guava
  * @author catforward
  */
-public class AsyncMessageBusTest extends TestCase implements MessageSubscriber<Message>{
+public class AsyncMessageBusTest extends TestCase implements MessageSubscriber<Message> {
 
     static class FakeExecutor implements Executor {
         List<Runnable> tasks = new ArrayList<>();
@@ -53,7 +55,7 @@ public class AsyncMessageBusTest extends TestCase implements MessageSubscriber<M
     }
 
     private FakeExecutor executor;
-    private AsyncMessageBus bus;
+    private tsm.ebr.thin.bus.AsyncMessageBus bus;
     private HashMap<String, Message> result;
 
     @Override
