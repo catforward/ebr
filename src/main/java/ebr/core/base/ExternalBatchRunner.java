@@ -24,13 +24,10 @@
  */
 package ebr.core.base;
 
-import ebr.core.ExternalBatchRunnerService;
-import ebr.core.ServiceBuilder;
-import ebr.core.ServiceEventListener;
+import ebr.core.*;
 import ebr.core.base.Broker.BaseBroker;
 import ebr.core.base.Broker.Id;
 import ebr.core.data.JobState;
-import ebr.core.Task;
 import ebr.core.jobs.JobExecuteBroker;
 import ebr.core.jobs.JobItemBuilder;
 import ebr.core.jobs.JobStateManagementBroker;
@@ -42,6 +39,9 @@ import java.util.*;
 import java.util.concurrent.*;
 import java.util.function.Supplier;
 
+import static ebr.core.ServiceEvent.Symbols.JOB_STATE;
+import static ebr.core.ServiceEvent.Symbols.JOB_URL;
+import static ebr.core.ServiceEvent.Type.*;
 import static ebr.core.base.Message.Symbols.*;
 import static ebr.core.util.MiscUtils.checkNotNull;
 
@@ -189,6 +189,11 @@ public final class ExternalBatchRunner implements ExternalBatchRunnerService, Me
     @Override
     public void onMessage(Message message) {
         AppLogger.debug(message.toString());
+
+        if (listener != null) {
+            putServiceEvent(message);
+        }
+
         if (MSG_ACT_SERVICE_SHUTDOWN.equals(message.act)
                 || MSG_ACT_ALL_JOB_FINISHED.equals(message.act)) {
             servicePool.forEach((id, service) -> service.finish());
@@ -202,10 +207,6 @@ public final class ExternalBatchRunner implements ExternalBatchRunnerService, Me
             if (service != null) {
                 service.receive(message);
             }
-        }
-
-        if (listener != null) {
-            // TODO
         }
     }
 
@@ -226,5 +227,25 @@ public final class ExternalBatchRunner implements ExternalBatchRunnerService, Me
         param.put(Message.Symbols.MSG_DATA_JOB_FLOW_URL, url);
         messageBus.publish(new Message(MSG_ACT_LAUNCH_JOB_FLOW, Id.APP, Id.APP, param));
         run();
+    }
+
+    private void putServiceEvent(Message message) {
+        switch (message.act) {
+            case MSG_ACT_JOB_STATE_CHANGED: {
+                String url = (String) message.param.getOrDefault(Message.Symbols.MSG_DATA_JOB_URL, "");
+                JobState state = (JobState) message.param.getOrDefault(Message.Symbols.MSG_DATA_NEW_JOB_STATE, "");
+                listener.onServiceEvent(new ServiceEvent(JOB_STATE_CHANGED, Map.of(JOB_URL, url, JOB_STATE, state)));
+                break;
+            }
+            case MSG_ACT_ALL_JOB_FINISHED: {
+                listener.onServiceEvent(new ServiceEvent(ALL_JOB_FINISHED, Map.of()));
+                break;
+            }
+            case MSG_ACT_SERVICE_SHUTDOWN: {
+                listener.onServiceEvent(new ServiceEvent(SERVICE_SHUTDOWN, Map.of()));
+                break;
+            }
+            default: break;
+        }
     }
 }

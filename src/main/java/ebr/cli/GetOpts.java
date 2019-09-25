@@ -23,8 +23,6 @@
  */
 package ebr.cli;
 
-import tsm.ebr.base.Const;
-
 import java.util.ArrayList;
 import java.util.ListIterator;
 
@@ -111,7 +109,7 @@ public class GetOpts {
 		boolean match = hasOpt(c);
 		if (match) {
 			int idx = optStr.indexOf(c) + 1;
-			return idx < optStr.length() && Const.COLON == optStr.charAt(idx);
+			return idx < optStr.length() && ':' == optStr.charAt(idx);
 		}
 		return false;
 	}

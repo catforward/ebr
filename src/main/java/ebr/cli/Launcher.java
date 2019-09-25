@@ -97,6 +97,6 @@ public class Launcher {
 
 
     public void onServiceEvent(ServiceEvent event) {
-        // TODO
+        System.out.println(String.format("event:[%s], data:[%s]",event.type.name(), event.data.toString()));
     }
 }

@@ -25,10 +25,10 @@
 package ebr.core.util.bus;
 
 import junit.framework.TestCase;
-import tsm.ebr.base.Broker;
-import tsm.ebr.base.Message;
-import tsm.ebr.thin.bus.AsyncMessageBus;
-import tsm.ebr.thin.bus.MessageSubscriber;
+import ebr.core.base.Broker;
+import ebr.core.base.Message;
+import ebr.core.util.bus.AsyncMessageBus;
+import ebr.core.util.bus.MessageSubscriber;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -55,7 +55,7 @@ public class AsyncMessageBusTest extends TestCase implements MessageSubscriber<M
     }
 
     private FakeExecutor executor;
-    private tsm.ebr.thin.bus.AsyncMessageBus bus;
+    private AsyncMessageBus bus;
     private HashMap<String, Message> result;
 
     @Override
@@ -77,7 +77,7 @@ public class AsyncMessageBusTest extends TestCase implements MessageSubscriber<M
         final String TEST_ID = "test_01";
         bus.subscribe(Message.class, this);
         Message msg = new Message(TEST_ID, Broker.Id.APP, Broker.Id.APP);
-        bus.post(msg);
+        bus.publish(msg);
 
         assertFalse(result.containsKey(TEST_ID));
 

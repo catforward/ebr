@@ -41,6 +41,14 @@ import static ebr.core.util.MiscUtils.checkNotNull;
  */
 public final class JobItemBuilder {
     private final static int INIT_CAP = 16;
+    /*
+     * define the max depth between flow and task
+     * sample
+     *  depth1: flow(root) -> task
+     *  depth2: flow(root) -> flow(sub) -> task
+     *  depth3: flow(root) -> flow(sub) -> flow(NG!) ...
+     */
+    private final static int MAX_DEPTH = 2;
     /** internal symbols in app */
     private final static String KEY_ROOT_UNIT = "KEY_ROOT_UNIT";
 
@@ -75,10 +83,23 @@ public final class JobItemBuilder {
                 throw new RuntimeException(String.format("[%s]: the define onf command is not exist!", task.id()));
             }
         }
+        // depth
+        if (getDepth(task) > MAX_DEPTH) {
+            throw new RuntimeException("the max depth can not over 2");
+        }
         // children
         for (Task child : task.children()) {
             validateTask(child);
         }
+    }
+
+    private static int getDepth(Task task) {
+        int depth = 0;
+        if (task.parentTask() != null) {
+            ++depth;
+            depth += getDepth(task.parentTask());
+        }
+        return depth;
     }
 
     private static void createJobTree(Task task, JobImpl parent, HashMap<String, JobImpl> idJobMap) {

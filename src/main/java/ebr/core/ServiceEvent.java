@@ -34,10 +34,16 @@ public final class ServiceEvent {
     public enum Type {
         /*  */
         JOB_STATE_CHANGED,
+        /*  */
+        ALL_JOB_FINISHED,
+        /*  */
+        SERVICE_SHUTDOWN,
     }
     public enum Symbols {
         /*  */
-        JOB_URL("JOB_URL");
+        JOB_URL("JOB_URL"),
+        /*  */
+        JOB_STATE("JOB_STATE");
 
         private final String val;
         Symbols(String newValue) {
@@ -45,10 +51,10 @@ public final class ServiceEvent {
         }
     }
 
-    final Type type;
-    final Map<Symbols, Object> data;
+    public final Type type;
+    public final Map<Symbols, Object> data;
 
-    ServiceEvent(Type type, Map<Symbols, Object> data) {
+    public ServiceEvent(Type type, Map<Symbols, Object> data) {
         this.type = type;
         this.data = Map.copyOf(data);
     }

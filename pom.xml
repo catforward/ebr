@@ -5,7 +5,7 @@
 
 	<groupId>tsm.one</groupId>
 	<artifactId>ebr</artifactId>
-	<version>1.1</version>
+	<version>2.0</version>
 	<packaging>jar</packaging>
 
 	<name>EBR</name>
@@ -18,7 +18,7 @@
 		<java.version>11</java.version>
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
-		<main.clazz>tsm.ebr.Main</main.clazz>
+		<main.clazz>ebr.cli.Launcher</main.clazz>
 	</properties>
 
 	<dependencies>

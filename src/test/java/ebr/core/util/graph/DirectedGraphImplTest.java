@@ -26,8 +26,8 @@ package ebr.core.util.graph;
 
 import org.junit.Assert;
 import org.junit.Test;
-import tsm.ebr.thin.graph.DirectedGraph;
-import tsm.ebr.thin.graph.GraphBuilder;
+import ebr.core.util.graph.DirectedGraph;
+import ebr.core.util.graph.GraphBuilder;
 
 import java.util.Set;
 
@@ -44,7 +44,7 @@ public class DirectedGraphImplTest {
      */
     @Test
     public void  DirectedGraphImpl_Test01() {
-        tsm.ebr.thin.graph.DirectedGraph<Integer> graph = tsm.ebr.thin.graph.GraphBuilder.directed()
+        DirectedGraph<Integer> graph = GraphBuilder.directed()
                 .setAllowsSelfLoops(false).setInsertionOrder(true).build();
         graph.addVertex(1);
         graph.addVertex(2);
@@ -69,7 +69,7 @@ public class DirectedGraphImplTest {
      */
     @Test
     public void  DirectedGraphImpl_Test02() {
-        tsm.ebr.thin.graph.DirectedGraph<Integer> graph = tsm.ebr.thin.graph.GraphBuilder.directed().setAllowsSelfLoops(false).build();
+        DirectedGraph<Integer> graph = GraphBuilder.directed().setAllowsSelfLoops(false).build();
         graph.addVertex(1);
         graph.addVertex(2);
         graph.addVertex(3);
@@ -91,7 +91,7 @@ public class DirectedGraphImplTest {
      */
     @Test
     public void  DirectedGraphImpl_Test03() {
-        tsm.ebr.thin.graph.DirectedGraph<Integer> graph = tsm.ebr.thin.graph.GraphBuilder.directed().setAllowsSelfLoops(false).build();
+        DirectedGraph<Integer> graph = GraphBuilder.directed().setAllowsSelfLoops(false).build();
         graph.putEdge(1,4);
         graph.putEdge(2,3);
         Assert.assertTrue(graph.containsVertex(1));
@@ -111,7 +111,7 @@ public class DirectedGraphImplTest {
      */
     @Test
     public void  DirectedGraphImpl_Test04() {
-        tsm.ebr.thin.graph.DirectedGraph<Integer> graph = tsm.ebr.thin.graph.GraphBuilder.directed().setAllowsSelfLoops(false).build();
+        DirectedGraph<Integer> graph = GraphBuilder.directed().setAllowsSelfLoops(false).build();
         graph.addVertex(1);
         graph.addVertex(2);
         graph.addVertex(3);
@@ -138,7 +138,7 @@ public class DirectedGraphImplTest {
      */
     @Test
     public void  DirectedGraphImpl_Test05() {
-        tsm.ebr.thin.graph.DirectedGraph<Integer> graph = tsm.ebr.thin.graph.GraphBuilder.directed().setAllowsSelfLoops(false).build();
+        DirectedGraph<Integer> graph = GraphBuilder.directed().setAllowsSelfLoops(false).build();
         graph.addVertex(1);
         graph.addVertex(2);
         graph.addVertex(3);
@@ -165,7 +165,7 @@ public class DirectedGraphImplTest {
      */
     @Test
     public void  DirectedGraphImpl_Test06() {
-        tsm.ebr.thin.graph.DirectedGraph<Integer> graph = tsm.ebr.thin.graph.GraphBuilder.directed().setAllowsSelfLoops(false).build();
+        DirectedGraph<Integer> graph = GraphBuilder.directed().setAllowsSelfLoops(false).build();
         graph.addVertex(1);
         graph.addVertex(2);
         graph.addVertex(3);
@@ -188,7 +188,7 @@ public class DirectedGraphImplTest {
      */
     @Test
     public void  DirectedGraphImpl_Test07() {
-        tsm.ebr.thin.graph.DirectedGraph<Integer> graph = tsm.ebr.thin.graph.GraphBuilder.directed().setAllowsSelfLoops(false).build();
+        DirectedGraph<Integer> graph = GraphBuilder.directed().setAllowsSelfLoops(false).build();
         graph.addVertex(1);
         graph.addVertex(2);
         graph.addVertex(3);
@@ -209,7 +209,7 @@ public class DirectedGraphImplTest {
      */
     @Test
     public void  DirectedGraphImpl_Test08() {
-        tsm.ebr.thin.graph.DirectedGraph<Integer> graph = tsm.ebr.thin.graph.GraphBuilder.directed().setAllowsSelfLoops(false).build();
+        DirectedGraph<Integer> graph = GraphBuilder.directed().setAllowsSelfLoops(false).build();
         graph.addVertex(1);
         graph.addVertex(2);
         graph.addVertex(3);
@@ -236,7 +236,7 @@ public class DirectedGraphImplTest {
     @Test
     public void  DirectedGraphImpl_Test10() {
         boolean selfLoop = false;
-        tsm.ebr.thin.graph.DirectedGraph<Integer> graph = tsm.ebr.thin.graph.GraphBuilder.directed().setAllowsSelfLoops(false).build();
+        DirectedGraph<Integer> graph = GraphBuilder.directed().setAllowsSelfLoops(false).build();
         graph.addVertex(1);
         graph.addVertex(2);
         graph.addVertex(3);
@@ -261,7 +261,7 @@ public class DirectedGraphImplTest {
     @Test
     public void  DirectedGraphImpl_Test11() {
         boolean selfLoop = false;
-        tsm.ebr.thin.graph.DirectedGraph<Integer> graph = tsm.ebr.thin.graph.GraphBuilder.directed().setAllowsSelfLoops(false).build();
+        DirectedGraph<Integer> graph = GraphBuilder.directed().setAllowsSelfLoops(false).build();
         graph.addVertex(1);
         graph.addVertex(2);
         graph.addVertex(3);
@@ -285,7 +285,7 @@ public class DirectedGraphImplTest {
      */
     @Test
     public void  DirectedGraphImpl_Test12() {
-        tsm.ebr.thin.graph.DirectedGraph<Integer> graph = tsm.ebr.thin.graph.GraphBuilder.directed().setAllowsSelfLoops(false).build();
+        DirectedGraph<Integer> graph = GraphBuilder.directed().setAllowsSelfLoops(false).build();
         graph.addVertex(1);
         graph.addVertex(2);
         graph.addVertex(3);
@@ -307,7 +307,7 @@ public class DirectedGraphImplTest {
     @Test
     public void  DirectedGraphImpl_Test20() {
         boolean selfLoop = false;
-        tsm.ebr.thin.graph.DirectedGraph<Integer> graph = tsm.ebr.thin.graph.GraphBuilder.directed().setAllowsSelfLoops(false).build();
+        DirectedGraph<Integer> graph = GraphBuilder.directed().setAllowsSelfLoops(false).build();
         graph.addVertex(1);
         graph.addVertex(2);
         graph.addVertex(3);
