@@ -26,8 +26,12 @@ package ebr.core;
 
 import ebr.core.base.ExternalBatchRunner;
 
+import static ebr.core.base.ExternalBatchRunner.RUNNER;
+
 /**
+ * <pre>
  * the builder of EBR Service
+ * </pre>
  * @author catforward
  */
 public class ServiceBuilder {
@@ -74,6 +78,6 @@ public class ServiceBuilder {
     }
 
     public ExternalBatchRunnerService buildExternalBatchRunnerService() {
-        return ExternalBatchRunner.getInstance().init(this);
+        return RUNNER.init(this);
     }
 }

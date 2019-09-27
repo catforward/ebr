@@ -37,6 +37,7 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
+import static ebr.core.base.ExternalBatchRunner.RUNNER;
 import static ebr.core.base.ExternalBatchRunner.getMessageBus;
 import static ebr.core.base.Message.Symbols.MSG_ACT_SERVICE_SHUTDOWN;
 
@@ -114,8 +115,8 @@ public abstract class Broker {
          * 注册一个消息处理器
          * </pre>
          *
-         * @param act
-         * @param hndClass
+         * @param act 注册对象动作
+         * @param hndClass 处理类
          */
         @SafeVarargs
         protected final void registerActionHandler(String act, Class<? extends IHandler>... hndClass) {
@@ -138,7 +139,7 @@ public abstract class Broker {
          * 注册消息处理器
          * </pre>
          *
-         * @param act
+         * @param act 注册对象动作
          */
         protected void register(String act) {
             actionMap.put(act, null);
@@ -149,7 +150,7 @@ public abstract class Broker {
          * 注销消息处理器
          * </pre>
          *
-         * @param act
+         * @param act 注销对象动作
          */
         protected void unregister(String act) {
             actionMap.remove(act);
@@ -160,7 +161,7 @@ public abstract class Broker {
          * 接受消息
          * </pre>
          *
-         * @param message
+         * @param message 消息对象
          */
         @Override
         public final void receive(Message message) {
@@ -230,8 +231,8 @@ public abstract class Broker {
          * 发送消息
          * </pre>
          *
-         * @param act
-         * @param param
+         * @param act 发送对象动作
+         * @param param 发送的负载数据
          */
         protected void post(String act, Map<String, Object> param) {
             getMessageBus().publish(new Message(act, id(), Id.APP, param));
@@ -246,7 +247,7 @@ public abstract class Broker {
          * @return Future 执行结果
          */
         protected CompletableFuture<JobState> deployTaskAsync(Supplier<JobState> task) {
-            return ExternalBatchRunner.getInstance().deployTaskAsync(task);
+            return RUNNER.deployTaskAsync(task);
         }
 
         /**
@@ -254,8 +255,8 @@ public abstract class Broker {
          * 发送消息
          * </pre>
          *
-         * @param act
-         * @param param
+         * @param act 发送对象动作
+         * @param param 发送的负载数据
          */
         protected void send(String act, Id dst, Map<String, Object> param) {
             getMessageBus().publish(new Message(act, id(), dst, param));
@@ -266,7 +267,7 @@ public abstract class Broker {
          * 发送程序结束的消息广播
          * </pre>
          *
-         * @param act
+         * @param act 发送对象动作
          */
         void notice(String act) {
             getMessageBus().publish(new Message(act, id(), Id.APP));

@@ -82,7 +82,7 @@ public final class PathUtils {
      *
      * @return String 部署路径
      */
-    public static String getRootPath() {
+    private static String getRootPath() {
 
         if (rootPath != null) {
             return rootPath;

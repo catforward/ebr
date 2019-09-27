@@ -58,8 +58,8 @@ class AsyncDispatcher {
      * 向消息队列添加消息后
      * 向订阅者推送消息
      * </pre>
-     * @param obj
-     * @param subscribers
+     * @param obj 分发对象
+     * @param subscribers 订阅者
      */
     void dispatch(Object obj, Iterator<MessageSubscriber> subscribers) {
         while (subscribers.hasNext()) {

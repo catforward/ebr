@@ -22,25 +22,39 @@
   SOFTWARE.
 
  */
-package ebr.core;
+package ebr.core.base;
+
+import ebr.core.ServiceEvent;
+
+import java.util.Map;
 
 /**
  * <pre>
- * the client can use this interface
- * to known what happened within ebr lib
+ * ServiceEvent实现类
  * </pre>
  * @author catforward
  */
-@FunctionalInterface
-public interface ServiceEventListener {
+public class ServiceEventImpl implements ServiceEvent {
+    Type serviceType;
+    Map<Symbols, Object> payLoad;
+    ServiceEventImpl() {}
     /**
-     * <pre>
-     * this method will be called
-     * when some internal event occurred
-     * in ebr service
-     * @see ServiceEvent
-     * </pre>
-     * @param event the service event object
+     * the type of service event
+     *
+     * @return Type
      */
-    void onServiceEvent(ServiceEvent event);
+    @Override
+    public Type type() {
+        return serviceType;
+    }
+
+    /**
+     * the payload within service event
+     *
+     * @return Map
+     */
+    @Override
+    public Map<Symbols, Object> data() {
+        return payLoad;
+    }
 }

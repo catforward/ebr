@@ -59,6 +59,7 @@ public class JobStateManagementBroker extends Broker.BaseBroker {
     protected void onFinish() {
         unregister(Message.Symbols.MSG_ACT_LAUNCH_JOB_FLOW);
         unregister(Message.Symbols.MSG_ACT_JOB_STATE_CHANGED);
+        JobItemStateHolder.clear();
     }
 }
 

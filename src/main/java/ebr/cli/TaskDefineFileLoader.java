@@ -43,7 +43,7 @@ import static ebr.cli.ConfigUtils.Item.KEY_INSTANT_TASK;
  * </pre>
  * @author catforward
  */
-public class TaskDefineFileLoader {
+class TaskDefineFileLoader {
 
     private final static int INIT_CAP = 16;
     /** symbols in json file */
@@ -133,7 +133,7 @@ public class TaskDefineFileLoader {
             currentTask = Optional.ofNullable(idTaskPool.get(id)).orElseGet(() -> {
                 TaskImpl newTask = new TaskImpl(id, mParent);
                 idTaskPool.put(id, newTask);
-                if (newTask.parent == null) {
+                if (newTask.parentTask() == null) {
                     idTaskPool.put(KEY_ROOT_TASK, newTask);
                 } else {
                     mParent.children.add(newTask);

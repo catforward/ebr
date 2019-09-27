@@ -33,13 +33,15 @@ import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * <pre>
- * 模块内运行时统一管理任务执行状态
+ * 运行时统一管理任务执行状态
  * 现在只针对一个定义文件中的任务进行管理
  * </pre>
  * @author catforward
  */
-class JobItemStateHolder {
-    private final static JobItemStateHolder INSTANCE = new JobItemStateHolder();
+enum JobItemStateHolder {
+    /** 单例 */
+    STATE_HOLDER;
+
     /** 任务流集合 */
     private final Map<String, JobFlow> urlJobFlowMap = new ConcurrentHashMap<>();
     /** 任务单元集合 */
@@ -47,21 +49,21 @@ class JobItemStateHolder {
     /** 根任务流 */
     private JobFlow rootFlow = null;
 
-    private JobItemStateHolder() {
+    JobItemStateHolder() {
     }
 
     /**
      * <pre>
      * 添加一个任务流
      * </pre>
-     * @param newJobFlow
+     * @param newJobFlow 新的Flow实例
      */
     static void addJobFlow(JobFlow newJobFlow) {
-        if (!INSTANCE.urlJobFlowMap.containsKey(newJobFlow.rootJob.url())) {
-            INSTANCE.urlJobFlowMap.put(newJobFlow.rootJob.url(), newJobFlow);
+        if (!STATE_HOLDER.urlJobFlowMap.containsKey(newJobFlow.rootJob.url())) {
+            STATE_HOLDER.urlJobFlowMap.put(newJobFlow.rootJob.url(), newJobFlow);
         }
-        if (INSTANCE.rootFlow == null && JobType.FLOW == newJobFlow.rootJob.type()) {
-            INSTANCE.rootFlow = newJobFlow;
+        if (STATE_HOLDER.rootFlow == null && JobType.FLOW == newJobFlow.rootJob.type()) {
+            STATE_HOLDER.rootFlow = newJobFlow;
         }
         AppLogger.info(newJobFlow.toString());
     }
@@ -70,29 +72,29 @@ class JobItemStateHolder {
      * <pre>
      * 添加一个任务单元
      * </pre>
-     * @param newJob
+     * @param newJob 新的Job实例
      */
     static void addJob(Job newJob) {
-        if (!INSTANCE.urlJobMap.containsKey(newJob.url())) {
-            INSTANCE.urlJobMap.put(newJob.url(), newJob);
+        if (!STATE_HOLDER.urlJobMap.containsKey(newJob.url())) {
+            STATE_HOLDER.urlJobMap.put(newJob.url(), newJob);
         }
     }
 
     static JobFlow getRootJobFlow() {
-        return INSTANCE.rootFlow;
+        return STATE_HOLDER.rootFlow;
     }
 
     static JobFlow getJobFlow(String url) {
-        return INSTANCE.urlJobFlowMap.get(url);
+        return STATE_HOLDER.urlJobFlowMap.get(url);
     }
 
     static Job getJob(String url) {
-        return INSTANCE.urlJobMap.get(url);
+        return STATE_HOLDER.urlJobMap.get(url);
     }
 
     static void clear() {
-        INSTANCE.rootFlow = null;
-        INSTANCE.urlJobFlowMap.clear();
-        INSTANCE.urlJobMap.clear();
+        STATE_HOLDER.rootFlow = null;
+        STATE_HOLDER.urlJobFlowMap.clear();
+        STATE_HOLDER.urlJobMap.clear();
     }
 }

@@ -105,7 +105,7 @@ public class JobExecuteBroker extends BaseBroker {
      * <pre>
      * 启动一个Job
      * </pre>
-     * @param job
+     * @param job 启动对象Job
      */
     private void perform(Job job) {
         noticeNewState(job.url(), JobState.ACTIVE);

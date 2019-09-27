@@ -24,26 +24,38 @@
  */
 package ebr.core;
 
-import java.util.List;
-
 /**
- *
+ * <pre>
+ * the interface define the services which provided by ebr lib
+ * </pre>
  * @author catforward
  */
 public interface ExternalBatchRunnerService {
 
     /**
-     * @param listener
+     * <pre>
+     * set a instance of ServiceEventListener
+     * when you focus on some internal event of ebr lib
+     * </pre>
+     * @param listener the given listener object
      */
     void setServiceEventListener(ServiceEventListener listener);
 
     /**
-     * @param root
+     * <pre>
+     * create a job flow and return the url of the job flow
+     * by given root task
+     * </pre>
+     * @param root the root task
+     * @return String the url of a job flow witch created from the root task
      */
     String createJobFlow(Task root);
 
     /**
-     * @param url
+     * <pre>
+     * launch the given job flow by url
+     * </pre>
+     * @param url the url of target job flow
      */
     void launchJobFlow(String url);
 

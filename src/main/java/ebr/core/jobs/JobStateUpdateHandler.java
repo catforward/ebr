@@ -31,7 +31,8 @@ import ebr.core.util.AppLogger;
 
 /**
  * <pre>
- * 任务状态更新
+ * 当发生Message.Symbols.MSG_ACT_JOB_STATE_CHANGED事件时
+ * 更新指定的任务状态
  * </pre>
  * @author catforward
  */

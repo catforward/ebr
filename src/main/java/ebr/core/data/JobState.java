@@ -42,6 +42,4 @@ public enum JobState {
     COMPLETE,
     /** 任务执行异常时 */
     FAILED,
-    /** 任务延迟 */
-    DELAYED,
 }

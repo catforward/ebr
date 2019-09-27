@@ -30,14 +30,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- *
+ * Task实现类
+ * 保存任务定义的基本属性
  * @author catforward
  */
 public final class TaskImpl implements Task {
-    private final static int INIT_CAP = 16;
+    private final static int INIT_CAP = 8;
 
-    final String id;
-    final TaskImpl parent;
+    private final String id;
+    private final TaskImpl parent;
     final List<Task> children = new ArrayList<>(INIT_CAP);
     final List<String> preTask = new ArrayList<>(INIT_CAP);
     String desc;

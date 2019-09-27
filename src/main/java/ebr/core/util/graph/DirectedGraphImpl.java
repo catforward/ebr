@@ -36,6 +36,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
  * 需求很简单
  * - 可以修改顶点，边
  * - 可以获取指定顶点的前驱，后继顶点
+ * 使用邻接表来表现顶点与边的关系
  * </pre>
  * @author catforward
  */

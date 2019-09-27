@@ -40,16 +40,16 @@ import java.util.stream.Collectors;
 
 /**
  * <pre>
- * the implements of TaskJob
+ * the implements of Job
  * </pre>
  * @author catforward
  */
 public class JobImpl implements Job {
-    private final static int INIT_CAP = 16;
+    private final static int INIT_CAP = 8;
     /** 任务基本属性定义 */
-    final Task task;
+    private final Task task;
     /** 任务间的关系定义 */
-    final JobImpl parent;
+    private final JobImpl parent;
     final ArrayList<JobImpl> children;
     final ArrayList<Job> preconditions;
     /** 任务扩展属性 */
@@ -118,7 +118,7 @@ public class JobImpl implements Job {
      * update the status of this job
      * </pre>
      *
-     * @param newState
+     * @param newState 新的状态
      */
     @Override
     public void updateState(JobState newState) {
@@ -306,7 +306,7 @@ public class JobImpl implements Job {
 
 class JobFlow {
     final JobImpl rootJob;
-    final DirectedGraph<Job> flowGraph;
+    private final DirectedGraph<Job> flowGraph;
 
     private JobFlow(JobImpl job) {
         rootJob = job;
@@ -385,9 +385,11 @@ class JobFlow {
     }
 
     private DirectedGraph<Job> createEmptyGraph() {
-        return GraphBuilder.directed() // 指定为有向图
+        // 指定为有向图
+        return GraphBuilder.directed()
                 //.setInsertionOrder(true)
-                .setAllowsSelfLoops(false) // 不允许自环
+                // 不允许自环
+                .setAllowsSelfLoops(false)
                 .build();
     }
 }

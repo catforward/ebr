@@ -27,22 +27,25 @@ package ebr.core;
 import java.util.Map;
 
 /**
- *
+ * <pre>
+ * the service event that notice the caller of this lib
+ * what event had occurred
+ * </pre>
  * @author catforward
  */
-public final class ServiceEvent {
-    public enum Type {
-        /*  */
+public interface ServiceEvent {
+    enum Type {
+        /* occurred at job's state changed */
         JOB_STATE_CHANGED,
-        /*  */
+        /* occurred at all jobs done */
         ALL_JOB_FINISHED,
-        /*  */
+        /* occurred at all internal service finished */
         SERVICE_SHUTDOWN,
     }
-    public enum Symbols {
-        /*  */
+    enum Symbols {
+        /* identity url of job that the state changed */
         JOB_URL("JOB_URL"),
-        /*  */
+        /* the new state of job */
         JOB_STATE("JOB_STATE");
 
         private final String val;
@@ -51,11 +54,15 @@ public final class ServiceEvent {
         }
     }
 
-    public final Type type;
-    public final Map<Symbols, Object> data;
+    /**
+     * the type of service event
+     * @return Type
+     */
+    Type type();
 
-    public ServiceEvent(Type type, Map<Symbols, Object> data) {
-        this.type = type;
-        this.data = Map.copyOf(data);
-    }
+    /**
+     * the payload within service event
+     * @return Map
+     */
+    Map<Symbols, Object> data();
 }

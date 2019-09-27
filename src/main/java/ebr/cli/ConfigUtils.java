@@ -39,7 +39,7 @@ import java.util.Properties;
  *
  * @author catforward
  */
-public class ConfigUtils {
+class ConfigUtils {
 
     /**
      * <pre>
@@ -67,7 +67,7 @@ public class ConfigUtils {
      *
      * @return 配置类实例
      */
-    public static ConfigUtils getInstance() {
+    private static ConfigUtils getInstance() {
         return INSTANCE;
     }
 

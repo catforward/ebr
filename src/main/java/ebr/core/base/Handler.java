@@ -33,6 +33,8 @@ import java.util.logging.Logger;
 /**
  * <pre>
  * 业务处理器
+ * - 处理器的作用是当某一个内部事件触发时，由注册此事件的处理器来进行具体处理
+ * - 同一事件可以有多个处理器按照注册时的生命顺序进行链式处理
  * </pre>
  * @author catforward
  */
@@ -122,25 +124,22 @@ public abstract class Handler {
             return currentAction;
         }
 
-        public HandlerContext setNoticeAction(String newAction) {
+        public void setNoticeAction(String newAction) {
             noticeAction = newAction;
-            return this;
         }
 
-        public HandlerContext setNextAction(String newAction) {
+        public void setNextAction(String newAction) {
             if (nextAction != null) {
                 logger.warning(String.format("nextAction将被替换(%s)<-(%s)", nextAction, newAction));
             }
             nextAction = newAction;
-            return this;
         }
 
-        public HandlerContext addHandlerResult(String newKey, Object newObj) {
+        public void addHandlerResult(String newKey, Object newObj) {
             if (result.containsKey(newKey)) {
                 logger.warning(String.format("handlerResult(%s)将被替换", newKey));
             }
             result.put(newKey, newObj);
-            return this;
         }
 
         public HandlerContext setErrorMessage(String msg) {
@@ -167,9 +166,8 @@ public abstract class Handler {
             handlerPool = new LinkedHashMap<>();
         }
 
-        HandlerChain addHandler(Class<? extends IHandler> clazz) throws SecurityException {
+         void addHandler(Class<? extends IHandler> clazz) throws SecurityException {
             handlerPool.put(clazz, new HandlerDesc(clazz));
-            return this;
         }
     }
 }

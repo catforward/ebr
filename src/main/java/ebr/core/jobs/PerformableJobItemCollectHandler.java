@@ -36,6 +36,8 @@ import java.util.Set;
 
 /**
  * <pre>
+ * 发生Message.Symbols.MSG_ACT_LAUNCH_JOB_FLOW
+ * 和Message.Symbols.MSG_ACT_JOB_STATE_CHANGED事件时
  * 收集所有可启动的目标job或flow
  * 查找策略
  * 1.查找直接后继节点，并检查后继节点的前躯是否全部结束
@@ -111,7 +113,7 @@ public class PerformableJobItemCollectHandler implements Handler.IHandler {
      * 3.如果1没有找到任何直接的后继节点，则检查此url所在父节点是否为FLOW节点
      * 4.针对3的结果，如果父节点完成了则检索出父节点的直接后继节点，重复1的处理
      * </pre>
-     * @param url
+     * @param url 状态变更了的Job的URL
      */
     private void searchPerformableJobs(String url) {
         Job changedJob = JobItemStateHolder.getJob(url);
@@ -138,8 +140,8 @@ public class PerformableJobItemCollectHandler implements Handler.IHandler {
 
     /**
      * 查找给出的任务单元中前提条件满足可以启动的对象
-     * @param flow
-     * @param sucSet
+     * @param flow 次节点集合所属的flow
+     * @param sucSet 后继节点集合
      */
     private void collectPerformableJobs(JobFlow flow, Set<Job> sucSet) {
         for (Job suc : sucSet) {

@@ -63,8 +63,8 @@ public class AsyncMessageBus {
      * <pre>
      * 订阅某种类型的消息
      * </pre>
-     * @param topic
-     * @param subscriber
+     * @param topic 订阅对象
+     * @param subscriber 订阅者
      */
     public void subscribe(Class<?> topic, MessageSubscriber subscriber) {
         checkNotNull(topic);
@@ -81,7 +81,7 @@ public class AsyncMessageBus {
      * <pre>
      *　退订所有类型的消息
      * </pre>
-     * @param subscriber
+     * @param subscriber 订阅者
      */
     public void unsubscribe(MessageSubscriber subscriber) {
         checkNotNull(subscriber);
@@ -94,7 +94,7 @@ public class AsyncMessageBus {
      * <pre>
      * 发送消息
      * </pre>
-     * @param obj
+     * @param obj 分发对象
      */
     public void publish(Object obj) {
         Class<?> topic = checkNotNull(obj).getClass();

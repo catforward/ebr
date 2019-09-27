@@ -37,6 +37,7 @@ import ebr.core.util.bus.MessageSubscriber;
 
 import java.util.*;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
 import static ebr.core.ServiceEvent.Symbols.JOB_STATE;
@@ -49,10 +50,14 @@ import static ebr.core.util.MiscUtils.checkNotNull;
  *
  * @author catforward
  */
-public final class ExternalBatchRunner implements ExternalBatchRunnerService, MessageSubscriber<Message> {
+public enum ExternalBatchRunner implements ExternalBatchRunnerService, MessageSubscriber<Message> {
+    /** 单例 */
+    RUNNER;
+
     private final static int INIT_CAP = 8;
     private ServiceBuilder builder;
     private ServiceEventListener listener;
+    private ServiceEventImpl serviceEvent;
     /** 主线程循环停止标志 */
     private boolean terminated;
     /** 提供具体功能的处理类实例 */
@@ -63,20 +68,8 @@ public final class ExternalBatchRunner implements ExternalBatchRunnerService, Me
     private ExecutorService workerExecutor;
     /** 消息总线 */
     private AsyncMessageBus messageBus;
-    /** 单例 */
-    private final static ExternalBatchRunner INSTANCE = new ExternalBatchRunner();
 
-    /**
-     * <pre>
-     * ExternalBatchRunner
-     * </pre>
-     * @return ExternalBatchRunner ExternalBatchRunner
-     */
-    public static ExternalBatchRunner getInstance() {
-        return INSTANCE;
-    }
-
-    private ExternalBatchRunner() {
+    ExternalBatchRunner() {
         builder = null;
         terminated = false;
         servicePool = new LinkedHashMap<>(INIT_CAP);
@@ -95,13 +88,13 @@ public final class ExternalBatchRunner implements ExternalBatchRunnerService, Me
             this.builder = builder;
 
             singleEventDispatcher = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS,
-                    new LinkedBlockingQueue<>(1024), new ThreadPoolExecutor.AbortPolicy());
+                    new LinkedBlockingQueue<>(1024), new EbrThreadFactory("ebr-message-"), new ThreadPoolExecutor.AbortPolicy());
             messageBus = new AsyncMessageBus(singleEventDispatcher);
             // workerThreadPool
             int minNum = (this.builder.getMinWorkerNum() == 0) ? Runtime.getRuntime().availableProcessors() : this.builder.getMinWorkerNum();
             int maxNum = (this.builder.getMaxWorkerNum() == 0) ? minNum * 2 : this.builder.getMaxWorkerNum();
             workerExecutor = new ThreadPoolExecutor(minNum, maxNum, 0L, TimeUnit.MILLISECONDS,
-                    new LinkedBlockingQueue<>());
+                    new LinkedBlockingQueue<>(), new EbrThreadFactory("ebr-worker-"));
 
             if (this.builder.getDevMode()) {
                 AppLogger.init();
@@ -143,7 +136,7 @@ public final class ExternalBatchRunner implements ExternalBatchRunnerService, Me
      * @return AsyncMessageBus 消息总线实例
      */
     static AsyncMessageBus getMessageBus() {
-        return INSTANCE.messageBus;
+        return RUNNER.messageBus;
     }
 
     /**
@@ -213,6 +206,9 @@ public final class ExternalBatchRunner implements ExternalBatchRunnerService, Me
     @Override
     public void setServiceEventListener(ServiceEventListener listener) {
         this.listener = listener;
+        if (this.listener != null) {
+            this.serviceEvent = new ServiceEventImpl();
+        }
     }
 
     @Override
@@ -232,20 +228,56 @@ public final class ExternalBatchRunner implements ExternalBatchRunnerService, Me
     private void putServiceEvent(Message message) {
         switch (message.act) {
             case MSG_ACT_JOB_STATE_CHANGED: {
-                String url = (String) message.param.getOrDefault(Message.Symbols.MSG_DATA_JOB_URL, "");
-                JobState state = (JobState) message.param.getOrDefault(Message.Symbols.MSG_DATA_NEW_JOB_STATE, "");
-                listener.onServiceEvent(new ServiceEvent(JOB_STATE_CHANGED, Map.of(JOB_URL, url, JOB_STATE, state)));
+                String url = (String) message.param.getOrDefault(MSG_DATA_JOB_URL, "");
+                JobState state = (JobState) message.param.getOrDefault(MSG_DATA_NEW_JOB_STATE, "");
+                serviceEvent.serviceType = JOB_STATE_CHANGED;
+                serviceEvent.payLoad = Map.of(JOB_URL, url, JOB_STATE, state);
+                listener.onServiceEvent(serviceEvent);
                 break;
             }
             case MSG_ACT_ALL_JOB_FINISHED: {
-                listener.onServiceEvent(new ServiceEvent(ALL_JOB_FINISHED, Map.of()));
+                serviceEvent.serviceType = ALL_JOB_FINISHED;
+                serviceEvent.payLoad = Map.of();
+                listener.onServiceEvent(serviceEvent);
                 break;
             }
             case MSG_ACT_SERVICE_SHUTDOWN: {
-                listener.onServiceEvent(new ServiceEvent(SERVICE_SHUTDOWN, Map.of()));
+                serviceEvent.serviceType = SERVICE_SHUTDOWN;
+                serviceEvent.payLoad = Map.of();
+                listener.onServiceEvent(serviceEvent);
                 break;
             }
             default: break;
         }
+    }
+}
+
+class EbrThreadFactory implements ThreadFactory {
+    private static final AtomicInteger poolNumber = new AtomicInteger(1);
+    private final ThreadGroup group;
+    private final AtomicInteger threadNumber = new AtomicInteger(1);
+    private final String namePrefix;
+
+    EbrThreadFactory(final String prefix) {
+        SecurityManager s = System.getSecurityManager();
+        group = (s != null) ? s.getThreadGroup() :
+                Thread.currentThread().getThreadGroup();
+        namePrefix = prefix + "pool-" +
+                poolNumber.getAndIncrement() +
+                "-thread-";
+    }
+
+    @Override
+    public Thread newThread(Runnable r) {
+        Thread t = new Thread(group, r,
+                namePrefix + threadNumber.getAndIncrement(),
+                0);
+        if (t.isDaemon()) {
+            t.setDaemon(false);
+        }
+        if (t.getPriority() != Thread.NORM_PRIORITY) {
+            t.setPriority(Thread.NORM_PRIORITY);
+        }
+        return t;
     }
 }

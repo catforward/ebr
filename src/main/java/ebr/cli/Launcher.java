@@ -95,8 +95,7 @@ public class Launcher {
         System.exit(1);
     }
 
-
-    public void onServiceEvent(ServiceEvent event) {
-        System.out.println(String.format("event:[%s], data:[%s]",event.type.name(), event.data.toString()));
+    private void onServiceEvent(ServiceEvent event) {
+        System.out.println(String.format("event:[%s], data:[%s]",event.type().name(), event.data().toString()));
     }
 }

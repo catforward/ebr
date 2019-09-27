@@ -47,17 +47,7 @@ public final class AppLogger {
     private static Logger errorLogger = null;
     private static Logger appLogger = null;
     private final static String LOG_HEADER = "=========== EBR START ===========";
-    /**
-     * 0 -> thread
-     * 1 -> self method
-     * 2 -> AppLogger.info or trace or debug
-     * 3 -> class in ebr app
-     */
-    private static int CALLER_INDEX = 3;
-    private static String LEVEL_LABLE_INFO = " INFO";
-    private static String LEVEL_LABEL_TRACE = "TRACE";
-    private static String LEVEL_LABEL_DEBUG = "DEBUG";
-    private static String LEVEL_LABEL_ERROR = "ERROR";
+    private final static int CALLER_INDEX = 3;
 
     public static void init() throws IOException {
         initAppFileLogger();
@@ -66,6 +56,12 @@ public final class AppLogger {
 
     private static String msgWithCaller(final String level, final String msg) {
         StackTraceElement[] elements = Thread.currentThread().getStackTrace();
+        /*
+         * 0 -> thread
+         * 1 -> self method
+         * 2 -> AppLogger.info or trace or debug
+         * 3 -> class in ebr app
+         */
         if (elements.length > (CALLER_INDEX + 1)) {
             String className = elements[3].getClassName();
             String lineNumber = String.valueOf(elements[3].getLineNumber());
@@ -78,21 +74,21 @@ public final class AppLogger {
         if (appLogger == null) {
             return;
         }
-        appLogger.info(msgWithCaller(LEVEL_LABLE_INFO, msg));
+        appLogger.info(msgWithCaller(" INFO", msg));
     }
 
     public static void trace(final String msg) {
         if (appLogger == null) {
             return;
         }
-        appLogger.fine(msgWithCaller(LEVEL_LABEL_TRACE, msg));
+        appLogger.fine(msgWithCaller("TRACE", msg));
     }
 
     public static void debug(final String msg) {
         if (appLogger == null) {
             return;
         }
-        appLogger.info(msgWithCaller(LEVEL_LABEL_DEBUG, msg));
+        appLogger.info(msgWithCaller("DEBUG", msg));
     }
 
     public static void dumpError(Exception ex) {
@@ -101,7 +97,7 @@ public final class AppLogger {
         }
         StringWriter writer = new StringWriter();
         ex.printStackTrace(new PrintWriter(writer));
-        errorLogger.severe(String.format("[%s]: %s", LEVEL_LABEL_ERROR, writer.toString()));
+        errorLogger.severe(String.format("[%s]: %s", "ERROR", writer.toString()));
     }
 
     /**

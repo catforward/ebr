@@ -35,18 +35,18 @@ import static ebr.core.util.MiscUtils.checkNotNull;
 
 /**
  * <pre>
- * the builder of JobFlow and TaskJob
+ * the builder of JobFlow and Job
  * </pre>
  * @author catforward
  */
 public final class JobItemBuilder {
     private final static int INIT_CAP = 16;
-    /*
-     * define the max depth between flow and task
+    /**
+     *  define the max depth between flow and task
      * sample
-     *  depth1: flow(root) -> task
-     *  depth2: flow(root) -> flow(sub) -> task
-     *  depth3: flow(root) -> flow(sub) -> flow(NG!) ...
+     *  depth(1): flow(root) -> task
+     *  depth(2): flow(root) -> flow(sub) -> task
+     *  depth(3): flow(root) -> flow(sub) -> flow(sub) ... NG!!
      */
     private final static int MAX_DEPTH = 2;
     /** internal symbols in app */
@@ -68,8 +68,7 @@ public final class JobItemBuilder {
      * <pre>
      * 验证生成的任务单元的基本结构是否正确
      * </pre>
-     * @param task
-     * @return boolean
+     * @param task 需要检查的Task实例
      */
     private static void validateTask(Task task) {
         checkNotNull(task);
@@ -146,7 +145,7 @@ public final class JobItemBuilder {
         }
     }
 
-    public static void createJobFlow (JobImpl job) {
+    private static void createJobFlow(JobImpl job) {
         JobFlow flow = JobFlow.makeFrom(job);
         flow.standby();
         JobItemStateHolder.addJobFlow(flow);
