@@ -78,10 +78,9 @@ public final class JobItemBuilder {
             throw new EbrException("the define of uid is not exist!");
         }
         // command
-        if (task.children().isEmpty()) {
-            if (task.command() == null || task.command().isBlank()) {
-                throw new EbrException(String.format("[%s]: the define onf command is not exist!", task.id()));
-            }
+        if (task.children().isEmpty()
+                && (task.command() == null || task.command().isBlank())) {
+            throw new EbrException(String.format("[%s]: the define onf command is not exist!", task.id()));
         }
         // depth
         if (getDepth(task) > MAX_DEPTH) {

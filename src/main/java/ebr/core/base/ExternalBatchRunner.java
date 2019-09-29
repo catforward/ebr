@@ -241,28 +241,37 @@ public class ExternalBatchRunner implements ExternalBatchRunnerService, MessageS
 
     private void putServiceEvent(Message message) {
         switch (message.act) {
-            case MSG_ACT_JOB_STATE_CHANGED: {
-                String url = (String) message.param.getOrDefault(MSG_DATA_JOB_URL, "");
-                JobState state = (JobState) message.param.getOrDefault(MSG_DATA_NEW_JOB_STATE, "");
-                serviceEvent.serviceType = JOB_STATE_CHANGED;
-                serviceEvent.payLoad = Map.of(JOB_URL, url, JOB_STATE, state);
-                listener.onServiceEvent(serviceEvent);
+            case MSG_ACT_JOB_STATE_CHANGED:
+                onJobStateChanged(message);
                 break;
-            }
-            case MSG_ACT_ALL_JOB_FINISHED: {
-                serviceEvent.serviceType = ALL_JOB_FINISHED;
-                serviceEvent.payLoad = Map.of();
-                listener.onServiceEvent(serviceEvent);
+            case MSG_ACT_ALL_JOB_FINISHED:
+                onAllJobFinished();
                 break;
-            }
-            case MSG_ACT_SERVICE_SHUTDOWN: {
-                serviceEvent.serviceType = SERVICE_SHUTDOWN;
-                serviceEvent.payLoad = Map.of();
-                listener.onServiceEvent(serviceEvent);
+            case MSG_ACT_SERVICE_SHUTDOWN:
+                onServiceShutdown();
                 break;
-            }
             default: break;
         }
+    }
+
+    private void onJobStateChanged(Message message) {
+        String url = (String) message.param.getOrDefault(MSG_DATA_JOB_URL, "");
+        JobState state = (JobState) message.param.getOrDefault(MSG_DATA_NEW_JOB_STATE, "");
+        serviceEvent.serviceType = JOB_STATE_CHANGED;
+        serviceEvent.payLoad = Map.of(JOB_URL, url, JOB_STATE, state);
+        listener.onServiceEvent(serviceEvent);
+    }
+
+    private void onAllJobFinished() {
+        serviceEvent.serviceType = ALL_JOB_FINISHED;
+        serviceEvent.payLoad = Map.of();
+        listener.onServiceEvent(serviceEvent);
+    }
+
+    private void onServiceShutdown() {
+        serviceEvent.serviceType = SERVICE_SHUTDOWN;
+        serviceEvent.payLoad = Map.of();
+        listener.onServiceEvent(serviceEvent);
     }
 }
 

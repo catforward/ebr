@@ -52,11 +52,14 @@ public final class AppLogger {
     private AppLogger() {}
 
     public static void init() throws IOException {
-        initAppFileLogger();
-        initErrFileLogger();
+        initMessageFileLogger();
+        initErrorFileLogger();
     }
 
     private static String msgWithCaller(final String level, final String msg) {
+        if (msg == null || msg.trim().isBlank()) {
+            return "";
+        }
         StackTraceElement[] elements = Thread.currentThread().getStackTrace();
         /*
          * 0 -> thread
@@ -76,21 +79,24 @@ public final class AppLogger {
         if (messageLogger == null) {
             return;
         }
-        messageLogger.info(msgWithCaller(" INFO", msg));
+        final String infoMsg = msgWithCaller(" INFO", msg);
+        messageLogger.info(infoMsg);
     }
 
     public static void trace(final String msg) {
         if (messageLogger == null) {
             return;
         }
-        messageLogger.fine(msgWithCaller("TRACE", msg));
+        final String traceMsg = msgWithCaller("TRACE", msg);
+        messageLogger.fine(traceMsg);
     }
 
     public static void debug(final String msg) {
         if (messageLogger == null) {
             return;
         }
-        messageLogger.info(msgWithCaller("DEBUG", msg));
+        final String debugMsg = msgWithCaller("DEBUG", msg);
+        messageLogger.info(debugMsg);
     }
 
     public static void dumpError(Exception ex) {
@@ -99,7 +105,8 @@ public final class AppLogger {
         }
         StringWriter writer = new StringWriter();
         ex.printStackTrace(new PrintWriter(writer));
-        errorLogger.severe(String.format("[%s]: %s", "ERROR", writer.toString()));
+        final String errMsg = String.format("[%s]: %s", "ERROR", writer.toString());
+        errorLogger.severe(errMsg);
     }
 
     /**
@@ -107,7 +114,7 @@ public final class AppLogger {
      * 初始化jdk内置logger
      * </pre>
      */
-    private static void initAppFileLogger() throws IOException {
+    private static void initMessageFileLogger() throws IOException {
         if (messageLogger != null) {
             return;
         }
@@ -121,7 +128,7 @@ public final class AppLogger {
         messageLogger.info(LOG_HEADER);
     }
 
-    private static void initErrFileLogger() throws IOException {
+    private static void initErrorFileLogger() throws IOException {
         if (errorLogger != null) {
             return;
         }
