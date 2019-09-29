@@ -45,9 +45,11 @@ import java.util.logging.*;
  */
 public final class AppLogger {
     private static Logger errorLogger = null;
-    private static Logger appLogger = null;
-    private final static String LOG_HEADER = "=========== EBR START ===========";
-    private final static int CALLER_INDEX = 3;
+    private static Logger messageLogger = null;
+    private static final String LOG_HEADER = "=========== EBR START ===========";
+    private static final int CALLER_INDEX = 3;
+
+    private AppLogger() {}
 
     public static void init() throws IOException {
         initAppFileLogger();
@@ -71,24 +73,24 @@ public final class AppLogger {
     }
 
     public static void info(final String msg) {
-        if (appLogger == null) {
+        if (messageLogger == null) {
             return;
         }
-        appLogger.info(msgWithCaller(" INFO", msg));
+        messageLogger.info(msgWithCaller(" INFO", msg));
     }
 
     public static void trace(final String msg) {
-        if (appLogger == null) {
+        if (messageLogger == null) {
             return;
         }
-        appLogger.fine(msgWithCaller("TRACE", msg));
+        messageLogger.fine(msgWithCaller("TRACE", msg));
     }
 
     public static void debug(final String msg) {
-        if (appLogger == null) {
+        if (messageLogger == null) {
             return;
         }
-        appLogger.info(msgWithCaller("DEBUG", msg));
+        messageLogger.info(msgWithCaller("DEBUG", msg));
     }
 
     public static void dumpError(Exception ex) {
@@ -106,20 +108,20 @@ public final class AppLogger {
      * </pre>
      */
     private static void initAppFileLogger() throws IOException {
-        if (appLogger != null) {
+        if (messageLogger != null) {
             return;
         }
         String fileName = PathUtils.getLogPath() + File.separator + "ebr_dev_app.log";
-        appLogger = Logger.getLogger("ebr");
-        appLogger.setUseParentHandlers(false);
+        messageLogger = Logger.getLogger("ebr");
+        messageLogger.setUseParentHandlers(false);
         FileHandler fileHandler = new FileHandler(fileName, true);
         fileHandler.setLevel(Level.ALL);
         fileHandler.setFormatter(new LogFormatHandler());
-        appLogger.addHandler(fileHandler);
-        appLogger.info(LOG_HEADER);
+        messageLogger.addHandler(fileHandler);
+        messageLogger.info(LOG_HEADER);
     }
 
-    private static void initErrFileLogger() throws SecurityException, IOException {
+    private static void initErrFileLogger() throws IOException {
         if (errorLogger != null) {
             return;
         }
@@ -139,6 +141,6 @@ class LogFormatHandler extends Formatter {
 
     @Override
     public String format(LogRecord record) {
-        return String.format("[%s]: %s\n", LocalDateTime.now().format(dtf.get()), record.getMessage());
+        return String.format("[%s]: %s%n", LocalDateTime.now().format(dtf.get()), record.getMessage());
     }
 }

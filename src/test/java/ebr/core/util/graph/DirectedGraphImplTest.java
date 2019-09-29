@@ -45,7 +45,7 @@ public class DirectedGraphImplTest {
     @Test
     public void  DirectedGraphImpl_Test01() {
         DirectedGraph<Integer> graph = GraphBuilder.directed()
-                .setAllowsSelfLoops(false).setInsertionOrder(true).build();
+                .setAllowsSelfLoops(false).build();
         graph.addVertex(1);
         graph.addVertex(2);
         graph.addVertex(3);

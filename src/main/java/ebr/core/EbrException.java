@@ -22,31 +22,26 @@
   SOFTWARE.
 
  */
-package ebr.core.util;
+package ebr.core;
 
 /**
- * <pre>
- * 未分类的工具函数集合
- * </pre>
+ *
  * @author catforward
  */
-public final class MiscUtils {
+public class EbrException extends RuntimeException {
+    public EbrException() {
+        super();
+    }
 
-    private MiscUtils() {}
+    public EbrException(String message) {
+        super(message);
+    }
 
-    /**
-     * <pre>
-     * 检查对象是否为空
-     * 如果为空则抛出空指针异常
-     * 否则返回引用给调用者
-     * </pre>
-     * @param obj 检查对象
-     * @return Object 检查对象
-     */
-    public static <T extends Object> T checkNotNull(T obj) {
-        if (obj == null) {
-            throw new NullPointerException();
-        }
-        return obj;
+    public EbrException(String message, Throwable cause) {
+        super(message, cause);
+    }
+
+    public EbrException(Throwable cause) {
+        super(cause);
     }
 }

@@ -24,11 +24,12 @@
  */
 package ebr.core.base;
 
+import ebr.core.util.AppLogger;
+
 import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.logging.Logger;
 
 /**
  * <pre>
@@ -36,21 +37,20 @@ import java.util.logging.Logger;
  * - 处理器的作用是当某一个内部事件触发时，由注册此事件的处理器来进行具体处理
  * - 同一事件可以有多个处理器按照注册时的生命顺序进行链式处理
  * </pre>
+ *
  * @author catforward
  */
-public abstract class Handler {
-
-    public interface IHandler {
-        /**
-         * <pre>
-         * 进行实际处理
-         * 当返回false时表示处理链将被终止
-         * </pre>
-         * @param context 上下文
-         * @return true: succeeded false: failed
-         */
-        boolean doHandle(HandlerContext context);
-    }
+public interface Handler {
+    /**
+     * <pre>
+     * 进行实际处理
+     * 当返回false时表示处理链将被终止
+     * </pre>
+     *
+     * @param context 上下文
+     * @return true: succeeded false: failed
+     */
+    boolean doHandle(HandlerContext context);
 
     /**
      * <pre>
@@ -58,14 +58,14 @@ public abstract class Handler {
      * 用于缓存处理其class对象
      * </pre>
      */
-    public static class HandlerDesc {
-        final Class<? extends IHandler> handlerClass;
+     class HandlerDesc {
+        final Class<? extends Handler> handlerClass;
 
-        HandlerDesc(Class<? extends IHandler> clazz) throws SecurityException {
+        HandlerDesc(Class<? extends Handler> clazz) {
             handlerClass = clazz;
         }
 
-        IHandler newHandlerInstance() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
+        Handler newHandlerInstance() throws NoSuchMethodException, IllegalAccessException, InvocationTargetException, InstantiationException {
             return handlerClass.getDeclaredConstructor().newInstance();
         }
 
@@ -77,11 +77,14 @@ public abstract class Handler {
      * 用来保存每一个事件的参数及发送源，发送目的信息
      * </pre>
      */
-    public static class HandlerContext {
-        private final static Logger logger = Logger.getLogger(HandlerContext.class.getCanonicalName());
-        /** 事件所携带的参数 */
+    class HandlerContext {
+        /**
+         * 事件所携带的参数
+         */
         final HashMap<String, Object> param = new HashMap<>();
-        /** 处理器执行后的处理结果 */
+        /**
+         * 处理器执行后的处理结果
+         */
         final HashMap<String, Object> result = new HashMap<>();
         String errorMsg = null;
         String nextAction = null;
@@ -92,6 +95,7 @@ public abstract class Handler {
          * <pre>
          * 重置所有数据至初始状态
          * </pre>
+         *
          * @param newParam 新的事件所携带的参数
          */
         void reset(String action, Map<String, Object> newParam) {
@@ -130,21 +134,21 @@ public abstract class Handler {
 
         public void setNextAction(String newAction) {
             if (nextAction != null) {
-                logger.warning(String.format("nextAction将被替换(%s)<-(%s)", nextAction, newAction));
+                AppLogger.debug(String.format("nextAction将被替换(%s)<-(%s)", nextAction, newAction));
             }
             nextAction = newAction;
         }
 
         public void addHandlerResult(String newKey, Object newObj) {
             if (result.containsKey(newKey)) {
-                logger.warning(String.format("handlerResult(%s)将被替换", newKey));
+                AppLogger.debug(String.format("handlerResult(%s)将被替换", newKey));
             }
             result.put(newKey, newObj);
         }
 
         public HandlerContext setErrorMessage(String msg) {
             if (errorMsg != null) {
-                logger.warning(String.format("errorMsg将被替换(%s)<-(%s)", errorMsg, msg));
+                AppLogger.debug(String.format("errorMsg将被替换(%s)<-(%s)", errorMsg, msg));
             }
             errorMsg = msg;
             return this;
@@ -156,9 +160,11 @@ public abstract class Handler {
      * 处理链
      * </pre>
      */
-    static class HandlerChain {
-        /**  */
-        final Map<Class<? extends IHandler>, HandlerDesc> handlerPool;
+    class HandlerChain {
+        /**
+         *
+         */
+        final Map<Class<? extends Handler>, HandlerDesc> handlerPool;
         final String action;
 
         HandlerChain(String newAct) {
@@ -166,7 +172,7 @@ public abstract class Handler {
             handlerPool = new LinkedHashMap<>();
         }
 
-         void addHandler(Class<? extends IHandler> clazz) throws SecurityException {
+        void addHandler(Class<? extends Handler> clazz) {
             handlerPool.put(clazz, new HandlerDesc(clazz));
         }
     }

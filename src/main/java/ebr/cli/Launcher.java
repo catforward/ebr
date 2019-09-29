@@ -29,8 +29,10 @@ import ebr.core.ServiceBuilder;
 import ebr.core.ServiceEvent;
 import ebr.core.util.AppLogger;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  *
@@ -38,20 +40,13 @@ import java.util.Map;
  */
 public class Launcher {
 
-    private final static int INIT_CAP = 8;
+    private static final int INIT_CAP = 8;
 
-//	static void showArgs(String[] args) {
-//		for (int i = 0; i < args.length; ++i) {
-//			System.out.println(String.format("arg[%s]:%s", String.valueOf(i), args[i]));
-//		}
-//	}
-
-    public static void main(String[] args) throws Exception {
-        //showArgs(args);
+    public static void main(String[] args) throws IOException {
         new Launcher().initAndStart(args);
     }
 
-    private void initAndStart(String[] args) throws Exception {
+    private void initAndStart(String[] args) throws IOException {
         // 又不是服务器程序，不处理异常，如果有，那就任其终止程序
         ConfigUtils.merge(makeOptArgMap(args));
         AppLogger.init();
@@ -78,24 +73,24 @@ public class Launcher {
         try {
             while ((c = opts.getNextOption()) != -1) {
                 if ((char) c == 'f') {
-                    optArg.put(ConfigUtils.Item.KEY_INSTANT_TASK, opts.getOptionArg());
+                    optArg.put(ConfigUtils.KEY_INSTANT_TASK, opts.getOptionArg());
                 } else {
                     showUsage();
                 }
             }
         } catch (IllegalArgumentException ex) {
             showUsage();
-            ex.printStackTrace();
+            Logger.getGlobal().fine(ex.getMessage());
         }
         return optArg;
     }
 
     private static void showUsage() {
-        System.out.println("Usage: <path>/jar_file [-f] <name of task define file>");
+        System.err.println("Usage: <path>/jar_file [-f] <name of task define file>");
         System.exit(1);
     }
 
     private void onServiceEvent(ServiceEvent event) {
-        System.out.println(String.format("event:[%s], data:[%s]",event.type().name(), event.data().toString()));
+        System.err.println(String.format("event:[%s], data:[%s]",event.type().name(), event.data().toString()));
     }
 }

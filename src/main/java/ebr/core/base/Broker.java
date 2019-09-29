@@ -23,10 +23,10 @@
  */
 package ebr.core.base;
 
+import ebr.core.EbrException;
 import ebr.core.base.Handler.HandlerChain;
 import ebr.core.base.Handler.HandlerContext;
 import ebr.core.base.Handler.HandlerDesc;
-import ebr.core.base.Handler.IHandler;
 import ebr.core.base.Message.Receiver;
 import ebr.core.data.JobState;
 import ebr.core.util.AppLogger;
@@ -37,7 +37,6 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
-import static ebr.core.base.ExternalBatchRunner.RUNNER;
 import static ebr.core.base.ExternalBatchRunner.getMessageBus;
 import static ebr.core.base.Message.Symbols.MSG_ACT_SERVICE_SHUTDOWN;
 
@@ -53,7 +52,7 @@ import static ebr.core.base.Message.Symbols.MSG_ACT_SERVICE_SHUTDOWN;
  * @author catforward
  */
 public abstract class Broker {
-    private final static int INIT_CAP = 16;
+    private static final int INIT_CAP = 16;
     /**
      * <pre>
      * 处理类ID定义
@@ -82,9 +81,9 @@ public abstract class Broker {
         FINISHED,
     }
 
-    public static abstract class BaseBroker implements Receiver {
+    public abstract static class BaseBroker implements Receiver {
         /** 代理状态 */
-        volatile Status brokerStatus;
+        private Status brokerStatus;
         /** 处理器映射 */
         private final Map<String, HandlerChain> actionMap;
         /** 处理上下文 */
@@ -119,18 +118,18 @@ public abstract class Broker {
          * @param hndClass 处理类
          */
         @SafeVarargs
-        protected final void registerActionHandler(String act, Class<? extends IHandler>... hndClass) {
+        protected final void registerActionHandler(String act, Class<? extends Handler>... hndClass) {
             try {
                 HandlerChain chain = actionMap.get(act);
                 if (hndClass != null && hndClass.length > 0 && chain == null) {
                     chain = new HandlerChain(act);
-                    for (Class<? extends IHandler> cls : hndClass) {
+                    for (Class<? extends Handler> cls : hndClass) {
                         chain.addHandler(cls);
                     }
                 }
                 actionMap.put(act, chain);
             } catch (SecurityException e) {
-                throw new RuntimeException(e);
+                throw new EbrException(e);
             }
         }
 
@@ -203,16 +202,16 @@ public abstract class Broker {
                     if (!desc.newHandlerInstance().doHandle(context)) {
                         if (context.errorMsg != null) {
                             AppLogger.debug(context.errorMsg);
-                            throw new RuntimeException(context.errorMsg);
+                            throw new EbrException(context.errorMsg);
                         } else {
                             AppLogger.info(String.format("Action(%s)处理完成后处理链结束", desc.handlerClass.getCanonicalName()));
-                            //break;
                         }
                     }
                 }
             } catch (NoSuchMethodException | IllegalAccessException
                     | InvocationTargetException | InstantiationException e) {
-                throw new RuntimeException(e);
+                AppLogger.dumpError(e);
+                return false;
             }
 
             // 通知事件优先级高
@@ -247,7 +246,7 @@ public abstract class Broker {
          * @return Future 执行结果
          */
         protected CompletableFuture<JobState> deployTaskAsync(Supplier<JobState> task) {
-            return RUNNER.deployTaskAsync(task);
+            return ExternalBatchRunner.getInstance().deployTaskAsync(task);
         }
 
         /**

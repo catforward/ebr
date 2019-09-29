@@ -39,21 +39,14 @@ import java.util.Properties;
  *
  * @author catforward
  */
-class ConfigUtils {
+enum ConfigUtils {
+    /** 单例 */
+    CONFIG;
 
     /**
-     * <pre>
      * 配置文件中使用的键名
-     * </pre>
      */
-    public static class Item {
-        public final static String KEY_INSTANT_TASK = "ebr.instant.task";
-    }
-
-    /**
-     * 配置类实例
-     */
-    private static final ConfigUtils INSTANCE = new ConfigUtils();
+    public static final String KEY_INSTANT_TASK = "ebr.instant.task";
 
     /**
      * 属性类实例
@@ -62,27 +55,15 @@ class ConfigUtils {
 
     /**
      * <pre>
-     * 取得配置类实例
-     * </pre>
-     *
-     * @return 配置类实例
-     */
-    private static ConfigUtils getInstance() {
-        return INSTANCE;
-    }
-
-    /**
-     * <pre>
      * 属性类构造函数
      * </pre>
      */
-    private ConfigUtils() {
+    ConfigUtils() {
     }
 
     public static void merge(Map<String, String> values) {
-        ConfigUtils config = ConfigUtils.getInstance();
         for (Map.Entry<String, String> entry : values.entrySet()) {
-            config.prop.put(entry.getKey(), entry.getValue());
+            CONFIG.prop.put(entry.getKey(), entry.getValue());
         }
     }
 
@@ -95,8 +76,7 @@ class ConfigUtils {
      * @return 字符型值
      */
     public static String get(String key) {
-        ConfigUtils config = ConfigUtils.getInstance();
-        Optional<String> opt = Optional.ofNullable(config.prop.getProperty(key));
+        Optional<String> opt = Optional.ofNullable(CONFIG.prop.getProperty(key));
         return opt.orElse("");
     }
 
@@ -110,7 +90,6 @@ class ConfigUtils {
      * @return 属性值
      */
     public static Object getOrDefault(String key, Object defaultValue) {
-        ConfigUtils config = ConfigUtils.getInstance();
-        return config.prop.getOrDefault(key, defaultValue);
+        return CONFIG.prop.getOrDefault(key, defaultValue);
     }
 }
