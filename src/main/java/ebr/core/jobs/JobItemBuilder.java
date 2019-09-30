@@ -32,6 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
+import static ebr.core.util.MiscUtils.checkCommandBanList;
 import static ebr.core.util.MiscUtils.checkNotNull;
 
 /**
@@ -81,6 +82,10 @@ public final class JobItemBuilder {
         if (task.children().isEmpty()
                 && (task.command() == null || task.command().isBlank())) {
             throw new EbrException(String.format("[%s]: the define onf command is not exist!", task.id()));
+        }
+        // command ban list
+        if (task.command() != null && !task.command().isBlank()) {
+            checkCommandBanList(task.command());
         }
         // depth
         if (getDepth(task) > MAX_DEPTH) {

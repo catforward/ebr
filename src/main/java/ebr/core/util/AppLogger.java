@@ -44,10 +44,15 @@ import java.util.logging.*;
  * @author catforward
  */
 public final class AppLogger {
-    private static Logger errorLogger = null;
-    private static Logger messageLogger = null;
+    private Logger errorLogger = null;
+    private Logger messageLogger = null;
     private static final String LOG_HEADER = "=========== EBR START ===========";
     private static final int CALLER_INDEX = 3;
+
+    /** 单例 */
+    private static class AppLoggerHolder{
+        static final AppLogger LOGGER = new AppLogger();
+    }
 
     private AppLogger() {}
 
@@ -76,37 +81,37 @@ public final class AppLogger {
     }
 
     public static void info(final String msg) {
-        if (messageLogger == null) {
+        if (AppLoggerHolder.LOGGER.messageLogger == null) {
             return;
         }
         final String infoMsg = msgWithCaller(" INFO", msg);
-        messageLogger.info(infoMsg);
+        AppLoggerHolder.LOGGER.messageLogger.info(infoMsg);
     }
 
     public static void trace(final String msg) {
-        if (messageLogger == null) {
+        if (AppLoggerHolder.LOGGER.messageLogger == null) {
             return;
         }
         final String traceMsg = msgWithCaller("TRACE", msg);
-        messageLogger.fine(traceMsg);
+        AppLoggerHolder.LOGGER.messageLogger.fine(traceMsg);
     }
 
     public static void debug(final String msg) {
-        if (messageLogger == null) {
+        if (AppLoggerHolder.LOGGER.messageLogger == null) {
             return;
         }
         final String debugMsg = msgWithCaller("DEBUG", msg);
-        messageLogger.info(debugMsg);
+        AppLoggerHolder.LOGGER.messageLogger.info(debugMsg);
     }
 
     public static void dumpError(Exception ex) {
-        if (errorLogger == null) {
+        if (AppLoggerHolder.LOGGER.errorLogger == null) {
             return;
         }
         StringWriter writer = new StringWriter();
         ex.printStackTrace(new PrintWriter(writer));
         final String errMsg = String.format("[%s]: %s", "ERROR", writer.toString());
-        errorLogger.severe(errMsg);
+        AppLoggerHolder.LOGGER.errorLogger.severe(errMsg);
     }
 
     /**
@@ -115,31 +120,31 @@ public final class AppLogger {
      * </pre>
      */
     private static void initMessageFileLogger() throws IOException {
-        if (messageLogger != null) {
+        if (AppLoggerHolder.LOGGER.messageLogger != null) {
             return;
         }
         String fileName = PathUtils.getLogPath() + File.separator + "ebr_dev_app.log";
-        messageLogger = Logger.getLogger("ebr");
-        messageLogger.setUseParentHandlers(false);
+        AppLoggerHolder.LOGGER.messageLogger = Logger.getLogger("ebr");
+        AppLoggerHolder.LOGGER.messageLogger.setUseParentHandlers(false);
         FileHandler fileHandler = new FileHandler(fileName, true);
         fileHandler.setLevel(Level.ALL);
         fileHandler.setFormatter(new LogFormatHandler());
-        messageLogger.addHandler(fileHandler);
-        messageLogger.info(LOG_HEADER);
+        AppLoggerHolder.LOGGER.messageLogger.addHandler(fileHandler);
+        AppLoggerHolder.LOGGER.messageLogger.info(LOG_HEADER);
     }
 
     private static void initErrorFileLogger() throws IOException {
-        if (errorLogger != null) {
+        if (AppLoggerHolder.LOGGER.errorLogger != null) {
             return;
         }
         String fileName = PathUtils.getLogPath() + File.separator + "ebr_dev_error.log";
-        errorLogger = Logger.getLogger("ebr.error");
-        errorLogger.setUseParentHandlers(false);
+        AppLoggerHolder.LOGGER.errorLogger = Logger.getLogger("ebr.error");
+        AppLoggerHolder.LOGGER.errorLogger.setUseParentHandlers(false);
         FileHandler fileHandler = new FileHandler(fileName, true);
         fileHandler.setLevel(Level.SEVERE);
         fileHandler.setFormatter(new LogFormatHandler());
-        errorLogger.addHandler(fileHandler);
-        errorLogger.severe(LOG_HEADER);
+        AppLoggerHolder.LOGGER.errorLogger.addHandler(fileHandler);
+        AppLoggerHolder.LOGGER.errorLogger.severe(LOG_HEADER);
     }
 }
 

@@ -34,6 +34,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import static ebr.core.util.MiscUtils.checkCommandBanList;
+
 /**
  *
  * @author catforward
@@ -43,6 +45,7 @@ public class Launcher {
     private static final int INIT_CAP = 8;
 
     public static void main(String[] args) throws IOException {
+        checkCommandBanList(args);
         new Launcher().initAndStart(args);
     }
 

@@ -28,11 +28,31 @@ package ebr.core.util;
  * <pre>
  * 未分类的工具函数集合
  * </pre>
+ *
  * @author catforward
  */
 public final class MiscUtils {
 
-    private MiscUtils() {}
+    /**
+     * 命令行或者命令行参数中不应出现的字符
+     */
+    private static final char[] commandBanList = {'|',
+            //';',
+            '&',
+            '$',
+            '>',
+            '<',
+            '`',
+            //'\\',
+            '!',
+            '\t',
+            '\n',
+            '\r',
+            '\f',
+            '\u0000'};
+
+    private MiscUtils() {
+    }
 
     /**
      * <pre>
@@ -40,6 +60,7 @@ public final class MiscUtils {
      * 如果为空则抛出空指针异常
      * 否则返回引用给调用者
      * </pre>
+     *
      * @param obj 检查对象
      * @return Object 检查对象
      */
@@ -48,5 +69,37 @@ public final class MiscUtils {
             throw new NullPointerException();
         }
         return obj;
+    }
+
+    /**
+     * <pre>
+     * 检查对象中是否有禁止的字符
+     * 如果有禁止的字符则抛出异常
+     * </pre>
+     *
+     * @param args 检查对象命令行参数数组
+     */
+    public static void checkCommandBanList(String[] args) {
+        checkNotNull(args);
+        for (String arg : args) {
+            checkCommandBanList(arg);
+        }
+    }
+
+    /**
+     * <pre>
+     * 检查对象中是否有禁止的字符
+     * 如果有禁止的字符则抛出异常
+     * </pre>
+     *
+     * @param cmd 检查对象命令行
+     */
+    public static void checkCommandBanList(String cmd) {
+        checkNotNull(cmd);
+        for (char c : commandBanList) {
+            if (cmd.indexOf(c) != -1) {
+                throw new IllegalArgumentException(String.format("存在非法的字符[%s]", c));
+            }
+        }
     }
 }
