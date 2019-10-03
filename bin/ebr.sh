@@ -2,7 +2,7 @@
 
 SCRIPT_ROOT=$(cd $(dirname $0); pwd)
 EBR_ROOT=$(dirname ${SCRIPT_ROOT})
-APP_NAME=ebr-all.jar
+APP_NAME=lib-ebr.jar
 APP_JAR=${EBR_ROOT}/libs/${APP_NAME}
 CLI_LOG=${EBR_ROOT}/logs/cli_${APP_NAME}.log
 CMD_ARGS=$@
