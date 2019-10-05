@@ -24,6 +24,7 @@
  */
 package ebr.core.jobs;
 
+import ebr.core.EbrException;
 import ebr.core.data.JobType;
 import ebr.core.Task;
 
@@ -31,6 +32,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
+import static ebr.core.util.MiscUtils.checkCommandBanList;
 import static ebr.core.util.MiscUtils.checkNotNull;
 
 /**
@@ -40,7 +42,7 @@ import static ebr.core.util.MiscUtils.checkNotNull;
  * @author catforward
  */
 public final class JobItemBuilder {
-    private final static int INIT_CAP = 16;
+    private static final int INIT_CAP = 16;
     /**
      *  define the max depth between flow and task
      * sample
@@ -48,9 +50,9 @@ public final class JobItemBuilder {
      *  depth(2): flow(root) -> flow(sub) -> task
      *  depth(3): flow(root) -> flow(sub) -> flow(sub) ... NG!!
      */
-    private final static int MAX_DEPTH = 2;
+    private static final int MAX_DEPTH = 2;
     /** internal symbols in app */
-    private final static String KEY_ROOT_UNIT = "KEY_ROOT_UNIT";
+    private static final String KEY_ROOT_UNIT = "KEY_ROOT_UNIT";
 
     private JobItemBuilder() {}
 
@@ -74,17 +76,20 @@ public final class JobItemBuilder {
         checkNotNull(task);
         // id
         if (task.id() == null || task.id().isBlank()) {
-            throw new RuntimeException("the define of uid is not exist!");
+            throw new EbrException("the define of uid is not exist!");
         }
         // command
-        if (task.children().isEmpty()) {
-            if (task.command() == null || task.command().isBlank()) {
-                throw new RuntimeException(String.format("[%s]: the define onf command is not exist!", task.id()));
-            }
+        if (task.children().isEmpty()
+                && (task.command() == null || task.command().isBlank())) {
+            throw new EbrException(String.format("[%s]: the define onf command is not exist!", task.id()));
+        }
+        // command ban list
+        if (task.command() != null && !task.command().isBlank()) {
+            checkCommandBanList(task.command());
         }
         // depth
         if (getDepth(task) > MAX_DEPTH) {
-            throw new RuntimeException("the max depth can not over 2");
+            throw new EbrException("the max depth can not over 2");
         }
         // children
         for (Task child : task.children()) {

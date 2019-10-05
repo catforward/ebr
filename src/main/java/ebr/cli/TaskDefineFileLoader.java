@@ -24,18 +24,20 @@
  */
 package ebr.cli;
 
+import ebr.core.EbrException;
 import ebr.core.util.PathUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.util.*;
 
-import static ebr.cli.ConfigUtils.Item.KEY_INSTANT_TASK;
+import static ebr.cli.ConfigUtils.KEY_INSTANT_TASK;
 
 /**
  * <pre>
@@ -45,14 +47,14 @@ import static ebr.cli.ConfigUtils.Item.KEY_INSTANT_TASK;
  */
 class TaskDefineFileLoader {
 
-    private final static int INIT_CAP = 16;
+    private static final int INIT_CAP = 16;
     /** symbols in json file */
-    private final static String ATTR_ID = "id";
-    private final static String ATTR_DESC = "desc";
-    private final static String ATTR_PRE_TASKS = "pre_tasks";
-    private final static String ATTR_COMMAND = "command";
+    private static final String ATTR_ID = "id";
+    private static final String ATTR_DESC = "desc";
+    private static final String ATTR_PRE_TASKS = "pre_tasks";
+    private static final String ATTR_COMMAND = "command";
     /** internal symbols in app */
-    private final static String KEY_ROOT_TASK = "KEY_ROOT_TASK";
+    private static final String KEY_ROOT_TASK = "KEY_ROOT_TASK";
 
     /**
      * @return true: succeeded false: failed
@@ -72,7 +74,7 @@ class TaskDefineFileLoader {
     private String makeDefineFileFullPath() {
         Optional<String> strVal = Optional.ofNullable(ConfigUtils.get(KEY_INSTANT_TASK));
         if (strVal.isEmpty()) {
-            throw new RuntimeException("没有发现Task定义文件的路径");
+            throw new EbrException("没有发现Task定义文件的路径");
         }
         String filePath = strVal.get();
         return filePath.startsWith("/") ? filePath : PathUtils.getDefPath() + File.separator + filePath;
@@ -88,11 +90,21 @@ class TaskDefineFileLoader {
      */
     private TaskImpl loadTaskMetaFromDefineFile(String filePath) {
         try {
-            DocumentBuilder documentBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            //解决java.lang.AbstractMethodError:javax.xml.parsers.DocumentBuilderFactory.setFeature(Ljava/lang/String;Z)V异常
+            System.setProperty("javax.xml.parsers.DocumentBuilderFactory", "com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
+            DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+            documentBuilderFactory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+            documentBuilderFactory.setFeature("http://xml.org/sax/features/external-general-entities", false);
+            documentBuilderFactory.setFeature("http://xml.org/sax/features/external-parameter-entities", false);
+            documentBuilderFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
+            documentBuilderFactory.setFeature(XMLConstants.FEATURE_SECURE_PROCESSING, true);
+            documentBuilderFactory.setXIncludeAware(false);
+            documentBuilderFactory.setExpandEntityReferences(false);
+            DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
             Document document = documentBuilder.parse(filePath);
             return parse(document);
         } catch (Exception ex) {
-            throw new RuntimeException(ex);
+            throw new EbrException(ex);
         }
     }
 
@@ -126,7 +138,7 @@ class TaskDefineFileLoader {
             NamedNodeMap map = node.getAttributes();
             Optional<Node> optValue = Optional.ofNullable(map.getNamedItem(ATTR_ID));
             if (optValue.isEmpty()) {
-                throw new RuntimeException("没有设置uid元素");
+                throw new EbrException("没有设置uid元素");
             }
             // 使用ID取得或创建Meta
             String id = optValue.get().getNodeValue().trim();

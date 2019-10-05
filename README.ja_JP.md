@@ -1,4 +1,4 @@
-# EBR (External Batch Runner)
+![](https://img.shields.io/badge/build-passing-green) ![](https://img.shields.io/badge/language-java-blue.svg) ![](https://img.shields.io/badge/license-MIT-000000.svg) 
 
 # EBR (External Batch Runner)
 
@@ -16,12 +16,12 @@ EBR(External Batch Runner)は明確な依存関係を持つ外部プログラム
 
 開発環境
 
-- OS：Debian 9
-- JDK：OpenJDK 11
+- OS: Debian 9
+- JDK: OpenJDK 11
 
 使用したライブラリ
 
-- JRE
+- OpenJDK 11
 
 外部コマンド間の関係定義
 

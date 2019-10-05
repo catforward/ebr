@@ -38,6 +38,8 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import static ebr.core.data.JobState.FAILED;
+
 /**
  * <pre>
  * the implements of Job
@@ -45,7 +47,7 @@ import java.util.stream.Collectors;
  * @author catforward
  */
 public class JobImpl implements Job {
-    private final static int INIT_CAP = 8;
+    private static final int INIT_CAP = 8;
     /** 任务基本属性定义 */
     private final Task task;
     /** 任务间的关系定义 */
@@ -56,7 +58,7 @@ public class JobImpl implements Job {
     private final String url;
     private final JobType type;
     /** 任务状态 */
-    private volatile JobState state;
+    private JobState state;
     /** 当单元类型为FLOW时，记录子任务的完成数 */
     private AtomicInteger unfinishedCount;
 
@@ -122,36 +124,38 @@ public class JobImpl implements Job {
      */
     @Override
     public void updateState(JobState newState) {
-        switch (newState) {
-            case INACTIVE: {
-                state = JobState.INACTIVE;
-                unfinishedCount = new AtomicInteger(children.size());
-                break;
-            }
-            case COMPLETE: {
-                state = JobState.COMPLETE;
-                if (parent != null && JobType.TASK != parent.type) {
-                    parent.childJobCompleted();
-                }
-                break;
-            }
-            case ACTIVE: {
-                state = JobState.ACTIVE;
-                break;
-            }
-            case FAILED: {
-                state = JobState.FAILED;
-                if (parent != null) {
-                    // 传递到root job
-                    parent.updateState(newState);
-                }
-            }
-            default: {
-                state = JobState.FAILED;
-                break;
-            }
-        }
         state = newState;
+        switch (newState) {
+            case INACTIVE:
+                onInactive();
+                break;
+            case COMPLETE:
+                onComplete();
+                break;
+            case ACTIVE:
+                break;
+            case FAILED:
+            default:
+                onFailed();
+                break;
+        }
+    }
+
+    private void onInactive() {
+        unfinishedCount = new AtomicInteger(children.size());
+    }
+
+    private void onComplete() {
+        if (parent != null && JobType.TASK != parent.type) {
+            parent.childJobCompleted();
+        }
+    }
+
+    private void onFailed() {
+        if (parent != null) {
+            // 传递到root job
+            parent.updateState(FAILED);
+        }
     }
 
     /**
@@ -387,7 +391,6 @@ class JobFlow {
     private DirectedGraph<Job> createEmptyGraph() {
         // 指定为有向图
         return GraphBuilder.directed()
-                //.setInsertionOrder(true)
                 // 不允许自环
                 .setAllowsSelfLoops(false)
                 .build();

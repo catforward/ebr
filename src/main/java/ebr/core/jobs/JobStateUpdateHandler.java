@@ -36,7 +36,7 @@ import ebr.core.util.AppLogger;
  * </pre>
  * @author catforward
  */
-public class JobStateUpdateHandler implements Handler.IHandler {
+public class JobStateUpdateHandler implements Handler {
 
     public JobStateUpdateHandler() {
         super();

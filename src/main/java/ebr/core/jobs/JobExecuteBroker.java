@@ -24,6 +24,7 @@
  */
 package ebr.core.jobs;
 
+import ebr.core.EbrException;
 import ebr.core.base.Broker.BaseBroker;
 import ebr.core.base.Broker.Id;
 import ebr.core.base.Message;
@@ -74,7 +75,7 @@ public class JobExecuteBroker extends BaseBroker {
             List<String> urls = (List<String>) message.param.getOrDefault(Symbols.MSG_DATA_PERFORMABLE_JOB_ITEM_LIST, List.of());
             performJobs(urls);
         } else {
-            throw new RuntimeException(String.format("[%s]:送错地方了老兄...", message.act));
+            throw new EbrException(String.format("[%s]:送错地方了老兄...", message.act));
         }
     }
 
@@ -128,6 +129,8 @@ public class JobExecuteBroker extends BaseBroker {
                 return (exitCode == 0) ? JobState.COMPLETE : JobState.FAILED;
             } catch (IOException | InterruptedException e) {
                 AppLogger.dumpError(e);
+                // Restore interrupted state...
+                Thread.currentThread().interrupt();
                 return JobState.FAILED;
             }
         });

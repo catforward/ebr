@@ -32,7 +32,6 @@ package ebr.core.util.graph;
  */
 public class GraphBuilder {
     boolean allowsSelfLoops = false;
-    boolean insertionOrder = false;
 
     private GraphBuilder() {}
 
@@ -45,11 +44,6 @@ public class GraphBuilder {
         if (this.allowsSelfLoops) {
             throw new UnsupportedOperationException("不好意思哦，还不支持自环图...");
         }
-        return this;
-    }
-
-    public GraphBuilder setInsertionOrder(boolean insertionOrder) {
-        this.insertionOrder = insertionOrder;
         return this;
     }
 

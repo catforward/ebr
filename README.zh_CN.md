@@ -1,3 +1,5 @@
+![](https://img.shields.io/badge/build-passing-green) ![](https://img.shields.io/badge/language-java-blue.svg) ![](https://img.shields.io/badge/license-MIT-000000.svg) 
+
 # EBR (External Batch Runner)
 
 EBR(External Batch Runner) 如其名，一个用来执行若干个有清晰的前后依赖关系的外部命令的小工具。
@@ -14,12 +16,12 @@ EBR(External Batch Runner) 如其名，一个用来执行若干个有清晰的�
 
 开发运行环境
 
-- OS：Debian 9
-- JDK：OpenJDK 11
+- OS: Debian 9
+- JDK: OpenJDK 11
 
 依赖
 
-- JRE
+- OpenJDK 11
 
 外部命令的依赖定义
 

@@ -48,6 +48,8 @@ import java.nio.charset.StandardCharsets;
  */
 public final class PathUtils {
 
+    private PathUtils() {}
+
     /**
      * 部署根路径
      */

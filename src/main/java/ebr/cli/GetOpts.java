@@ -82,7 +82,7 @@ public class GetOpts {
 		optArgPairListIterator = opts.listIterator();
 	}
 
-	public int getNextOption() throws IllegalArgumentException {
+	public int getNextOption() {
 		if (optArgPairListIterator.hasNext()) {
 			currentPair = optArgPairListIterator.next();
 			if (!hasOpt(currentPair.optChar)) {

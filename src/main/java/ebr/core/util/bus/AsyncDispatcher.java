@@ -35,7 +35,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 class AsyncDispatcher {
 
-    final static class MessageWithSubscriber {
+    static final class MessageWithSubscriber {
         final Object message;
         final MessageSubscriber subscriber;
         MessageWithSubscriber(Object message, MessageSubscriber subscriber) {

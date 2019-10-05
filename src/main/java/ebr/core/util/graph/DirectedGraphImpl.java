@@ -51,11 +51,7 @@ public class DirectedGraphImpl<T> implements DirectedGraph<T> {
 
     DirectedGraphImpl(GraphBuilder builder) {
         this.builder = builder;
-        //if (this.builder.insertionOrder) {
-        //    this.vertexEdgesMap = new ConcurrentSkipListMap<>(); //FIXME
-        //} else {
-            this.vertexEdgesMap = new ConcurrentHashMap<>();
-        //}
+        this.vertexEdgesMap = new ConcurrentHashMap<>();
     }
 
     @Override

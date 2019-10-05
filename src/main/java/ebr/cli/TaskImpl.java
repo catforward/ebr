@@ -35,7 +35,7 @@ import java.util.List;
  * @author catforward
  */
 public final class TaskImpl implements Task {
-    private final static int INIT_CAP = 8;
+    private static final int INIT_CAP = 8;
 
     private final String id;
     private final TaskImpl parent;

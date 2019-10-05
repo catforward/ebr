@@ -24,59 +24,24 @@
  */
 package ebr.core;
 
-import ebr.core.base.ExternalBatchRunner;
-
 /**
- * <pre>
- * the builder of EBR Service
- * </pre>
  *
  * @author catforward
  */
-public class ServiceBuilder {
-
-    private boolean serviceMode = false;
-    private int maxWorkerNum = 8;
-    private int minWorkerNum = 2;
-    private boolean devMode = false;
-
-    public static ServiceBuilder createExternalBatchRunnerBuilder() {
-        return new ServiceBuilder();
+public class EbrException extends RuntimeException {
+    public EbrException() {
+        super();
     }
 
-    public boolean getDevMode() {
-        return this.devMode;
+    public EbrException(String message) {
+        super(message);
     }
 
-    public int getMinWorkerNum() {
-        return this.minWorkerNum;
+    public EbrException(String message, Throwable cause) {
+        super(message, cause);
     }
 
-    public int getMaxWorkerNum() {
-        return this.maxWorkerNum;
-    }
-
-    public boolean isServiceMode() {
-        return this.serviceMode;
-    }
-
-    public void setServiceMode(boolean serviceMode) {
-        this.serviceMode = serviceMode;
-    }
-
-    public void setDevMode(boolean devMode) {
-        this.devMode = devMode;
-    }
-
-    public void setMaxWorkerNum(int maxWorkerNum) {
-        this.maxWorkerNum = maxWorkerNum;
-    }
-
-    public void setMinWorkerNum(int minWorkerNum) {
-        this.minWorkerNum = minWorkerNum;
-    }
-
-    public ExternalBatchRunnerService buildExternalBatchRunnerService() {
-        return ExternalBatchRunner.getInstance().init(this);
+    public EbrException(Throwable cause) {
+        super(cause);
     }
 }

@@ -1,3 +1,5 @@
+![](https://img.shields.io/badge/build-passing-green) ![](https://img.shields.io/badge/language-java-blue.svg) ![](https://img.shields.io/badge/license-MIT-000000.svg) 
+
 # EBR (External Batch Runner)
 
 EBR(External Batch Runner) , a small tool used to execute several external commands with clear front-end dependencies.
@@ -7,20 +9,20 @@ External Program
 - A script program (ex. shell script, windows bat, python script ...)
 - Executable programs without GUI
 
-example like this below
+Front-End Dependencies:
 
 ![image](https://github.com/catforward/ebr/raw/master/images/sample_task_flow.jpg)
 
 Development Environment
 
-- OS：Debian 9
-- JDK：OpenJDK 11
+- OS: Debian 9
+- JDK: OpenJDK 11
 
 Dependency
 
-- JRE
+- OpenJDK 11
 
-Define of external programs
+Definition of Dependencies
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>

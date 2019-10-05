@@ -24,6 +24,7 @@
  */
 package ebr.core.jobs;
 
+import ebr.core.EbrException;
 import ebr.core.base.Handler;
 import ebr.core.base.Message;
 import ebr.core.data.Job;
@@ -48,8 +49,8 @@ import java.util.Set;
  * </pre>
  * @author catforward
  */
-public class PerformableJobItemCollectHandler implements Handler.IHandler {
-    private final static int INIT_CAP = 16;
+public class PerformableJobItemCollectHandler implements Handler {
+    private static final int INIT_CAP = 16;
     private final ArrayList<String> performableUrls;
 
     public PerformableJobItemCollectHandler() {
@@ -79,7 +80,7 @@ public class PerformableJobItemCollectHandler implements Handler.IHandler {
                 searchPerformableJobs(url);
             }
         } else {
-            throw new RuntimeException(String.format("虽然不太可能，但是，送错地方了老兄...[%s]:", act));
+            throw new EbrException(String.format("虽然不太可能，但是，送错地方了老兄...[%s]:", act));
         }
 
         if (!performableUrls.isEmpty()) {

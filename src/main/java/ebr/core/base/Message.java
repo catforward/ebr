@@ -57,17 +57,19 @@ public final class Message {
      */
     public static class Symbols {
 
+        private Symbols() {}
+
         /** 服务事件中传送动作的预定义名称 */
-        public final static String MSG_ACT_SERVICE_SHUTDOWN = "MSG_ACT_SERVICE_SHUTDOWN";
-        public final static String MSG_ACT_LAUNCH_JOB_FLOW = "MSG_ACT_LAUNCH_JOB_FLOW";
-        public final static String MSG_ACT_LAUNCH_JOB_ITEM = "MSG_ACT_LAUNCH_JOB_ITEM";
-        public final static String MSG_ACT_JOB_STATE_CHANGED = "MSG_ACT_JOB_STATE_CHANGED";
-        public final static String MSG_ACT_ALL_JOB_FINISHED = "MSG_ACT_ALL_TASK_FINISHED";
+        public static final String MSG_ACT_SERVICE_SHUTDOWN = "MSG_ACT_SERVICE_SHUTDOWN";
+        public static final String MSG_ACT_LAUNCH_JOB_FLOW = "MSG_ACT_LAUNCH_JOB_FLOW";
+        public static final String MSG_ACT_LAUNCH_JOB_ITEM = "MSG_ACT_LAUNCH_JOB_ITEM";
+        public static final String MSG_ACT_JOB_STATE_CHANGED = "MSG_ACT_JOB_STATE_CHANGED";
+        public static final String MSG_ACT_ALL_JOB_FINISHED = "MSG_ACT_ALL_TASK_FINISHED";
         /** 服务事件中传送参数的预定义名称 */
-        public final static String MSG_DATA_JOB_FLOW_URL = "MSG_DATA_JOB_FLOW_URL";
-        public final static String MSG_DATA_JOB_URL = "MSG_DATA_JOB_URL";
-        public final static String MSG_DATA_PERFORMABLE_JOB_ITEM_LIST = "MSG_DATA_PERFORMABLE_JOB_LIST";
-        public final static String MSG_DATA_NEW_JOB_STATE = "MSG_DATA_NEW_JOB_STATE";
+        public static final String MSG_DATA_JOB_FLOW_URL = "MSG_DATA_JOB_FLOW_URL";
+        public static final String MSG_DATA_JOB_URL = "MSG_DATA_JOB_URL";
+        public static final String MSG_DATA_PERFORMABLE_JOB_ITEM_LIST = "MSG_DATA_PERFORMABLE_JOB_LIST";
+        public static final String MSG_DATA_NEW_JOB_STATE = "MSG_DATA_NEW_JOB_STATE";
 
     }
 

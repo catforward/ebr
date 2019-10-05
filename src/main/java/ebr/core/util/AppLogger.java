@@ -44,17 +44,27 @@ import java.util.logging.*;
  * @author catforward
  */
 public final class AppLogger {
-    private static Logger errorLogger = null;
-    private static Logger appLogger = null;
-    private final static String LOG_HEADER = "=========== EBR START ===========";
-    private final static int CALLER_INDEX = 3;
+    private Logger errorLogger = null;
+    private Logger messageLogger = null;
+    private static final String LOG_HEADER = "=========== EBR START ===========";
+    private static final int CALLER_INDEX = 3;
+
+    /** 单例 */
+    private static class AppLoggerHolder{
+        static final AppLogger LOGGER = new AppLogger();
+    }
+
+    private AppLogger() {}
 
     public static void init() throws IOException {
-        initAppFileLogger();
-        initErrFileLogger();
+        initMessageFileLogger();
+        initErrorFileLogger();
     }
 
     private static String msgWithCaller(final String level, final String msg) {
+        if (msg == null || msg.trim().isBlank()) {
+            return "";
+        }
         StackTraceElement[] elements = Thread.currentThread().getStackTrace();
         /*
          * 0 -> thread
@@ -71,33 +81,37 @@ public final class AppLogger {
     }
 
     public static void info(final String msg) {
-        if (appLogger == null) {
+        if (AppLoggerHolder.LOGGER.messageLogger == null) {
             return;
         }
-        appLogger.info(msgWithCaller(" INFO", msg));
+        final String infoMsg = msgWithCaller(" INFO", msg);
+        AppLoggerHolder.LOGGER.messageLogger.info(infoMsg);
     }
 
     public static void trace(final String msg) {
-        if (appLogger == null) {
+        if (AppLoggerHolder.LOGGER.messageLogger == null) {
             return;
         }
-        appLogger.fine(msgWithCaller("TRACE", msg));
+        final String traceMsg = msgWithCaller("TRACE", msg);
+        AppLoggerHolder.LOGGER.messageLogger.fine(traceMsg);
     }
 
     public static void debug(final String msg) {
-        if (appLogger == null) {
+        if (AppLoggerHolder.LOGGER.messageLogger == null) {
             return;
         }
-        appLogger.info(msgWithCaller("DEBUG", msg));
+        final String debugMsg = msgWithCaller("DEBUG", msg);
+        AppLoggerHolder.LOGGER.messageLogger.info(debugMsg);
     }
 
     public static void dumpError(Exception ex) {
-        if (errorLogger == null) {
+        if (AppLoggerHolder.LOGGER.errorLogger == null) {
             return;
         }
         StringWriter writer = new StringWriter();
         ex.printStackTrace(new PrintWriter(writer));
-        errorLogger.severe(String.format("[%s]: %s", "ERROR", writer.toString()));
+        final String errMsg = String.format("[%s]: %s", "ERROR", writer.toString());
+        AppLoggerHolder.LOGGER.errorLogger.severe(errMsg);
     }
 
     /**
@@ -105,32 +119,32 @@ public final class AppLogger {
      * 初始化jdk内置logger
      * </pre>
      */
-    private static void initAppFileLogger() throws IOException {
-        if (appLogger != null) {
+    private static void initMessageFileLogger() throws IOException {
+        if (AppLoggerHolder.LOGGER.messageLogger != null) {
             return;
         }
         String fileName = PathUtils.getLogPath() + File.separator + "ebr_dev_app.log";
-        appLogger = Logger.getLogger("ebr");
-        appLogger.setUseParentHandlers(false);
+        AppLoggerHolder.LOGGER.messageLogger = Logger.getLogger("ebr");
+        AppLoggerHolder.LOGGER.messageLogger.setUseParentHandlers(false);
         FileHandler fileHandler = new FileHandler(fileName, true);
         fileHandler.setLevel(Level.ALL);
         fileHandler.setFormatter(new LogFormatHandler());
-        appLogger.addHandler(fileHandler);
-        appLogger.info(LOG_HEADER);
+        AppLoggerHolder.LOGGER.messageLogger.addHandler(fileHandler);
+        AppLoggerHolder.LOGGER.messageLogger.info(LOG_HEADER);
     }
 
-    private static void initErrFileLogger() throws SecurityException, IOException {
-        if (errorLogger != null) {
+    private static void initErrorFileLogger() throws IOException {
+        if (AppLoggerHolder.LOGGER.errorLogger != null) {
             return;
         }
         String fileName = PathUtils.getLogPath() + File.separator + "ebr_dev_error.log";
-        errorLogger = Logger.getLogger("ebr.error");
-        errorLogger.setUseParentHandlers(false);
+        AppLoggerHolder.LOGGER.errorLogger = Logger.getLogger("ebr.error");
+        AppLoggerHolder.LOGGER.errorLogger.setUseParentHandlers(false);
         FileHandler fileHandler = new FileHandler(fileName, true);
         fileHandler.setLevel(Level.SEVERE);
         fileHandler.setFormatter(new LogFormatHandler());
-        errorLogger.addHandler(fileHandler);
-        errorLogger.severe(LOG_HEADER);
+        AppLoggerHolder.LOGGER.errorLogger.addHandler(fileHandler);
+        AppLoggerHolder.LOGGER.errorLogger.severe(LOG_HEADER);
     }
 }
 
@@ -139,6 +153,6 @@ class LogFormatHandler extends Formatter {
 
     @Override
     public String format(LogRecord record) {
-        return String.format("[%s]: %s\n", LocalDateTime.now().format(dtf.get()), record.getMessage());
+        return String.format("[%s]: %s%n", LocalDateTime.now().format(dtf.get()), record.getMessage());
     }
 }

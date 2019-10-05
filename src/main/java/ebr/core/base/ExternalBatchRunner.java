@@ -50,11 +50,13 @@ import static ebr.core.util.MiscUtils.checkNotNull;
  *
  * @author catforward
  */
-public enum ExternalBatchRunner implements ExternalBatchRunnerService, MessageSubscriber<Message> {
+public class ExternalBatchRunner implements ExternalBatchRunnerService, MessageSubscriber<Message> {
     /** 单例 */
-    RUNNER;
+    private static class RunnerHolder{
+        static final ExternalBatchRunner RUNNER = new ExternalBatchRunner();
+    }
 
-    private final static int INIT_CAP = 8;
+    private static final int INIT_CAP = 8;
     private ServiceBuilder builder;
     private ServiceEventListener listener;
     private ServiceEventImpl serviceEvent;
@@ -69,10 +71,18 @@ public enum ExternalBatchRunner implements ExternalBatchRunnerService, MessageSu
     /** 消息总线 */
     private AsyncMessageBus messageBus;
 
-    ExternalBatchRunner() {
+    private ExternalBatchRunner() {
         builder = null;
         terminated = false;
         servicePool = new LinkedHashMap<>(INIT_CAP);
+    }
+
+    /**
+     * get the instance of ExternalBatchRunner
+     * @return A instance of ExternalBatchRunner
+     */
+    public static ExternalBatchRunner getInstance() {
+        return RunnerHolder.RUNNER;
     }
 
     /**
@@ -81,36 +91,38 @@ public enum ExternalBatchRunner implements ExternalBatchRunnerService, MessageSu
      * </pre>
      */
     public ExternalBatchRunner init(ServiceBuilder builder) {
-        if (this.builder != null) {
-            return this;
-        }
-        try {
-            this.builder = builder;
-
-            singleEventDispatcher = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS,
-                    new LinkedBlockingQueue<>(1024), new EbrThreadFactory("ebr-message-"), new ThreadPoolExecutor.AbortPolicy());
-            messageBus = new AsyncMessageBus(singleEventDispatcher);
-            // workerThreadPool
-            int minNum = (this.builder.getMinWorkerNum() == 0) ? Runtime.getRuntime().availableProcessors() : this.builder.getMinWorkerNum();
-            int maxNum = (this.builder.getMaxWorkerNum() == 0) ? minNum * 2 : this.builder.getMaxWorkerNum();
-            workerExecutor = new ThreadPoolExecutor(minNum, maxNum, 0L, TimeUnit.MILLISECONDS,
-                    new LinkedBlockingQueue<>(), new EbrThreadFactory("ebr-worker-"));
-
-            if (this.builder.getDevMode()) {
-                AppLogger.init();
+        synchronized (RunnerHolder.RUNNER) {
+            if (this.builder != null) {
+                return this;
             }
+            try {
+                this.builder = builder;
 
-            // 在此按需要初始化的顺序来添加处理程序定义
-            BaseBroker broker = new JobStateManagementBroker();
-            broker.init();
-            servicePool.put(Id.MANAGEMENT, broker);
-            broker = new JobExecuteBroker();
-            broker.init();
-            servicePool.put(Id.EXECUTOR, broker);
+                singleEventDispatcher = new ThreadPoolExecutor(1, 1, 0L, TimeUnit.MILLISECONDS,
+                        new LinkedBlockingQueue<>(1024), new EbrThreadFactory("ebr-message-"), new ThreadPoolExecutor.AbortPolicy());
+                messageBus = new AsyncMessageBus(singleEventDispatcher);
+                // workerThreadPool
+                int minNum = (this.builder.getMinWorkerNum() == 0) ? Runtime.getRuntime().availableProcessors() : this.builder.getMinWorkerNum();
+                int maxNum = (this.builder.getMaxWorkerNum() == 0) ? minNum * 2 : this.builder.getMaxWorkerNum();
+                workerExecutor = new ThreadPoolExecutor(minNum, maxNum, 0L, TimeUnit.MILLISECONDS,
+                        new LinkedBlockingQueue<>(), new EbrThreadFactory("ebr-worker-"));
 
-            messageBus.subscribe(Message.class, this);
-        } catch (Exception ex) {
-            throw new RuntimeException(ex);
+                if (this.builder.getDevMode()) {
+                    AppLogger.init();
+                }
+
+                // 在此按需要初始化的顺序来添加处理程序定义
+                BaseBroker broker = new JobStateManagementBroker();
+                broker.init();
+                servicePool.put(Id.MANAGEMENT, broker);
+                broker = new JobExecuteBroker();
+                broker.init();
+                servicePool.put(Id.EXECUTOR, broker);
+
+                messageBus.subscribe(Message.class, this);
+            } catch (Exception ex) {
+                throw new EbrException(ex);
+            }
         }
         return this;
     }
@@ -136,7 +148,7 @@ public enum ExternalBatchRunner implements ExternalBatchRunnerService, MessageSu
      * @return AsyncMessageBus 消息总线实例
      */
     static AsyncMessageBus getMessageBus() {
-        return RUNNER.messageBus;
+        return RunnerHolder.RUNNER.messageBus;
     }
 
     /**
@@ -165,6 +177,8 @@ public enum ExternalBatchRunner implements ExternalBatchRunnerService, MessageSu
                 Thread.sleep(1000);
             } catch (InterruptedException e) {
                 AppLogger.dumpError(e);
+                // Restore interrupted state...
+                Thread.currentThread().interrupt();
             } finally {
                 terminated = shouldStop;
             }
@@ -227,28 +241,37 @@ public enum ExternalBatchRunner implements ExternalBatchRunnerService, MessageSu
 
     private void putServiceEvent(Message message) {
         switch (message.act) {
-            case MSG_ACT_JOB_STATE_CHANGED: {
-                String url = (String) message.param.getOrDefault(MSG_DATA_JOB_URL, "");
-                JobState state = (JobState) message.param.getOrDefault(MSG_DATA_NEW_JOB_STATE, "");
-                serviceEvent.serviceType = JOB_STATE_CHANGED;
-                serviceEvent.payLoad = Map.of(JOB_URL, url, JOB_STATE, state);
-                listener.onServiceEvent(serviceEvent);
+            case MSG_ACT_JOB_STATE_CHANGED:
+                onJobStateChanged(message);
                 break;
-            }
-            case MSG_ACT_ALL_JOB_FINISHED: {
-                serviceEvent.serviceType = ALL_JOB_FINISHED;
-                serviceEvent.payLoad = Map.of();
-                listener.onServiceEvent(serviceEvent);
+            case MSG_ACT_ALL_JOB_FINISHED:
+                onAllJobFinished();
                 break;
-            }
-            case MSG_ACT_SERVICE_SHUTDOWN: {
-                serviceEvent.serviceType = SERVICE_SHUTDOWN;
-                serviceEvent.payLoad = Map.of();
-                listener.onServiceEvent(serviceEvent);
+            case MSG_ACT_SERVICE_SHUTDOWN:
+                onServiceShutdown();
                 break;
-            }
             default: break;
         }
+    }
+
+    private void onJobStateChanged(Message message) {
+        String url = (String) message.param.getOrDefault(MSG_DATA_JOB_URL, "");
+        JobState state = (JobState) message.param.getOrDefault(MSG_DATA_NEW_JOB_STATE, "");
+        serviceEvent.serviceType = JOB_STATE_CHANGED;
+        serviceEvent.payLoad = Map.of(JOB_URL, url, JOB_STATE, state);
+        listener.onServiceEvent(serviceEvent);
+    }
+
+    private void onAllJobFinished() {
+        serviceEvent.serviceType = ALL_JOB_FINISHED;
+        serviceEvent.payLoad = Map.of();
+        listener.onServiceEvent(serviceEvent);
+    }
+
+    private void onServiceShutdown() {
+        serviceEvent.serviceType = SERVICE_SHUTDOWN;
+        serviceEvent.payLoad = Map.of();
+        listener.onServiceEvent(serviceEvent);
     }
 }
 
