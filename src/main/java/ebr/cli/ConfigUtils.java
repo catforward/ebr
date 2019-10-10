@@ -47,6 +47,7 @@ enum ConfigUtils {
      * 配置文件中使用的键名
      */
     public static final String KEY_INSTANT_TASK = "ebr.instant.task";
+    public static final String KEY_WORKER_NUM = "ebr.worker.number";
 
     /**
      * 属性类实例

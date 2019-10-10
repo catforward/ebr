@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import static ebr.core.util.MiscUtils.checkCommandBanList;
+import static ebr.cli.ConfigUtils.KEY_WORKER_NUM;
 
 /**
  *
@@ -61,7 +62,7 @@ public class Launcher {
         builder.setServiceMode(false);
         builder.setDevMode(true);
         builder.setMinWorkerNum(4);
-        builder.setMaxWorkerNum(4);
+        builder.setMaxWorkerNum(Integer.valueOf((String) ConfigUtils.getOrDefault(KEY_WORKER_NUM, "4")));
         // launch task flow
         ExternalBatchRunnerService service = builder.buildExternalBatchRunnerService();
         service.setServiceEventListener(this::onServiceEvent);
@@ -71,12 +72,14 @@ public class Launcher {
 
     private Map<String, String> makeOptArgMap(String[] args) {
         HashMap<String, String> optArg = new HashMap<>(INIT_CAP);
-        GetOpts opts = new GetOpts(args, "f:");
+        GetOpts opts = new GetOpts(args, "f:j:");
         int c;
         try {
             while ((c = opts.getNextOption()) != -1) {
                 if ((char) c == 'f') {
                     optArg.put(ConfigUtils.KEY_INSTANT_TASK, opts.getOptionArg());
+                } else if ((char) c == 'j') {
+                    optArg.put(ConfigUtils.KEY_WORKER_NUM, opts.getOptionArg());
                 } else {
                     showUsage();
                 }
