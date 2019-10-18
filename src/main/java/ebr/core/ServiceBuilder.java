@@ -69,11 +69,15 @@ public class ServiceBuilder {
     }
 
     public void setMaxWorkerNum(int maxWorkerNum) {
-        this.maxWorkerNum = maxWorkerNum;
+        if (maxWorkerNum > 0) {
+            this.maxWorkerNum = maxWorkerNum;
+        }
     }
 
     public void setMinWorkerNum(int minWorkerNum) {
-        this.minWorkerNum = minWorkerNum;
+        if (minWorkerNum > 0) {
+            this.minWorkerNum = minWorkerNum;
+        }
     }
 
     public ExternalBatchRunnerService buildExternalBatchRunnerService() {

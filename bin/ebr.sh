@@ -8,7 +8,7 @@ CLI_LOG=${EBR_ROOT}/logs/cli_${APP_NAME}.log
 CMD_ARGS=$@
 
 JAVA_BIN=/usr/bin/java
-JAVA_OPTS="-Xms32m -Xmx64m -Xlog:gc:${EBR_ROOT}/logs/gc_${APP_NAME}.log"
+JAVA_OPTS="-Xms16m -Xmx64m -Xlog:gc:${EBR_ROOT}/logs/gc_${APP_NAME}.log"
 
 is_exist() {
 	pid=`ps -ef | grep ${APP_NAME} | grep -v grep | awk '{print $2}'`
