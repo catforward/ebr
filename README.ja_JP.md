@@ -1,6 +1,6 @@
-![](https://img.shields.io/badge/build-passing-green) ![](https://img.shields.io/badge/language-java-blue.svg) ![](https://img.shields.io/badge/license-MIT-000000.svg) 
+![](https://img.shields.io/badge/build-passing-green) ![](https://img.shields.io/badge/language-java-blue.svg) ![](https://img.shields.io/badge/license-MIT-000000.svg)
 
-# EBR (External Batch Runner)
+# EBR (External Batch Runner)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font size=3>[English](https://github.com/catforward/ebr/blob/master/README.md) | [中文](https://github.com/catforward/ebr/blob/master/README.zh_CN.md)</font>
 
 EBR(External Batch Runner)は明確な依存関係を持つ外部プログラムを並列で実行するツールである。
 

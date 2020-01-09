@@ -1,6 +1,6 @@
-![](https://img.shields.io/badge/build-passing-green) ![](https://img.shields.io/badge/language-java-blue.svg) ![](https://img.shields.io/badge/license-MIT-000000.svg) 
+![](https://img.shields.io/badge/build-passing-green) ![](https://img.shields.io/badge/language-java-blue.svg) ![](https://img.shields.io/badge/license-MIT-000000.svg)
 
-# EBR (External Batch Runner)
+# EBR (External Batch Runner)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font size=3>[English](https://github.com/catforward/ebr/blob/master/README.md) | [日本語](https://github.com/catforward/ebr/blob/master/README.ja_JP.md)</font>
 
 EBR(External Batch Runner) 如其名，一个用来执行若干个有清晰的前后依赖关系的外部命令的小工具。
 
