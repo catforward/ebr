@@ -1,8 +1,5 @@
-target/
-.idea/
-/ebr.iml
-libs/
-logs/
+ebr-dist/logs/*
+ebr-server/target/
 .settings/
 .classpath
 .project

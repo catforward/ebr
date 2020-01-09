@@ -4,8 +4,8 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>tsm.one</groupId>
-  <artifactId>ebr</artifactId>
-  <version>2.0</version>
+  <artifactId>ebr-server</artifactId>
+  <version>3.0</version>
   <packaging>jar</packaging>
 
   <name>EBR</name>
@@ -19,7 +19,7 @@
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
     <sonar.java.binaries>${project.basedir}/target/classes</sonar.java.binaries>
-    <main.clazz>ebr.cli.Launcher</main.clazz>
+    <main.clazz>ebr.server.Launcher</main.clazz>
   </properties>
 
   <dependencies>
@@ -51,7 +51,7 @@
               <goal>shade</goal>
             </goals>
             <configuration>
-              <outputFile>${project.basedir}/libs/lib-${project.artifactId}.jar
+              <outputFile>${project.basedir}/../ebr-dist/lib/${project.artifactId}.jar
               </outputFile>
               <minimizeJar>false</minimizeJar>
               <transformers>

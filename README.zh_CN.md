@@ -1,6 +1,6 @@
-![](https://img.shields.io/badge/build-passing-green) ![](https://img.shields.io/badge/language-java-blue.svg) ![](https://img.shields.io/badge/license-MIT-000000.svg)
+![](https://img.shields.io/badge/build-passing-green) ![](https://img.shields.io/badge/language-java-blue.svg)
 
-# EBR (External Batch Runner)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font size=3>[English](https://github.com/catforward/ebr/blob/master/README.md) | [日本語](https://github.com/catforward/ebr/blob/master/README.ja_JP.md)</font>
+# EBR (External Batch Runner)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;[English](./README.md) | [日本語](./README.ja_JP.md)
 
 EBR(External Batch Runner) 如其名，一个用来执行若干个有清晰的前后依赖关系的外部命令的小工具。
 
@@ -48,7 +48,7 @@ EBR(External Batch Runner) 如其名，一个用来执行若干个有清晰的�
 用法
 
 ```
-/${your_path}/ebr/bin/ebr.sh -f ${your_define_file}.xml
+/${your_path}/ebr/bin/ebr-server.sh
 ```
 
 
