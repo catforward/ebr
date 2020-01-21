@@ -1,14 +1,12 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>tsm.one</groupId>
+  <groupId>tsm</groupId>
   <artifactId>ebr-server</artifactId>
-  <version>3.0</version>
+  <version>3.0.0-SNAPSHOT</version>
   <packaging>jar</packaging>
 
-  <name>EBR</name>
+  <name>EBR-Server</name>
   <description>External Batch Runner</description>
   <url>https://github.com/catforward/ebr</url>
 
@@ -19,15 +17,49 @@
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
     <sonar.java.binaries>${project.basedir}/target/classes</sonar.java.binaries>
-    <main.clazz>ebr.server.Launcher</main.clazz>
+    <main.clazz>pers.ebr.server.Launcher</main.clazz>
+    <vertx.version>3.8.4</vertx.version>
+    <log4j2.version>2.12.1</log4j2.version>
+    <slf4j.version>1.7.30</slf4j.version>
+    <guava.version>28.2-jre</guava.version>
+    <sqlite-jdbc.version>3.30.1</sqlite-jdbc.version>
   </properties>
 
   <dependencies>
     <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.12</version>
-      <scope>test</scope>
+      <groupId>com.google.guava</groupId>
+      <artifactId>guava</artifactId>
+      <version>${guava.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.xerial</groupId>
+      <artifactId>sqlite-jdbc</artifactId>
+      <version>${sqlite-jdbc.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>io.vertx</groupId>
+      <artifactId>vertx-core</artifactId>
+      <version>${vertx.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-api</artifactId>
+      <version>${log4j2.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <version>${log4j2.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j-impl</artifactId>
+      <version>${log4j2.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.slf4j</groupId>
+      <artifactId>slf4j-api</artifactId>
+      <version>${slf4j.version}</version>
     </dependency>
   </dependencies>
   <build>
@@ -51,15 +83,33 @@
               <goal>shade</goal>
             </goals>
             <configuration>
-              <outputFile>${project.basedir}/../ebr-dist/lib/${project.artifactId}.jar
-              </outputFile>
+              <outputFile>${project.basedir}/../ebr-dist/lib/${project.artifactId}.jar</outputFile>
               <minimizeJar>false</minimizeJar>
               <transformers>
-                <transformer
-                        implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                   <mainClass>${main.clazz}</mainClass>
                 </transformer>
               </transformers>
+              <filters>
+                <filter>
+                  <artifact>*:*</artifact>
+                  <excludes>
+                    <exclude>META-INF/*.SF</exclude>
+                    <exclude>META-INF/*.DSA</exclude>
+                    <exclude>META-INF/*.RSA</exclude>
+                    <exclude>org/sqlite/native/FreeBSD/**</exclude>
+                    <exclude>org/sqlite/native/Mac/**</exclude>
+                    <exclude>org/sqlite/native/Windows/**</exclude>
+                    <exclude>org/sqlite/native/Linux/aarch64/**</exclude>
+                    <exclude>org/sqlite/native/Linux/android-arm/**</exclude>
+                    <exclude>org/sqlite/native/Linux/arm/**</exclude>
+                    <exclude>org/sqlite/native/Linux/armv6/**</exclude>
+                    <exclude>org/sqlite/native/Linux/armv7/**</exclude>
+                    <exclude>org/sqlite/native/Linux/ppc64/**</exclude>
+                    <exclude>org/sqlite/native/Linux/x86/**</exclude>
+                  </excludes>
+                </filter>
+              </filters>
               <artifactSet>
                 <excludes>
                   <exclude>classworlds:classworlds</exclude>

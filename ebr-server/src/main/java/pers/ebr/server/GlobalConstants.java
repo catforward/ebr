@@ -16,18 +16,16 @@
  * limitations under the License.
  */
 
-package ebr.server;
-
-import java.io.IOException;
+package pers.ebr.server;
 
 /**
- *
- * @author catforward
+ * Define the constant variables which can be used in this whole application.
+ * 
+ * @author l.gong
  */
-public class Launcher {
+public interface GlobalConstants {
 
-    public static void main(String[] args) throws Exception {
-        System.out.println("Hello from EBR-Server...");
-    }
+    /* 存放根目录的环境变量名 */
+    public final static String ENV_EBR_ROOT = "EBR_ROOT";
 
 }

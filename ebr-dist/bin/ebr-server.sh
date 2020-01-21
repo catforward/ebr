@@ -1,14 +1,14 @@
 #!/bin/bash
 
 SCRIPT_ROOT=$(cd $(dirname $0); pwd)
-EBR_ROOT=$(dirname ${SCRIPT_ROOT})
+export EBR_ROOT=$(dirname ${SCRIPT_ROOT})
 APP_NAME=ebr-server.jar
 APP_JAR=${EBR_ROOT}/lib/${APP_NAME}
 CLI_LOG=${EBR_ROOT}/logs/${APP_NAME}.log
 CMD_ARGS=$@
 
 JAVA_BIN=/usr/bin/java
-JAVA_OPTS="-Xms256m -Xmx512m -Xlog:gc:${EBR_ROOT}/logs/gc_${APP_NAME}.log"
+JAVA_OPTS="-Xms64m -Xmx256m -Xlog:gc:${EBR_ROOT}/logs/gc_${APP_NAME}.log"
 
 is_exist() {
 	pid=`ps -ef | grep ${APP_NAME} | grep -v grep | awk '{print $2}'`

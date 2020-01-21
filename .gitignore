@@ -1,5 +1,7 @@
-ebr-dist/logs/*
+ebr-dist/lib/
+ebr-dist/logs/
 ebr-server/target/
 .settings/
 .classpath
 .project
+.factorypath
