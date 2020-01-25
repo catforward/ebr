@@ -15,30 +15,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package pers.ebr.server;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import pers.ebr.server.utils.Configurations;
-
+package pers.ebr.cli.core.data;
 
 /**
- * The Launcher of EBR-Server
- * 
- * @author l.gong
+ * <pre>
+ * define the type of job
+ * </pre>
+ * @author catforward
  */
-public class Launcher {
-
-    private final static Logger logger = LoggerFactory.getLogger(Launcher.class);
-
-    public static void main(String[] args) throws Exception {
-        logger.info("EBR-Server is Starting...");
-        Configurations.load();
-        Configurations.dumpAllProperties();
-        
-        logger.info("EBR-Server is Finished...");
-    }
-
+public enum JobType {
+    /** 任务流类型，可包含子任务或子模块 */
+    FLOW,
+    /** 任务类型，不能拥有子任务 */
+    TASK,
 }

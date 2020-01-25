@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<task id="TASK_FLOW" desc="root object if test task flow">
+    <task id="T1" desc="test task unit T1"
+          command="echo T1 Start; sleep 5; echo T1 End"/>
+
+    <task id="T2" desc="test task unit T2" pre_tasks="T1">
+        <task id="T2-1" desc="test task unit T2-1"
+              command="echo T2-1 Start; sleep 5; echo T2-1 End"/>
+
+        <task id="T2-2" desc="test task unit T2-2"
+              command="echo T2-2 Start; sleep 5; echo T2-2 End"/>
+
+        <task id="T2-3" desc="test task unit T2-3" pre_tasks="T2-1,T2-2"
+              command="echo T2-3 Start; sleep 5; echo T2-3 End"/>
+    </task>
+
+    <task id="T3" desc="test task unit T3" pre_tasks="T1,T2"
+          command="echo T3 Start; sleep 5; echo T3 End"/>
+
+    <task id="T4" desc="test task unit T4" pre_tasks="T1"
+          command="echo T4 Start; sleep 5; echo T4 End"/>
+</task>
