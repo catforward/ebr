@@ -17,8 +17,8 @@
  */
 package pers.ebr.cli.core.jobs;
 
-import pers.ebr.cli.core.base.Broker;
-import pers.ebr.cli.core.base.Message;
+import pers.ebr.cli.core.Broker;
+import pers.ebr.cli.core.Message;
 
 /**
  * <pre>

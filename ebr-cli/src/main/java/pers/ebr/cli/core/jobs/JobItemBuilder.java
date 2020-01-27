@@ -18,15 +18,15 @@
 package pers.ebr.cli.core.jobs;
 
 import pers.ebr.cli.core.EbrException;
-import pers.ebr.cli.core.data.JobType;
+import pers.ebr.cli.core.types.JobType;
 import pers.ebr.cli.core.Task;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
-import static pers.ebr.cli.core.util.MiscUtils.checkCommandBanList;
-import static pers.ebr.cli.core.util.MiscUtils.checkNotNull;
+import static pers.ebr.cli.util.MiscUtils.checkCommandBanList;
+import static pers.ebr.cli.util.MiscUtils.checkNotNull;
 
 /**
  * <pre>

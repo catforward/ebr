@@ -18,11 +18,11 @@
 package pers.ebr.cli.core.jobs;
 
 import pers.ebr.cli.core.EbrException;
-import pers.ebr.cli.core.base.Handler;
-import pers.ebr.cli.core.base.Message;
-import pers.ebr.cli.core.data.Job;
-import pers.ebr.cli.core.data.JobState;
-import pers.ebr.cli.core.data.JobType;
+import pers.ebr.cli.core.Handler;
+import pers.ebr.cli.core.Message;
+import pers.ebr.cli.core.types.Job;
+import pers.ebr.cli.core.types.JobState;
+import pers.ebr.cli.core.types.JobType;
 
 import java.util.ArrayList;
 import java.util.List;

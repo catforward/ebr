@@ -18,7 +18,7 @@
 package pers.ebr.cli;
 
 import pers.ebr.cli.core.EbrException;
-import pers.ebr.cli.core.util.PathUtils;
+import pers.ebr.cli.util.PathUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -44,7 +44,7 @@ class TaskDefineFileLoader {
     /** symbols in json file */
     private static final String ATTR_ID = "id";
     private static final String ATTR_DESC = "desc";
-    private static final String ATTR_PRE_TASKS = "pre_tasks";
+    private static final String ATTR_PRE_TASKS = "depends";
     private static final String ATTR_COMMAND = "command";
     /** internal symbols in app */
     private static final String KEY_ROOT_TASK = "KEY_ROOT_TASK";
@@ -69,8 +69,9 @@ class TaskDefineFileLoader {
         if (strVal.isEmpty()) {
             throw new EbrException("没有发现Task定义文件的路径");
         }
-        String filePath = strVal.get();
-        return filePath.startsWith("/") ? filePath : PathUtils.getDefPath() + File.separator + filePath;
+        //String filePath = strVal.get();
+        //return filePath.startsWith("/") ? filePath : PathUtils.getDefPath() + File.separator + filePath;
+        return strVal.get();
     }
 
 

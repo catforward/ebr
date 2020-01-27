@@ -18,13 +18,13 @@
 package pers.ebr.cli.core.jobs;
 
 import pers.ebr.cli.core.EbrException;
-import pers.ebr.cli.core.base.Broker.BaseBroker;
-import pers.ebr.cli.core.base.Broker.Id;
-import pers.ebr.cli.core.base.Message;
-import pers.ebr.cli.core.base.Message.Symbols;
-import pers.ebr.cli.core.data.Job;
-import pers.ebr.cli.core.data.JobState;
-import pers.ebr.cli.core.util.AppLogger;
+import pers.ebr.cli.core.Broker.BaseBroker;
+import pers.ebr.cli.core.Broker.Id;
+import pers.ebr.cli.core.Message;
+import pers.ebr.cli.core.Message.Symbols;
+import pers.ebr.cli.core.types.Job;
+import pers.ebr.cli.core.types.JobState;
+import pers.ebr.cli.util.AppLogger;
 
 import java.io.BufferedReader;
 import java.io.IOException;

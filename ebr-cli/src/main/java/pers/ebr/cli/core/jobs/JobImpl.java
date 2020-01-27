@@ -17,12 +17,12 @@
  */
 package pers.ebr.cli.core.jobs;
 
-import pers.ebr.cli.core.data.Job;
-import pers.ebr.cli.core.data.JobState;
-import pers.ebr.cli.core.data.JobType;
+import pers.ebr.cli.core.types.Job;
+import pers.ebr.cli.core.types.JobState;
+import pers.ebr.cli.core.types.JobType;
 import pers.ebr.cli.core.Task;
-import pers.ebr.cli.core.util.graph.DirectedGraph;
-import pers.ebr.cli.core.util.graph.GraphBuilder;
+import pers.ebr.cli.util.graph.DirectedGraph;
+import pers.ebr.cli.util.graph.GraphBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -31,7 +31,7 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-import static pers.ebr.cli.core.data.JobState.FAILED;
+import static pers.ebr.cli.core.types.JobState.FAILED;
 
 /**
  * <pre>

@@ -17,26 +17,21 @@
  */
 package pers.ebr.cli;
 
-import pers.ebr.cli.core.ExternalBatchRunnerService;
-import pers.ebr.cli.core.ServiceBuilder;
-import pers.ebr.cli.core.ServiceEvent;
-import pers.ebr.cli.core.util.AppLogger;
+import pers.ebr.cli.core.ExternalBatchRunner;
+import pers.ebr.cli.util.AppLogger;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import static pers.ebr.cli.core.util.MiscUtils.checkCommandBanList;
-import static pers.ebr.cli.ConfigUtils.KEY_WORKER_NUM;
+import static pers.ebr.cli.util.MiscUtils.checkCommandBanList;
 
 /**
  *
  * @author l.gong
  */
 public class Launcher {
-
-    private static final int INIT_CAP = 8;
 
     public static void main(String[] args) throws IOException {
         checkCommandBanList(args);
@@ -47,27 +42,21 @@ public class Launcher {
         // 又不是服务器程序，不处理异常，如果有，那就任其终止程序
         ConfigUtils.merge(makeOptArgMap(args));
         AppLogger.init();
-        // load from xml
+
         TaskDefineFileLoader loader = new TaskDefineFileLoader();
-        TaskImpl rootTask = loader.load();
-        // create ebr builder
-        ServiceBuilder builder = ServiceBuilder.createExternalBatchRunnerBuilder();
-        builder.setDevMode(true);
-        // launch task flow
-        ExternalBatchRunnerService service = builder.buildExternalBatchRunnerService();
-        service.setServiceEventListener(this::onServiceEvent);
-        String url = service.createJobFlow(rootTask);
-        service.launchJobFlow(url);
+        ExternalBatchRunner.getInstance().init().launchJobFlow(loader.load());
     }
 
     private Map<String, String> makeOptArgMap(String[] args) {
-        HashMap<String, String> optArg = new HashMap<>(INIT_CAP);
-        GetOpts opts = new GetOpts(args, "f:");
+        HashMap<String, String> optArg = new HashMap<>();
+        GetOpts opts = new GetOpts(args, "f:d");
         int c;
         try {
             while ((c = opts.getNextOption()) != -1) {
                 if ((char) c == 'f') {
                     optArg.put(ConfigUtils.KEY_INSTANT_TASK, opts.getOptionArg());
+                } else if ((char) c == 'd') {
+                    optArg.put(ConfigUtils.EBR_LOG_ENABLE, Boolean.toString(true));
                 } else {
                     showUsage();
                 }
@@ -80,11 +69,8 @@ public class Launcher {
     }
 
     private static void showUsage() {
-        System.err.println("Usage: <path>/jar_file [-f] <name of task define file>");
+        System.err.println("Usage: <path>/ebr_cli.jar [-f] <name of task define file>");
         System.exit(1);
     }
 
-    private void onServiceEvent(ServiceEvent event) {
-        System.err.println(String.format("event:[%s], data:[%s]",event.type().name(), event.data().toString()));
-    }
 }

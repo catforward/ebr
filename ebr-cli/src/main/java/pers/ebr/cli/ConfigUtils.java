@@ -25,7 +25,7 @@ import java.util.Properties;
  *
  * @author l.gong
  */
-enum ConfigUtils {
+public enum ConfigUtils {
     /** 单例 */
     CONFIG;
 
@@ -33,7 +33,8 @@ enum ConfigUtils {
      * 配置文件中使用的键名
      */
     public static final String KEY_INSTANT_TASK = "ebr.instant.task";
-    public static final String KEY_WORKER_NUM = "ebr.worker.number";
+    public static final String EBR_LOG_ENABLE = "ebr.log.enable";
+    public static final String EBR_LOG_LOCAL = "ebr.log.local";
 
     /**
      * 属性类实例

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<task id="TASK_FLOW" desc="root object if test task flow">
+    <task id="T1" desc="test task unit T1" command="C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -Command echo 'T1 start...';sleep 5;echo 'T1 Finished...'"/>
+    <task id="T2" desc="test task unit T2" depends="T1">
+        <task id="T2-1" desc="test task unit T2-1" command="C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -Command echo 'T2-1 start...';sleep 5;echo 'T2-1 Finished...'"/>
+        <task id="T2-2" desc="test task unit T2-2" command="C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -Command echo 'T2-2 start...';sleep 5;echo 'T2-2 Finished...'"/>
+        <task id="T2-3" desc="test task unit T2-3" depends="T2-1,T2-2" command="C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -Command echo 'T2-3 start...';sleep 5;echo 'T2-3 Finished...'"/>
+    </task>
+    <task id="T3" desc="test task unit T3" depends="T1,T2" command="C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -Command echo 'T3 start...';sleep 5;echo 'T3 Finished...'"/>
+    <task id="T4" desc="test task unit T4" depends="T1" command="C:\Windows\System32\WindowsPowerShell\v1.0\powershell.exe -Command echo 'T4 start...';sleep 5;echo 'T4 Finished...'"/>
+</task>
