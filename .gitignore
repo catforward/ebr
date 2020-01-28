@@ -1,8 +1,16 @@
-target/
-.idea/
-/ebr.iml
-libs/
-logs/
+ebr-dist/lib/
+ebr-dist/logs/
+ebr-cli/target/
+ebr-server/target/
+
+# vscode
 .settings/
 .classpath
 .project
+.factorypath
+
+# idea
+.idea/
+ebr.iml
+ebr-cli/ebr-cli.iml
+ebr-server/ebr-server.iml

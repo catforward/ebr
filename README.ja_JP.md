@@ -1,17 +1,47 @@
-![](https://img.shields.io/badge/build-passing-green) ![](https://img.shields.io/badge/language-java-blue.svg) ![](https://img.shields.io/badge/license-MIT-000000.svg)
+# EBR (External Batch Runner)
 
-# EBR (External Batch Runner)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font size=3>[English](https://github.com/catforward/ebr/blob/master/README.md) | [中文](https://github.com/catforward/ebr/blob/master/README.zh_CN.md)</font>
+![build](https://img.shields.io/badge/build-passing-green)
 
-EBR(External Batch Runner)は明確な依存関係を持つ外部プログラムを並列で実行するツールである。
+README
+
+- [English](./README.md)
+- [中文](./README.zh_CN.md)
+
+Note: 個人学習用プロジェクトのため、設計書やベストプラクティスは一切ありません。
+
+EBR(External Batch Runner)は明確な依存の関係を持つ外部プログラムを並列で実行するツールである。
 
 外部プログラムとは
 
 - スクリプト (shell, bat, python...)
 - コマンド(GUIが無いプログラム)
 
-コマンド間の関係は下記図の様
+例え、下記のような実行対象となるコマンド間の関係定義がある
 
-![image](https://github.com/catforward/ebr/raw/master/images/sample_task_flow.jpg)
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<task id="TaskFlow-1" desc="root group">
+    <task id="task-1" desc="run command-1" command="/your/path/command-1.sh"/>
+    <task id="task-2" desc="task group-1" depends="task-1">
+        <task id="task-2-1" desc="run command-2" command="/your/path/command-2.sh"/>
+        <task id="task-2-1" desc="run command-3" command="/your/path/command-3.sh"/>
+        <task id="task-2-3" desc="run command-4" depends="task-2-1,task-2-2" command="/your/path/command-4.sh"/>
+    </task>
+    <task id="task-3" desc="run command-5" depends="task-1,task-2" command="/your/path/command-5.sh"/>
+    <task id="task-4" desc="run command-6" depends="task-1" command="/your/path/command-6.sh"/>
+</task>
+```
+
+下記コマンドを叩くと
+
+```sh
+java -jar /${your_path}/ebr-cli.jar -f /${your_path}/your_define.xml
+```
+
+指定されたコマンド間の依存関係を分析し、下記図のような有向非巡回グラフ（DAG）を作成する。そして、外部プログラムは定義に従って順次実行される。
+
+![image](ebr-docs/sample_task_flow.jpg)
+
 
 
 開発環境
@@ -22,31 +52,3 @@ EBR(External Batch Runner)は明確な依存関係を持つ外部プログラム
 使用したライブラリ
 
 - OpenJDK 11
-
-外部コマンド間の関係定義
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<task id="TASK_FLOW" desc="root group">
-    <task id="T1" desc="run command-1"
-          command="/your/command-1"/>
-    <task id="T2" desc="command group" pre_tasks="T1">
-        <task id="T2-1" desc="run command-2"
-              command="/your/command-2"/>
-        <task id="T2-1" desc="run command-3"
-                      command="/your/command-3"/>
-        <task id="T2-3" desc="run command-4" pre_tasks="T2-1,T2-2"
-              command="/your/command-4"/>
-    </task>
-    <task id="T3" desc="run command-5" pre_tasks="T1,T2"
-          command="/your/command-5"/>
-    <task id="T4" desc="run command-6" pre_tasks="T1"
-          command="/your/command-6"/>
-</task>
-```
-
-コマンドの使い方
-
-```
-/${your_path}/ebr/bin/ebr.sh -f ${your_define_file}.xml
-```
