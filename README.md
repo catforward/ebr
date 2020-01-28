@@ -7,7 +7,9 @@ README
 - [中文](./README.zh_CN.md)
 - [日本語](./README.ja_JP.md)
 
-EBR(External Batch Runner) , a personal tool used to execute several external programs with clear dependencies.
+Note: This is a pure personal study project. It's means that it have no design documents and have no the best practices, just coding following my mind.
+
+EBR(External Batch Runner) , a simple tool used to execute several external programs with clear dependencies.
 
 External Program
 
@@ -40,7 +42,7 @@ java -jar /${your_path}/ebr-cli.jar -f /${your_path}/your_define.xml
 
 EBR will parse the definition to a directed acyclic graph (DAG), and then, execute them as we defined.
 
-![image](./images/sample_task_flow.jpg)
+![image](ebr-docs/sample_task_flow.jpg)
 
 Development Environment
 

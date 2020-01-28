@@ -18,9 +18,10 @@
 package pers.ebr.cli.core.jobs;
 
 import pers.ebr.cli.core.Handler;
-import pers.ebr.cli.core.Message;
 import pers.ebr.cli.core.types.JobState;
 import pers.ebr.cli.util.AppLogger;
+
+import static pers.ebr.cli.core.Message.*;
 
 /**
  * <pre>
@@ -37,18 +38,18 @@ public class JobStateUpdateHandler implements Handler {
 
     @Override
     public boolean doHandle(Handler.HandlerContext context) {
-        String url = (String) context.getParam(Message.Symbols.MSG_DATA_JOB_URL);
-        JobState state = (JobState) context.getParam(Message.Symbols.MSG_DATA_NEW_JOB_STATE);
+        String url = (String) context.getParam(MSG_DATA_JOB_URL);
+        JobState state = (JobState) context.getParam(MSG_DATA_NEW_JOB_STATE);
         AppLogger.info(String.format("url:[%s] state->[%s]", url, state.name()));
         JobItemStateHolder.getJob(url).updateState(state);
         // 如果任意一个unit执行错误
         // 或者顶层flow都完成了
         // 则通知应用程序退出
         if (JobState.FAILED == state) {
-            context.setNoticeAction(Message.Symbols.MSG_ACT_SERVICE_SHUTDOWN);
+            context.setNoticeAction(MSG_ACT_SERVICE_SHUTDOWN);
             return false;
         } else if (JobItemStateHolder.getRootJobFlow().isComplete()) {
-            context.setNextAction(Message.Symbols.MSG_ACT_ALL_JOB_FINISHED);
+            context.setNextAction(MSG_ACT_ALL_JOB_FINISHED);
             return false;
         }
         return true;

@@ -36,7 +36,7 @@ import static pers.ebr.cli.util.MiscUtils.checkNotNull;
 public class AsyncMessageBus {
     private final Executor executor;
     private final AsyncDispatcher dispatcher;
-    private final Map<Class<?>, CopyOnWriteArraySet<MessageSubscriber>> topicSubscriber;
+    private final Map<String, CopyOnWriteArraySet<MessageSubscriber>> topicSubscriber;
 
     public AsyncMessageBus(Executor executor) {
         this.executor = executor;
@@ -59,7 +59,7 @@ public class AsyncMessageBus {
      * @param topic 订阅对象
      * @param subscriber 订阅者
      */
-    public void subscribe(Class<?> topic, MessageSubscriber subscriber) {
+    public void subscribe(String topic, MessageSubscriber subscriber) {
         checkNotNull(topic);
         checkNotNull(subscriber);
         CopyOnWriteArraySet<MessageSubscriber> subscribers = this.topicSubscriber.getOrDefault(topic, null);
@@ -87,15 +87,15 @@ public class AsyncMessageBus {
      * <pre>
      * 发送消息
      * </pre>
-     * @param obj 分发对象
+     * @param topic 分发主题
+     * @param data 分发数据
      */
-    public void publish(Object obj) {
-        Class<?> topic = checkNotNull(obj).getClass();
+    public void publish(String topic, Map<String, Object> data) {
         CopyOnWriteArraySet<MessageSubscriber> subscribers = this.topicSubscriber.getOrDefault(topic, null);
         if (subscribers != null) {
             Iterator<MessageSubscriber> inter = subscribers.iterator();
             if (inter.hasNext()) {
-                this.dispatcher.dispatch(obj, inter);
+                this.dispatcher.dispatch(topic, Map.copyOf(data), inter);
             }
         }
     }

@@ -7,7 +7,9 @@ README
 - [English](./README.md)
 - [日本語](./README.ja_JP.md)
 
-EBR(External Batch Runner) 是个人使用的小工具，用来管理并执行若干个有清晰的前后依赖关系的外部命令。
+Note: 这是一个纯粹的个人学习项目。没有设计文档，也没有什么所谓的最佳实践，只是按照我的想法编写的垃圾代码。
+
+EBR(External Batch Runner) 是一个简单的工具，用来管理并执行若干个有清晰的前置依赖关系的外部命令。
 
 外部程序包括
 
@@ -40,7 +42,7 @@ java -jar /${your_path}/ebr-cli.jar -f /${your_path}/your_define.xml
 
 - EBR将会解析给定的依赖定义，并转换成如下的有向无环的图结构（DAG），然后按照顺序执行它们
 
-![image](./images/sample_task_flow.jpg)
+![image](ebr-docs/sample_task_flow.jpg)
 
 开发运行环境
 

@@ -35,7 +35,7 @@ class DirectedEdge<T> {
         checkNotNull(vertexFrom);
         checkNotNull(vertexTo);
         if (vertexFrom.equals(vertexTo)) {
-            throw new IllegalArgumentException("起点和终点不能相等");
+            throw new IllegalArgumentException("The starting vertex cannot be the same as the end vertex");
         }
         this.vertexFrom = vertexFrom;
         this.vertexTo = vertexTo;

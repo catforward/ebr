@@ -32,14 +32,14 @@ import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
-import static pers.ebr.cli.core.Message.Symbols.*;
+import static pers.ebr.cli.core.Message.*;
 import static pers.ebr.cli.util.MiscUtils.checkNotNull;
 
 /**
  *
  * @author l.gong
  */
-public class ExternalBatchRunner implements MessageSubscriber<Message> {
+public class ExternalBatchRunner implements MessageSubscriber {
     /** 单例 */
     private static class RunnerHolder{
         static final ExternalBatchRunner RUNNER = new ExternalBatchRunner();
@@ -95,7 +95,7 @@ public class ExternalBatchRunner implements MessageSubscriber<Message> {
                 broker.init();
                 servicePool.put(Id.EXECUTOR, broker);
 
-                messageBus.subscribe(Message.class, this);
+                subscribeAllTopic();
             } catch (Exception ex) {
                 throw new EbrException(ex);
             }
@@ -112,6 +112,25 @@ public class ExternalBatchRunner implements MessageSubscriber<Message> {
     private void run() {
         mainLoop();
         finish();
+    }
+
+    private void subscribeAllTopic() {
+        messageBus.subscribe(MSG_ACT_SERVICE_SHUTDOWN, this);
+        messageBus.subscribe(MSG_ACT_LAUNCH_JOB_FLOW, this);
+        messageBus.subscribe(MSG_ACT_LAUNCH_JOB_ITEM, this);
+        messageBus.subscribe(MSG_ACT_JOB_STATE_CHANGED, this);
+        messageBus.subscribe(MSG_ACT_ALL_JOB_FINISHED, this);
+    }
+
+    public void launchJobFlow(Task root) {
+        checkNotNull(root);
+        String url = JobItemBuilder.createJobs(root);
+        HashMap<String, Object> param = new HashMap<>(1);
+        param.put(MSG_FROM_BROKER_ID, Id.APP);
+        param.put(MSG_TO_BROKER_ID, Id.APP);
+        param.put(MSG_DATA_JOB_FLOW_URL, url);
+        messageBus.publish(MSG_ACT_LAUNCH_JOB_FLOW, param);
+        run();
     }
 
     /**
@@ -164,36 +183,27 @@ public class ExternalBatchRunner implements MessageSubscriber<Message> {
      * <pre>
      * 接受消息
      * </pre>
-     *
+     * @param topic 主题
      * @param message 消息体
      */
     @Override
-    public void onMessage(Message message) {
+    public void onMessage(String topic, Map<String, Object> message) {
         AppLogger.debug(message.toString());
 
-        if (MSG_ACT_SERVICE_SHUTDOWN.equals(message.act)
-                || MSG_ACT_ALL_JOB_FINISHED.equals(message.act)) {
+        if (MSG_ACT_SERVICE_SHUTDOWN.equals(topic)
+                || MSG_ACT_ALL_JOB_FINISHED.equals(topic)) {
             servicePool.forEach((id, service) -> service.finish());
             return;
         }
-
-        if (Id.APP == message.dst) {
-            servicePool.forEach((id, service) -> service.receive(message));
+        Id dst = (Id) message.getOrDefault(MSG_TO_BROKER_ID, Id.UNKNOWN);
+        if (Id.APP == dst) {
+            servicePool.forEach((id, service) -> service.receive(topic, message));
         } else {
-            BaseBroker service = servicePool.get(message.dst);
+            BaseBroker service = servicePool.get(dst);
             if (service != null) {
-                service.receive(message);
+                service.receive(topic, message);
             }
         }
-    }
-
-    public void launchJobFlow(Task root) {
-        checkNotNull(root);
-        String url = JobItemBuilder.createJobs(root);
-        HashMap<String, Object> param = new HashMap<>(1);
-        param.put(Message.Symbols.MSG_DATA_JOB_FLOW_URL, url);
-        messageBus.publish(new Message(MSG_ACT_LAUNCH_JOB_FLOW, Id.APP, Id.APP, param));
-        run();
     }
 
 }

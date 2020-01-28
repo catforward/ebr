@@ -7,7 +7,9 @@ README
 - [English](./README.md)
 - [中文](./README.zh_CN.md)
 
-EBR(External Batch Runner)は明確な前後依存の関係を持つ外部プログラムを並列で実行するツールである。
+Note: 個人学習用プロジェクトのため、設計書やベストプラクティスは一切ありません。
+
+EBR(External Batch Runner)は明確な依存の関係を持つ外部プログラムを並列で実行するツールである。
 
 外部プログラムとは
 
@@ -38,7 +40,7 @@ java -jar /${your_path}/ebr-cli.jar -f /${your_path}/your_define.xml
 
 指定されたコマンド間の依存関係を分析し、下記図のような有向非巡回グラフ（DAG）を作成する。そして、外部プログラムは定義に従って順次実行される。
 
-![image](./images/sample_task_flow.jpg)
+![image](ebr-docs/sample_task_flow.jpg)
 
 
 

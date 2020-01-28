@@ -31,7 +31,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 
 import static pers.ebr.cli.core.ExternalBatchRunner.getMessageBus;
-import static pers.ebr.cli.core.Message.Symbols.*;
+import static pers.ebr.cli.core.Message.*;
 
 /**
  * <pre>
@@ -58,6 +58,8 @@ public abstract class Broker {
         EXECUTOR,
         /** 专用于管理任务状态的服务 */
         MANAGEMENT,
+        /** 未知服务 */
+        UNKNOWN,
     }
 
     /**
@@ -152,28 +154,29 @@ public abstract class Broker {
          * <pre>
          * 接受消息
          * </pre>
-         *
+         * @param topic 消息主题
          * @param message 消息对象
          */
         @Override
-        public final void receive(Message message) {
+        public final void receive(String topic, Map<String, Object> message) {
+            Id dst = (Id) message.getOrDefault(MSG_TO_BROKER_ID, Id.UNKNOWN);
             // 检查自己是否应该接受此事件
-            if (Id.APP != message.dst && id() != message.dst) {
+            if (Id.APP != dst && id() != dst) {
                 return;
             }
 
-            showConsoleMsg(message);
+            showConsoleMsg(topic, message);
 
             // 检查自己是否关注此事件
-            if (!actionMap.containsKey(message.act)) {
+            if (!actionMap.containsKey(topic)) {
                 return;
             }
             // 处理此事件
             try {
-                if (actionMap.get(message.act) == null) {
-                    onMessage(message);
-                } else if (!doChain(message)) {
-                    AppLogger.debug(String.format("处理[%s]事件失败...", message.act));
+                if (actionMap.get(topic) == null) {
+                    onMessage(topic, message);
+                } else if (!doChain(topic, message)) {
+                    AppLogger.debug(String.format("处理[%s]事件失败...", topic));
                 }
             } catch (Exception ex) {
                 AppLogger.dumpError(ex);
@@ -181,18 +184,18 @@ public abstract class Broker {
             }
         }
 
-        private void showConsoleMsg(Message message) {
-            switch (message.act) {
+        private void showConsoleMsg(String topic, Map<String, Object> message) {
+            switch (topic) {
                 case MSG_ACT_JOB_STATE_CHANGED:
-                    String url = (String) message.param.getOrDefault(MSG_DATA_JOB_URL, "");
-                    JobState state = (JobState) message.param.getOrDefault(MSG_DATA_NEW_JOB_STATE, "");
+                    String url = (String) message.getOrDefault(MSG_DATA_JOB_URL, "");
+                    JobState state = (JobState) message.getOrDefault(MSG_DATA_NEW_JOB_STATE, "");
                     System.err.println(String.format("event:[JOB_STATE_CHANGED], new state:[%s], url:[%s]", state, url));
                     break;
                 case MSG_ACT_ALL_JOB_FINISHED:
-                    System.err.println(String.format("event:[ALL_JOB_FINISHED]"));
+                    System.err.println("event:[ALL_JOB_FINISHED]");
                     break;
                 case MSG_ACT_SERVICE_SHUTDOWN:
-                    System.err.println(String.format("event:[SERVICE_SHUTDOWN]"));
+                    System.err.println("event:[SERVICE_SHUTDOWN]");
                     break;
                 default: break;
             }
@@ -202,12 +205,12 @@ public abstract class Broker {
          * <pre>
          * 消息处理
          * </pre>
-         *
+         * @param topic dispatched topic
          * @param message dispatched message
          */
-        private boolean doChain(Message message) {
-            HandlerChain chain = actionMap.get(message.act);
-            context.reset(message.act, message.param);
+        private boolean doChain(String topic, Map<String, Object> message) {
+            HandlerChain chain = actionMap.get(topic);
+            context.reset(topic, message);
             try {
                 for (var entry : chain.handlerPool.entrySet()) {
                     context.mergeParam();
@@ -233,7 +236,7 @@ public abstract class Broker {
             }
 
             if (context.nextAction != null) {
-                post(context.nextAction, Map.copyOf(context.result));
+                post(context.nextAction, context.result);
             }
             return true;
         }
@@ -247,7 +250,9 @@ public abstract class Broker {
          * @param param 发送的负载数据
          */
         protected void post(String act, Map<String, Object> param) {
-            getMessageBus().publish(new Message(act, id(), Id.APP, param));
+            param.put(MSG_FROM_BROKER_ID, id());
+            param.put(MSG_TO_BROKER_ID, Id.APP);
+            getMessageBus().publish(act, param);
         }
 
         /**
@@ -264,25 +269,16 @@ public abstract class Broker {
 
         /**
          * <pre>
-         * 发送消息
-         * </pre>
-         *
-         * @param act 发送对象动作
-         * @param param 发送的负载数据
-         */
-        protected void send(String act, Id dst, Map<String, Object> param) {
-            getMessageBus().publish(new Message(act, id(), dst, param));
-        }
-
-        /**
-         * <pre>
          * 发送程序结束的消息广播
          * </pre>
          *
          * @param act 发送对象动作
          */
         void notice(String act) {
-            getMessageBus().publish(new Message(act, id(), Id.APP));
+            HashMap<String, Object> param = new HashMap<>(2);
+            param.put(MSG_FROM_BROKER_ID, id());
+            param.put(MSG_TO_BROKER_ID, Id.APP);
+            getMessageBus().publish(act, param);
         }
 
         /**
@@ -312,9 +308,10 @@ public abstract class Broker {
          * <pre>
          * (子类实现)处理事件
          * </pre>
+         * @param topic 主题
          * @param message 事件
          */
-        protected void onMessage(Message message) {
+        protected void onMessage(String topic, Map<String, Object> message) {
         }
     }
 }

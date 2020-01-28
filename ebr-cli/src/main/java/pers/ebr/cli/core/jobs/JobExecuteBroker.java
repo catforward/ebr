@@ -20,8 +20,6 @@ package pers.ebr.cli.core.jobs;
 import pers.ebr.cli.core.EbrException;
 import pers.ebr.cli.core.Broker.BaseBroker;
 import pers.ebr.cli.core.Broker.Id;
-import pers.ebr.cli.core.Message;
-import pers.ebr.cli.core.Message.Symbols;
 import pers.ebr.cli.core.types.Job;
 import pers.ebr.cli.core.types.JobState;
 import pers.ebr.cli.util.AppLogger;
@@ -32,7 +30,10 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+
+import static pers.ebr.cli.core.Message.*;
 
 /**
  * <pre>
@@ -54,21 +55,21 @@ public class JobExecuteBroker extends BaseBroker {
 
     @Override
     protected void onInit() {
-        register(Symbols.MSG_ACT_LAUNCH_JOB_ITEM);
+        register(MSG_ACT_LAUNCH_JOB_ITEM);
     }
 
     @Override
     protected void onFinish() {
-        unregister(Symbols.MSG_ACT_LAUNCH_JOB_ITEM);
+        unregister(MSG_ACT_LAUNCH_JOB_ITEM);
     }
 
     @Override
-    protected void onMessage(Message message) {
-        if(Symbols.MSG_ACT_LAUNCH_JOB_ITEM.equals(message.act)) {
-            List<String> urls = (List<String>) message.param.getOrDefault(Symbols.MSG_DATA_PERFORMABLE_JOB_ITEM_LIST, List.of());
+    protected void onMessage(String topic, Map<String, Object> message) {
+        if(MSG_ACT_LAUNCH_JOB_ITEM.equals(topic)) {
+            List<String> urls = (List<String>) message.getOrDefault(MSG_DATA_PERFORMABLE_JOB_ITEM_LIST, List.of());
             performJobs(urls);
         } else {
-            throw new EbrException(String.format("[%s]:送错地方了老兄...", message.act));
+            throw new EbrException(String.format("[%s]:送错地方了老兄...", topic));
         }
     }
 
@@ -90,9 +91,9 @@ public class JobExecuteBroker extends BaseBroker {
      */
     private void noticeNewState(String url, JobState newState) {
         HashMap<String, Object> param = new HashMap<>(2);
-        param.put(Symbols.MSG_DATA_JOB_URL, url);
-        param.put(Symbols.MSG_DATA_NEW_JOB_STATE, newState);
-        post(Symbols.MSG_ACT_JOB_STATE_CHANGED, param);
+        param.put(MSG_DATA_JOB_URL, url);
+        param.put(MSG_DATA_NEW_JOB_STATE, newState);
+        post(MSG_ACT_JOB_STATE_CHANGED, param);
     }
 
     /**

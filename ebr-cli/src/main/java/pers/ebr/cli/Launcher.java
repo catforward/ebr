@@ -42,7 +42,6 @@ public class Launcher {
         // 又不是服务器程序，不处理异常，如果有，那就任其终止程序
         ConfigUtils.merge(makeOptArgMap(args));
         AppLogger.init();
-
         TaskDefineFileLoader loader = new TaskDefineFileLoader();
         ExternalBatchRunner.getInstance().init().launchJobFlow(loader.load());
     }

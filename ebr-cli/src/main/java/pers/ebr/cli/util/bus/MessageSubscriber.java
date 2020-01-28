@@ -17,19 +17,22 @@
  */
 package pers.ebr.cli.util.bus;
 
+import java.util.Map;
+
 /**
  * <pre>
  * 消息订阅者
  * </pre>
  * @author l.gong
  */
-public interface MessageSubscriber<M> {
+public interface MessageSubscriber {
 
     /**
      * <pre>
      * 接受消息
      * </pre>
+     * @param topic 主题
      * @param message 消息体
      */
-    void onMessage(M message);
+    void onMessage(String topic, Map<String, Object> message);
 }

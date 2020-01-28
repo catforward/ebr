@@ -18,7 +18,9 @@
 package pers.ebr.cli.core.jobs;
 
 import pers.ebr.cli.core.Broker;
-import pers.ebr.cli.core.Message;
+
+import static pers.ebr.cli.core.Message.MSG_ACT_JOB_STATE_CHANGED;
+import static pers.ebr.cli.core.Message.MSG_ACT_LAUNCH_JOB_FLOW;
 
 /**
  * <pre>
@@ -40,18 +42,18 @@ public class JobStateManagementBroker extends Broker.BaseBroker {
     @Override
     protected void onInit() {
         // 由客户端触发
-        registerActionHandler(Message.Symbols.MSG_ACT_LAUNCH_JOB_FLOW,
+        registerActionHandler(MSG_ACT_LAUNCH_JOB_FLOW,
                 PerformableJobItemCollectHandler.class);
         // 由executor触发
-        registerActionHandler(Message.Symbols.MSG_ACT_JOB_STATE_CHANGED,
+        registerActionHandler(MSG_ACT_JOB_STATE_CHANGED,
                 JobStateUpdateHandler.class,
                 PerformableJobItemCollectHandler.class);
     }
 
     @Override
     protected void onFinish() {
-        unregister(Message.Symbols.MSG_ACT_LAUNCH_JOB_FLOW);
-        unregister(Message.Symbols.MSG_ACT_JOB_STATE_CHANGED);
+        unregister(MSG_ACT_LAUNCH_JOB_FLOW);
+        unregister(MSG_ACT_JOB_STATE_CHANGED);
         JobItemStateHolder.clear();
     }
 }

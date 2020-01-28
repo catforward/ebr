@@ -18,6 +18,7 @@
 package pers.ebr.cli.util.bus;
 
 import java.util.Iterator;
+import java.util.Map;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
@@ -29,9 +30,11 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 class AsyncDispatcher {
 
     static final class MessageWithSubscriber {
-        final Object message;
+        final String topic;
+        final Map<String, Object> message;
         final MessageSubscriber subscriber;
-        MessageWithSubscriber(Object message, MessageSubscriber subscriber) {
+        MessageWithSubscriber(String topic, Map<String, Object> message, MessageSubscriber subscriber) {
+            this.topic = topic;
             this.message = message;
             this.subscriber = subscriber;
         }
@@ -51,12 +54,13 @@ class AsyncDispatcher {
      * 向消息队列添加消息后
      * 向订阅者推送消息
      * </pre>
-     * @param obj 分发对象
+     * @param topic 分发主题
+     * @param data 分发数据
      * @param subscribers 订阅者
      */
-    void dispatch(Object obj, Iterator<MessageSubscriber> subscribers) {
+    void dispatch(String topic, Map<String, Object> data, Iterator<MessageSubscriber> subscribers) {
         while (subscribers.hasNext()) {
-            this.queue.add(new MessageWithSubscriber(obj, subscribers.next()));
+            this.queue.add(new MessageWithSubscriber(topic, data, subscribers.next()));
         }
 
         MessageWithSubscriber ms;
@@ -68,7 +72,7 @@ class AsyncDispatcher {
     private void dispatchMessage(MessageWithSubscriber ms) {
         this.bus.getExecutor().execute(() -> {
             try {
-                ms.subscriber.onMessage(ms.message);
+                ms.subscriber.onMessage(ms.topic, ms.message);
             } catch (RuntimeException e) {
                 bus.handleSubscriberException(e);
             }

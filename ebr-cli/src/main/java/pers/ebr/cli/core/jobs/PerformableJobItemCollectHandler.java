@@ -19,7 +19,6 @@ package pers.ebr.cli.core.jobs;
 
 import pers.ebr.cli.core.EbrException;
 import pers.ebr.cli.core.Handler;
-import pers.ebr.cli.core.Message;
 import pers.ebr.cli.core.types.Job;
 import pers.ebr.cli.core.types.JobState;
 import pers.ebr.cli.core.types.JobType;
@@ -27,6 +26,8 @@ import pers.ebr.cli.core.types.JobType;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+
+import static pers.ebr.cli.core.Message.*;
 
 /**
  * <pre>
@@ -63,13 +64,13 @@ public class PerformableJobItemCollectHandler implements Handler {
     @Override
     public boolean doHandle(Handler.HandlerContext context) {
         String act = context.getCurrentAction();
-        if(Message.Symbols.MSG_ACT_LAUNCH_JOB_FLOW.equals(act)) {
-            String url = (String) context.getParam(Message.Symbols.MSG_DATA_JOB_FLOW_URL);
+        if(MSG_ACT_LAUNCH_JOB_FLOW.equals(act)) {
+            String url = (String) context.getParam(MSG_DATA_JOB_FLOW_URL);
             collectTopLevelJobs(url);
-        } else if (Message.Symbols.MSG_ACT_JOB_STATE_CHANGED.equals(act)) {
-            JobState state = (JobState) context.getParam(Message.Symbols.MSG_DATA_NEW_JOB_STATE);
+        } else if (MSG_ACT_JOB_STATE_CHANGED.equals(act)) {
+            JobState state = (JobState) context.getParam(MSG_DATA_NEW_JOB_STATE);
             if (JobState.COMPLETE == state) {
-                String url = (String) context.getParam(Message.Symbols.MSG_DATA_JOB_URL);
+                String url = (String) context.getParam(MSG_DATA_JOB_URL);
                 searchPerformableJobs(url);
             }
         } else {
@@ -77,8 +78,8 @@ public class PerformableJobItemCollectHandler implements Handler {
         }
 
         if (!performableUrls.isEmpty()) {
-            context.setNextAction(Message.Symbols.MSG_ACT_LAUNCH_JOB_ITEM);
-            context.addHandlerResult(Message.Symbols.MSG_DATA_PERFORMABLE_JOB_ITEM_LIST, List.copyOf(performableUrls));
+            context.setNextAction(MSG_ACT_LAUNCH_JOB_ITEM);
+            context.addHandlerResult(MSG_DATA_PERFORMABLE_JOB_ITEM_LIST, List.copyOf(performableUrls));
         }
 
         return true;

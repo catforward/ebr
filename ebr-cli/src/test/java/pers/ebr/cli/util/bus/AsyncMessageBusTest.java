@@ -19,18 +19,21 @@ package pers.ebr.cli.util.bus;
 
 import junit.framework.TestCase;
 import pers.ebr.cli.core.Broker;
-import pers.ebr.cli.core.Message;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Executor;
+
+import static pers.ebr.cli.core.Message.MSG_FROM_BROKER_ID;
+import static pers.ebr.cli.core.Message.MSG_TO_BROKER_ID;
 
 /**
  * Forked form The TestCase from Guava
  * @author l.gong
  */
-public class AsyncMessageBusTest extends TestCase implements MessageSubscriber<Message> {
+public class AsyncMessageBusTest extends TestCase implements MessageSubscriber {
 
     static class FakeExecutor implements Executor {
         List<Runnable> tasks = new ArrayList<>();
@@ -47,7 +50,7 @@ public class AsyncMessageBusTest extends TestCase implements MessageSubscriber<M
 
     private FakeExecutor executor;
     private AsyncMessageBus bus;
-    private HashMap<String, Message> result;
+    private HashMap<String, Map<String, Object>> result;
 
     @Override
     protected void setUp() throws Exception {
@@ -66,9 +69,11 @@ public class AsyncMessageBusTest extends TestCase implements MessageSubscriber<M
 
     public void testBasic_01() {
         final String TEST_ID = "test_01";
-        bus.subscribe(Message.class, this);
-        Message msg = new Message(TEST_ID, Broker.Id.APP, Broker.Id.APP);
-        bus.publish(msg);
+        bus.subscribe(TEST_ID, this);
+        HashMap<String, Object> data = new HashMap<>();
+        data.put(MSG_FROM_BROKER_ID, Broker.Id.APP);
+        data.put(MSG_TO_BROKER_ID, Broker.Id.APP);
+        bus.publish(TEST_ID, data);
 
         assertFalse(result.containsKey(TEST_ID));
 
@@ -78,19 +83,21 @@ public class AsyncMessageBusTest extends TestCase implements MessageSubscriber<M
         tasks.get(0).run();
 
         assertTrue(result.containsKey(TEST_ID));
-        assertTrue(msg.equals(result.get(TEST_ID)));
+        Map<String, Object> msgData = result.get(TEST_ID);
+        assertTrue(Broker.Id.APP.equals(msgData.get(MSG_FROM_BROKER_ID)));
+        assertTrue(Broker.Id.APP.equals(msgData.get(MSG_TO_BROKER_ID)));
     }
 
     /**
      * 接受消息
-     *
+     * @param topic 主题
      * @param message 消息体
      */
     @Override
-    public void onMessage(Message message) {
-        if (result.containsKey(message.act)) {
+    public void onMessage(String topic, Map<String, Object> message) {
+        if (result.containsKey(topic)) {
             throw new RuntimeException("no....");
         }
-        result.put(message.act, message);
+        result.put(topic, message);
     }
 }

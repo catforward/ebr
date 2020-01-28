@@ -38,58 +38,26 @@ public final class Message {
     interface Receiver {
         /**
          * 接受事件并处理此事件
-         * @param message 接受的事件对象
+         * @param topic 主题
+         * @param message 接受的事件数据
          */
-        void receive(Message message);
+        void receive(String topic, Map<String, Object> message);
     }
 
-    /**
-     * <pre>
-     * 预定义名称
-     * </pre>
-     */
-    public static class Symbols {
+    /** 服务事件中传送动作的预定义名称 */
+    public static final String MSG_ACT_SERVICE_SHUTDOWN = "MSG_ACT_SERVICE_SHUTDOWN";
+    public static final String MSG_ACT_LAUNCH_JOB_FLOW = "MSG_ACT_LAUNCH_JOB_FLOW";
+    public static final String MSG_ACT_LAUNCH_JOB_ITEM = "MSG_ACT_LAUNCH_JOB_ITEM";
+    public static final String MSG_ACT_JOB_STATE_CHANGED = "MSG_ACT_JOB_STATE_CHANGED";
+    public static final String MSG_ACT_ALL_JOB_FINISHED = "MSG_ACT_ALL_TASK_FINISHED";
+    /** 服务事件中传送参数的预定义名称 */
+    public static final String MSG_DATA_JOB_FLOW_URL = "MSG_DATA_JOB_FLOW_URL";
+    public static final String MSG_DATA_JOB_URL = "MSG_DATA_JOB_URL";
+    public static final String MSG_DATA_PERFORMABLE_JOB_ITEM_LIST = "MSG_DATA_PERFORMABLE_JOB_LIST";
+    public static final String MSG_DATA_NEW_JOB_STATE = "MSG_DATA_NEW_JOB_STATE";
 
-        private Symbols() {}
+    /** 数据KEY名 */
+    public static final String MSG_FROM_BROKER_ID = "BROKER_ID_FROM";
+    public static final String MSG_TO_BROKER_ID = "BROKER_ID_TO";
 
-        /** 服务事件中传送动作的预定义名称 */
-        public static final String MSG_ACT_SERVICE_SHUTDOWN = "MSG_ACT_SERVICE_SHUTDOWN";
-        public static final String MSG_ACT_LAUNCH_JOB_FLOW = "MSG_ACT_LAUNCH_JOB_FLOW";
-        public static final String MSG_ACT_LAUNCH_JOB_ITEM = "MSG_ACT_LAUNCH_JOB_ITEM";
-        public static final String MSG_ACT_JOB_STATE_CHANGED = "MSG_ACT_JOB_STATE_CHANGED";
-        public static final String MSG_ACT_ALL_JOB_FINISHED = "MSG_ACT_ALL_TASK_FINISHED";
-        /** 服务事件中传送参数的预定义名称 */
-        public static final String MSG_DATA_JOB_FLOW_URL = "MSG_DATA_JOB_FLOW_URL";
-        public static final String MSG_DATA_JOB_URL = "MSG_DATA_JOB_URL";
-        public static final String MSG_DATA_PERFORMABLE_JOB_ITEM_LIST = "MSG_DATA_PERFORMABLE_JOB_LIST";
-        public static final String MSG_DATA_NEW_JOB_STATE = "MSG_DATA_NEW_JOB_STATE";
-
-    }
-
-    /** The Action of event */
-    public final String act;
-    public final Id src;
-    public final Id dst;
-    public final Map<String, Object> param;
-
-    public Message(String newAct,
-                   Id newSrc,
-                   Id newDst) {
-        this(newAct, newSrc, newDst, Map.of());
-    }
-
-    public Message(String newAct,
-                   Id newSrc,
-                   Id newDst,
-                   Map<String, Object> newParam) {
-        act = newAct;
-        src = newSrc;
-        dst = newDst;
-        param = Map.copyOf(newParam);
-    }
-
-    @Override
-    public String toString() {
-        return String.format("[%s -> %s]::[%s]", src, dst, act);
-    }
 }
