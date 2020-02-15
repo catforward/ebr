@@ -15,13 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.cli.util.graph;
+package pers.ebr.cli.core.graph;
 
 /**
  * <pre>
- * 图工厂
+ * The Builder of Graph
  * </pre>
- * @author catforward
+ *
+ * @author l.gong
  */
 public class GraphBuilder {
     boolean allowsSelfLoops = false;

@@ -15,24 +15,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.cli.core.types;
+package pers.ebr.cli.core.tasks;
 
 /**
  * <pre>
- * define the state of job
- * INACTIVE -> [Start processing] -> ACTIVE
- * ACTIVE -> [Complete] -> COMPLETE
- * ACTIVE -> [Failure] -> FAILED
+ * Define the type of job
  * </pre>
+ *
  * @author l.gong
  */
-public enum JobState {
-    /** 任务待机时 */
-    INACTIVE,
-    /** 任务执行时 */
-    ACTIVE,
-    /** 任务执行成功时 */
-    COMPLETE,
-    /** 任务执行异常时 */
-    FAILED,
+public enum TaskType {
+    /** 可包含子模块 */
+    GROUP,
+    /** 不能拥有子任务 */
+    UNIT,
 }

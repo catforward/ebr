@@ -18,6 +18,9 @@
 package pers.ebr.cli.core;
 
 /**
+ * <pre>
+ * Exception Class in EBR
+ * </pre>
  *
  * @author l.gong
  */

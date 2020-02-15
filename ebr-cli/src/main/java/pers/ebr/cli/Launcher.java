@@ -17,17 +17,22 @@
  */
 package pers.ebr.cli;
 
-import pers.ebr.cli.core.ExternalBatchRunner;
-import pers.ebr.cli.util.AppLogger;
-
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import pers.ebr.cli.core.ExternalBatchRunner;
+import pers.ebr.cli.util.AppLogger;
+import pers.ebr.cli.util.ConfigUtils;
+import pers.ebr.cli.util.GetOpts;
+
 import static pers.ebr.cli.util.MiscUtils.checkCommandBanList;
 
 /**
+ * <pre>
+ * Main Class
+ * </pre>
  *
  * @author l.gong
  */
@@ -40,21 +45,24 @@ public class Launcher {
 
     private void initAndStart(String[] args) throws IOException {
         // 又不是服务器程序，不处理异常，如果有，那就任其终止程序
-        ConfigUtils.merge(makeOptArgMap(args));
-        AppLogger.init();
-        TaskDefineFileLoader loader = new TaskDefineFileLoader();
-        ExternalBatchRunner.getInstance().init().launchJobFlow(loader.load());
+        try {
+            ConfigUtils.mergeForm(makeOptArgMap(args));
+            AppLogger.init();
+            ExternalBatchRunner.launch();
+        } catch (Exception ex) {
+            System.err.println(ex.getMessage());
+        }
     }
 
     private Map<String, String> makeOptArgMap(String[] args) {
         HashMap<String, String> optArg = new HashMap<>();
-        GetOpts opts = new GetOpts(args, "f:d");
+        GetOpts opts = new GetOpts(args, "f:x");
         int c;
         try {
             while ((c = opts.getNextOption()) != -1) {
                 if ((char) c == 'f') {
                     optArg.put(ConfigUtils.KEY_INSTANT_TASK, opts.getOptionArg());
-                } else if ((char) c == 'd') {
+                } else if ((char) c == 'x') {
                     optArg.put(ConfigUtils.EBR_LOG_ENABLE, Boolean.toString(true));
                 } else {
                     showUsage();

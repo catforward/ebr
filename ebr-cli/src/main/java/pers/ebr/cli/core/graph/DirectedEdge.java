@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.cli.util.graph;
+package pers.ebr.cli.core.graph;
 
 import java.util.Objects;
 
@@ -25,6 +25,7 @@ import static pers.ebr.cli.util.MiscUtils.checkNotNull;
  * <pre>
  * 有向边
  * </pre>
+ *
  * @author l.gong
  */
 class DirectedEdge<T> {

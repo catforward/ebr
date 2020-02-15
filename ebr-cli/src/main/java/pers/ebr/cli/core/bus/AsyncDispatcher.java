@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.cli.util.bus;
+package pers.ebr.cli.core.bus;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -25,6 +25,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  * <pre>
  * 异步分派
  * </pre>
+ *
  * @author l.gong
  */
 class AsyncDispatcher {

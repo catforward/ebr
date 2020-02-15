@@ -40,19 +40,6 @@ public final class PathUtils {
      */
     private static String rootPath;
 
-    public static String getOutputPath(String path) {
-        if (path == null || path.trim().isEmpty()) {
-            return getRootPath();
-        } else if (path.startsWith(File.separator)) {
-            return path;
-        } else if (path.startsWith("." + File.separator) || path.startsWith(".." + File.separator)) {
-            String tmpFullPath = String.format("%s%s%s", getRootPath(), File.separator, path);
-            File file = new File(tmpFullPath);
-            return file.getAbsolutePath();
-        }
-        return "";
-    }
-
     /**
      * <pre>
      * 取得EBR的部署路径

@@ -15,10 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.cli;
+package pers.ebr.cli.core.tasks;
 
 import pers.ebr.cli.core.EbrException;
-import pers.ebr.cli.util.PathUtils;
+import pers.ebr.cli.util.ConfigUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -27,62 +27,42 @@ import org.w3c.dom.NodeList;
 import javax.xml.XMLConstants;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.File;
+import java.io.FileInputStream;
 import java.util.*;
 
-import static pers.ebr.cli.ConfigUtils.KEY_INSTANT_TASK;
+import static pers.ebr.cli.core.tasks.TaskType.GROUP;
+import static pers.ebr.cli.util.ConfigUtils.KEY_INSTANT_TASK;
+import static pers.ebr.cli.util.MiscUtils.checkNotNull;
 
 /**
  * <pre>
  * 从磁盘读取任务流配置文件并构建任务定义树
  * </pre>
+ *
  * @author l.gong
  */
-class TaskDefineFileLoader {
+public class TaskItemBuilder {
 
-    private static final int INIT_CAP = 16;
-    /** symbols in json file */
+    /** symbols in xml file */
     private static final String ATTR_ID = "id";
     private static final String ATTR_DESC = "desc";
-    private static final String ATTR_PRE_TASKS = "depends";
     private static final String ATTR_COMMAND = "command";
-    /** internal symbols in app */
-    private static final String KEY_ROOT_TASK = "KEY_ROOT_TASK";
+    private static final String ATTR_DEPENDS = "depends";
 
-    /**
-     * @return true: succeeded false: failed
-     */
-    public TaskImpl load() {
-        final String filePath = makeDefineFileFullPath();
-        return loadTaskMetaFromDefineFile(filePath);
-    }
-
+    public TaskItemBuilder() {}
 
     /**
      * <pre>
-     * 生成一个Task定义文件的完整路径
+     * build a new TaskFlow object
      * </pre>
      *
+     * @return TaskFlow: the TaskFlow object
      */
-    private String makeDefineFileFullPath() {
+    public TaskFlow load() {
         Optional<String> strVal = Optional.ofNullable(ConfigUtils.get(KEY_INSTANT_TASK));
         if (strVal.isEmpty()) {
-            throw new EbrException("没有发现Task定义文件的路径");
+            throw new EbrException("the path of define file is empty.");
         }
-        //String filePath = strVal.get();
-        //return filePath.startsWith("/") ? filePath : PathUtils.getDefPath() + File.separator + filePath;
-        return strVal.get();
-    }
-
-
-    /**
-     * <pre>
-     * 从定义文件创建一个任务节点树
-     * </pre>
-     *
-     * @param filePath Task定义文件的完整路径
-     */
-    private TaskImpl loadTaskMetaFromDefineFile(String filePath) {
         try {
             //解决java.lang.AbstractMethodError:javax.xml.parsers.DocumentBuilderFactory.setFeature(Ljava/lang/String;Z)V异常
             System.setProperty("javax.xml.parsers.DocumentBuilderFactory", "com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
@@ -95,8 +75,8 @@ class TaskDefineFileLoader {
             documentBuilderFactory.setXIncludeAware(false);
             documentBuilderFactory.setExpandEntityReferences(false);
             DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-            Document document = documentBuilder.parse(filePath);
-            return parse(document);
+            Document document = documentBuilder.parse(new FileInputStream(strVal.get()));
+            return parse(document.getDocumentElement());
         } catch (Exception ex) {
             throw new EbrException(ex);
         }
@@ -108,12 +88,12 @@ class TaskDefineFileLoader {
      * </pre>
      *
      * @param node Task定义文件转换后的json根节点
-     * @return TaskImpl
+     * @return TaskFlow
      */
-    private TaskImpl parse(Node node) {
-        HashMap<String, TaskImpl> idTaskPool = new HashMap<>(INIT_CAP);
-        createMetaPool(null, node, idTaskPool);
-        return idTaskPool.get(KEY_ROOT_TASK);
+    private TaskFlow parse(Node node) {
+        TaskFlow flow = new TaskFlow();
+        createMetaPool(null, node, flow);
+        return checkNotNull(flow.build());
     }
 
     /**
@@ -121,12 +101,12 @@ class TaskDefineFileLoader {
      * 创建节点树
      * </pre>
      *
-     * @param mParent       父节点
-     * @param node     当前节点
-     * @param idTaskPool 所有节点对象池
+     * @param parent  父节点
+     * @param node    当前节点
+     * @param flow    任务流
      */
-    private void createMetaPool(TaskImpl mParent, Node node, Map<String, TaskImpl> idTaskPool) {
-        TaskImpl currentTask = null;
+    private void createMetaPool(Task parent, Node node, TaskFlow flow) {
+        Task currentTask = null;
         // attributes
         if (node.hasAttributes() && Node.ELEMENT_NODE == node.getNodeType()) {
             NamedNodeMap map = node.getAttributes();
@@ -136,15 +116,12 @@ class TaskDefineFileLoader {
             }
             // 使用ID取得或创建Meta
             String id = optValue.get().getNodeValue().trim();
-            currentTask = Optional.ofNullable(idTaskPool.get(id)).orElseGet(() -> {
-                TaskImpl newTask = new TaskImpl(id, mParent);
-                idTaskPool.put(id, newTask);
-                if (newTask.parentTask() == null) {
-                    idTaskPool.put(KEY_ROOT_TASK, newTask);
+            currentTask = Optional.ofNullable(flow.getTask(id)).orElseGet(() -> {
+                if (parent == null) {
+                    return new Task(id, "/", "");
                 } else {
-                    mParent.children.add(newTask);
+                    return new Task(id, parent.url, parent.id);
                 }
-                return newTask;
             });
             // 描述
             optValue = Optional.ofNullable(map.getNamedItem(ATTR_DESC));
@@ -156,23 +133,25 @@ class TaskDefineFileLoader {
             if (optValue.isPresent()) {
                 currentTask.command = optValue.get().getNodeValue().trim();
             }
-            // 触发器
-            optValue = Optional.ofNullable(map.getNamedItem(ATTR_PRE_TASKS));
+            // 依赖
+            optValue = Optional.ofNullable(map.getNamedItem(ATTR_DEPENDS));
             if (optValue.isPresent()) {
                 StringTokenizer tokenizer = new StringTokenizer(optValue.get().getNodeValue().trim(), ",", false);
-                if (tokenizer.countTokens() != 0) {
-                    while (tokenizer.hasMoreElements()) {
-                        currentTask.preTask.add(tokenizer.nextToken().trim());
-                    }
+                while (tokenizer.hasMoreElements()) {
+                    currentTask.depends.add(tokenizer.nextToken().trim());
                 }
             }
         }
         // 子元素
         NodeList nodeList = node.getChildNodes();
         int len = nodeList.getLength();
-        if (len != 0) {
+        if (currentTask != null) {
+            if (len > 0) {
+                currentTask.type = GROUP;
+            }
+            flow.addTask(currentTask);
             for (int i = 0; i < len; i++) {
-                createMetaPool(currentTask, nodeList.item(i), idTaskPool);
+                createMetaPool(currentTask, nodeList.item(i), flow);
             }
         }
     }

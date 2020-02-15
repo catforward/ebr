@@ -15,10 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.cli.util.bus;
+package pers.ebr.cli.core.bus;
 
 import junit.framework.TestCase;
-import pers.ebr.cli.core.Broker;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,14 +25,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
 
-import static pers.ebr.cli.core.Message.MSG_FROM_BROKER_ID;
-import static pers.ebr.cli.core.Message.MSG_TO_BROKER_ID;
+import static pers.ebr.cli.core.Topic.TOPIC_DATA_TASK_ID;
+import static pers.ebr.cli.core.Topic.TOPIC_DATA_TASK_NEW_STATE;
 
 /**
  * Forked form The TestCase from Guava
  * @author l.gong
  */
-public class AsyncMessageBusTest extends TestCase implements MessageSubscriber {
+public class AsyncTopicBusTest extends TestCase implements MessageSubscriber {
 
     static class FakeExecutor implements Executor {
         List<Runnable> tasks = new ArrayList<>();
@@ -71,8 +70,8 @@ public class AsyncMessageBusTest extends TestCase implements MessageSubscriber {
         final String TEST_ID = "test_01";
         bus.subscribe(TEST_ID, this);
         HashMap<String, Object> data = new HashMap<>();
-        data.put(MSG_FROM_BROKER_ID, Broker.Id.APP);
-        data.put(MSG_TO_BROKER_ID, Broker.Id.APP);
+        data.put(TOPIC_DATA_TASK_ID, "APP");
+        data.put(TOPIC_DATA_TASK_NEW_STATE, "APP-STATE");
         bus.publish(TEST_ID, data);
 
         assertFalse(result.containsKey(TEST_ID));
@@ -84,8 +83,8 @@ public class AsyncMessageBusTest extends TestCase implements MessageSubscriber {
 
         assertTrue(result.containsKey(TEST_ID));
         Map<String, Object> msgData = result.get(TEST_ID);
-        assertTrue(Broker.Id.APP.equals(msgData.get(MSG_FROM_BROKER_ID)));
-        assertTrue(Broker.Id.APP.equals(msgData.get(MSG_TO_BROKER_ID)));
+        assertTrue("APP".equals(msgData.get(TOPIC_DATA_TASK_ID)));
+        assertTrue("APP-STATE".equals(msgData.get(TOPIC_DATA_TASK_NEW_STATE)));
     }
 
     /**

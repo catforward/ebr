@@ -15,17 +15,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.cli.core.types;
+package pers.ebr.cli.core.bus;
+
+import java.util.Map;
 
 /**
  * <pre>
- * define the type of job
+ * 消息订阅者
  * </pre>
- * @author catforward
+ *
+ * @author l.gong
  */
-public enum JobType {
-    /** 任务流类型，可包含子任务或子模块 */
-    FLOW,
-    /** 任务类型，不能拥有子任务 */
-    TASK,
+public interface MessageSubscriber {
+
+    /**
+     * <pre>
+     * 接受消息
+     * </pre>
+     * @param topic 主题
+     * @param message 消息体
+     */
+    void onMessage(String topic, Map<String, Object> message);
 }

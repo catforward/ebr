@@ -15,14 +15,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.cli;
+package pers.ebr.cli.util;
 
 import java.util.Map;
 import java.util.Optional;
 import java.util.Properties;
 
 /**
- *
+ * <pre>
+ * The Config Util in EBR
+ * </pre>
  * @author l.gong
  */
 public enum ConfigUtils {
@@ -34,7 +36,6 @@ public enum ConfigUtils {
      */
     public static final String KEY_INSTANT_TASK = "ebr.instant.task";
     public static final String EBR_LOG_ENABLE = "ebr.log.enable";
-    public static final String EBR_LOG_LOCAL = "ebr.log.local";
 
     /**
      * 属性类实例
@@ -49,7 +50,7 @@ public enum ConfigUtils {
     ConfigUtils() {
     }
 
-    public static void merge(Map<String, String> values) {
+    public static void mergeForm(Map<String, String> values) {
         for (Map.Entry<String, String> entry : values.entrySet()) {
             CONFIG.prop.put(entry.getKey(), entry.getValue());
         }

@@ -19,7 +19,7 @@ package pers.ebr.cli;
 
 import org.junit.Assert;
 import org.junit.Test;
-import pers.ebr.cli.GetOpts;
+import pers.ebr.cli.util.GetOpts;
 
 /**
  * 命令行参数测试

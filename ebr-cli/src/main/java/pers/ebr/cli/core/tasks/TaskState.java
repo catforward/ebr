@@ -15,24 +15,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.cli.util.bus;
-
-import java.util.Map;
+package pers.ebr.cli.core.tasks;
 
 /**
  * <pre>
- * 消息订阅者
+ * Define the state of job
+ * INACTIVE -> [Start processing] -> ACTIVE
+ * ACTIVE -> [Complete] -> COMPLETE
+ * ACTIVE -> [Failure] -> FAILED
  * </pre>
+ *
  * @author l.gong
  */
-public interface MessageSubscriber {
-
-    /**
-     * <pre>
-     * 接受消息
-     * </pre>
-     * @param topic 主题
-     * @param message 消息体
-     */
-    void onMessage(String topic, Map<String, Object> message);
+public enum TaskState {
+    /** 任务待机时 */
+    INACTIVE,
+    /** 任务执行时 */
+    ACTIVE,
+    /** 任务执行成功时 */
+    COMPLETE,
+    /** 任务执行异常时 */
+    FAILED,
 }

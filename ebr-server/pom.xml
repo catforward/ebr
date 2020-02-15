@@ -3,7 +3,7 @@
 
   <groupId>tsm</groupId>
   <artifactId>ebr-server</artifactId>
-  <version>3.0</version>
+  <version>3</version>
   <packaging>jar</packaging>
 
   <name>EBR-Server</name>

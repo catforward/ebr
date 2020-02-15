@@ -15,12 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.cli.util.graph;
+package pers.ebr.cli.core.graph;
 
 import org.junit.Assert;
 import org.junit.Test;
-import pers.ebr.cli.util.graph.DirectedGraph;
-import pers.ebr.cli.util.graph.GraphBuilder;
 
 import java.util.Set;
 

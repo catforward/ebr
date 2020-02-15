@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.cli.util.graph;
+package pers.ebr.cli.core.graph;
 
 import java.util.Set;
 
@@ -26,6 +26,7 @@ import java.util.Set;
  * - 可以修改顶点，边
  * - 可以获取指定顶点的前驱，后继顶点
  * </pre>
+ *
  * @author l.gong
  */
 public interface DirectedGraph<T> {

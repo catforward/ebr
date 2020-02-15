@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.cli.util.bus;
+package pers.ebr.cli.core.bus;
 
 import pers.ebr.cli.util.AppLogger;
 
@@ -31,6 +31,7 @@ import static pers.ebr.cli.util.MiscUtils.checkNotNull;
  * <pre>
  *　异步消息总线
  * </pre>
+ *
  * @author l.gong
  */
 public class AsyncMessageBus {

@@ -17,61 +17,21 @@
  */
 package pers.ebr.cli.core;
 
-import java.util.List;
-
 /**
  * <pre>
- * meta info of task
+ * Topics in EBR
  * </pre>
+ *
  * @author l.gong
  */
-public interface Task {
+public final class Topic {
 
-    /**
-     * <pre>
-     * task's id
-     * </pre>
-     * @return id
-     */
-    String id();
+    public static final String TOPIC_TASK_STATE_CHANGED = "TOPIC_TASK_STATE_CHANGED";
+    public static final String TOPIC_TASK_LAUNCH = "TOPIC_TASK_LAUNCH";
 
-    /**
-     * <pre>
-     * task's description
-     * </pre>
-     * @return desc
-     */
-    String desc();
+    public static final String TOPIC_DATA_TASK_ID = "TOPIC_DATA_TASK_ID";
+    public static final String TOPIC_DATA_TASK_OBJ = "TOPIC_DATA_TASK_OBJ";
+    public static final String TOPIC_DATA_TASK_OBJ_LIST = "TOPIC_DATA_TASK_OBJ_LIST";
+    public static final String TOPIC_DATA_TASK_NEW_STATE = "TOPIC_DATA_TASK_NEW_STATE";
 
-    /**
-     * <pre>
-     * the command of task
-     * </pre>
-     * @return command
-     */
-    String command();
-
-    /**
-     * <pre>
-     * the pre condition tasks of this task
-     * </pre>
-     * @return define str of pre tasks
-     */
-    List<String> preTasks();
-
-    /**
-     * <pre>
-     * the sub tasks of this task
-     * </pre>
-     * @return task's list of children
-     */
-    List<Task> children();
-
-    /**
-     * <pre>
-     * the parent of this task
-     * </pre>
-     * @return parent task
-     */
-    Task parentTask();
 }

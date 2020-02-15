@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.cli.util.graph;
+package pers.ebr.cli.core.graph;
 
 import java.util.HashSet;
 import java.util.Map;
@@ -31,6 +31,7 @@ import java.util.concurrent.CopyOnWriteArraySet;
  * - 可以获取指定顶点的前驱，后继顶点
  * 使用邻接表来表现顶点与边的关系
  * </pre>
+ *
  * @author l.gong
  */
 public class DirectedGraphImpl<T> implements DirectedGraph<T> {
