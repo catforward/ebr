@@ -65,9 +65,10 @@ public class TaskItemBuilder {
             throw new EbrException("the path of define file is empty.");
         }
         String fullPath = strVal.get();
-        if (!"/".startsWith(fullPath) && !fullPath.contains(":")) {
+        if (!(fullPath.startsWith("/") || fullPath.contains(":"))) {
             fullPath =  String.format("%s/%s", System.getProperty("user.dir"), fullPath);
         }
+        System.err.println(String.format("file:[%s] location:[%s]", strVal.get(), fullPath));
         try {
             //解决java.lang.AbstractMethodError:javax.xml.parsers.DocumentBuilderFactory.setFeature(Ljava/lang/String;Z)V异常
             System.setProperty("javax.xml.parsers.DocumentBuilderFactory", "com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
