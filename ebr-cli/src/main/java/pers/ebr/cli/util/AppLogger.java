@@ -17,10 +17,6 @@
  */
 package pers.ebr.cli.util;
 
-import pers.ebr.cli.ConfigUtils;
-
-import java.io.File;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.time.LocalDateTime;
@@ -29,11 +25,7 @@ import java.util.logging.*;
 
 /**
  * <pre>
- * 日志工具类，初始化jdk内置logger
- * 基于以下目录结构获取日志配置文件
- * ${EbrRoot}/
- *        |-- conf/
- *        |    |-- logging.properties
+ *  The Logger in EBR
  * </pre>
  *
  * @author l.gong
@@ -42,22 +34,18 @@ public final class AppLogger {
     private Logger messageLogger = null;
     private static final int CALLER_INDEX = 3;
 
-    /** 单例 */
     private static class AppLoggerHolder{
         static final AppLogger LOGGER = new AppLogger();
     }
 
     private AppLogger() {}
 
-    public static void init() throws IOException {
-        boolean logFileEnable = Boolean.valueOf((String) ConfigUtils.getOrDefault(ConfigUtils.EBR_LOG_ENABLE, "false"));
+    public static void init() {
+        boolean logFileEnable = Boolean.parseBoolean((String) ConfigUtils.getOrDefault(ConfigUtils.EBR_LOG_ENABLE, "false"));
         if (!logFileEnable) {
             return;
         }
-        String logFileLocal = PathUtils.getOutputPath(ConfigUtils.get(ConfigUtils.EBR_LOG_LOCAL));
-        if (!logFileLocal.isEmpty()) {
-            initMessageFileLogger(logFileLocal);
-        }
+        initMessageConsoleLogger();
     }
 
     private static String msgWithCaller(final String level, final String msg) {
@@ -113,26 +101,16 @@ public final class AppLogger {
         AppLoggerHolder.LOGGER.messageLogger.severe(errMsg);
     }
 
-    /**
-     * <pre>
-     * 初始化jdk内置logger
-     * </pre>
-     */
-    private static void initMessageFileLogger(String outputPath) throws IOException {
+    private static void initMessageConsoleLogger() {
         if (AppLoggerHolder.LOGGER.messageLogger != null) {
             return;
         }
-        File outTarget = new File(outputPath);
-        String fileName = outputPath;
-        if (outTarget.isDirectory()) {
-            fileName = outputPath + File.separator + "info_ebr_cli.log";
-        }
         AppLoggerHolder.LOGGER.messageLogger = Logger.getLogger("ebr");
         AppLoggerHolder.LOGGER.messageLogger.setUseParentHandlers(false);
-        FileHandler fileHandler = new FileHandler(fileName, true);
-        fileHandler.setLevel(Level.ALL);
-        fileHandler.setFormatter(new LogFormatHandler());
-        AppLoggerHolder.LOGGER.messageLogger.addHandler(fileHandler);
+        ConsoleHandler consoleHandler = new ConsoleHandler();
+        consoleHandler.setLevel(Level.ALL);
+        consoleHandler.setFormatter(new LogFormatHandler());
+        AppLoggerHolder.LOGGER.messageLogger.addHandler(consoleHandler);
     }
 
 }

@@ -1,17 +1,5 @@
 [
     {
-      "name" : "ebr.core.jobs.PerformableJobItemCollectHandler",
-      "methods": [
-        { "name": "<init>", "parameterTypes": [] }
-      ]
-    },
-    {
-        "name" : "ebr.core.jobs.JobStateUpdateHandler",
-        "methods": [
-          { "name": "<init>", "parameterTypes": [] }
-        ]
-    },
-    {
         "name" : "com.sun.org.apache.xerces.internal.impl.dv.xs.SchemaDVFactoryImpl",
         "methods" : [
           {

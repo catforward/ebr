@@ -18,6 +18,7 @@
 package pers.ebr.cli.core.tasks;
 
 import pers.ebr.cli.core.EbrException;
+import pers.ebr.cli.util.AppLogger;
 import pers.ebr.cli.util.ConfigUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -63,6 +64,10 @@ public class TaskItemBuilder {
         if (strVal.isEmpty()) {
             throw new EbrException("the path of define file is empty.");
         }
+        String fullPath = strVal.get();
+        if (!"/".startsWith(fullPath) && !fullPath.contains(":")) {
+            fullPath =  String.format("%s/%s", System.getProperty("user.dir"), fullPath);
+        }
         try {
             //解决java.lang.AbstractMethodError:javax.xml.parsers.DocumentBuilderFactory.setFeature(Ljava/lang/String;Z)V异常
             System.setProperty("javax.xml.parsers.DocumentBuilderFactory", "com.sun.org.apache.xerces.internal.jaxp.DocumentBuilderFactoryImpl");
@@ -75,9 +80,10 @@ public class TaskItemBuilder {
             documentBuilderFactory.setXIncludeAware(false);
             documentBuilderFactory.setExpandEntityReferences(false);
             DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-            Document document = documentBuilder.parse(new FileInputStream(strVal.get()));
+            Document document = documentBuilder.parse(new FileInputStream(fullPath));
             return parse(document.getDocumentElement());
         } catch (Exception ex) {
+            AppLogger.dumpError(ex);
             throw new EbrException(ex);
         }
     }
@@ -112,28 +118,22 @@ public class TaskItemBuilder {
             NamedNodeMap map = node.getAttributes();
             Optional<Node> optValue = Optional.ofNullable(map.getNamedItem(ATTR_ID));
             if (optValue.isEmpty()) {
-                throw new EbrException("没有设置uid元素");
+                throw new EbrException("attribute [id] must be set.");
             }
-            // 使用ID取得或创建Meta
+            // create a new task
             String id = optValue.get().getNodeValue().trim();
-            currentTask = Optional.ofNullable(flow.getTask(id)).orElseGet(() -> {
-                if (parent == null) {
-                    return new Task(id, "/", "");
-                } else {
-                    return new Task(id, parent.url, parent.id);
-                }
-            });
-            // 描述
+            currentTask = Optional.ofNullable(flow.getTask(id)).orElseGet(() -> new Task(id, (parent == null) ?  "": parent.id));
+            // desc
             optValue = Optional.ofNullable(map.getNamedItem(ATTR_DESC));
             if (optValue.isPresent()) {
                 currentTask.desc = optValue.get().getNodeValue().trim();
             }
-            // 命令
+            // command
             optValue = Optional.ofNullable(map.getNamedItem(ATTR_COMMAND));
             if (optValue.isPresent()) {
                 currentTask.command = optValue.get().getNodeValue().trim();
             }
-            // 依赖
+            // depends
             optValue = Optional.ofNullable(map.getNamedItem(ATTR_DEPENDS));
             if (optValue.isPresent()) {
                 StringTokenizer tokenizer = new StringTokenizer(optValue.get().getNodeValue().trim(), ",", false);
@@ -142,7 +142,7 @@ public class TaskItemBuilder {
                 }
             }
         }
-        // 子元素
+        // sub elements
         NodeList nodeList = node.getChildNodes();
         int len = nodeList.getLength();
         if (currentTask != null) {

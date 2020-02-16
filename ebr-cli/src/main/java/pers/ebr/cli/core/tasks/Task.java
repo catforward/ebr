@@ -18,10 +18,13 @@
 package pers.ebr.cli.core.tasks;
 
 import pers.ebr.cli.core.EbrException;
+import pers.ebr.cli.core.graph.DirectedGraph;
 
 import java.util.ArrayList;
+import java.util.Set;
 
 import static pers.ebr.cli.core.tasks.TaskState.*;
+import static pers.ebr.cli.core.tasks.TaskType.GROUP;
 import static pers.ebr.cli.core.tasks.TaskType.UNIT;
 
 /**
@@ -39,21 +42,62 @@ public class Task {
     final ArrayList<String> depends = new ArrayList<>();
     // management prop
     final String parentId;
-    final String location;
     final String url;
     TaskType type;
     TaskState state;
+    DirectedGraph<Task> subTasks;
 
-    Task(String id, String location, String parentId) {
+    Task(String id, String parentId) {
         this.id = id;
-        this.location = location;
         this.parentId = parentId;
         this.type = UNIT;
         this.state = INACTIVE;
-        this.url = String.format("/".equals(location) ? "%s%s" : "%s/%s", location, id);
+        this.url = String.format("%s/%s", parentId, id);
+        this.subTasks = null;
+    }
+
+    Set<Task> getSuccessors(Task target) {
+        if (type == GROUP && subTasks != null) {
+            return subTasks.successors(target);
+        } else {
+            throw new EbrException(String.format("there is no any sub task [id:%s, url:%s]", id, url));
+        }
+    }
+
+    Set<Task> getPredecessors(Task target) {
+        if (type == GROUP && subTasks != null) {
+            return subTasks.predecessors(target);
+        } else {
+            throw new EbrException(String.format("there is no any sub task [id:%s, url:%s]", id, url));
+        }
+    }
+
+    Set<Task> getSubTasks() {
+        if (type == GROUP && subTasks != null) {
+            return subTasks.vertexes();
+        } else {
+            throw new EbrException(String.format("there is no any sub task [id:%s, url:%s]", id, url));
+        }
+    }
+
+    void addSubTask(Task subTask) {
+        if (type == GROUP && subTasks != null) {
+            subTasks.addVertex(subTask);
+        } else {
+            throw new EbrException(String.format("can not add sub task[id:%s, url:%s]", id, url));
+        }
+    }
+
+    void addSequence(Task from, Task to) {
+        if (type == GROUP && subTasks != null) {
+            subTasks.putEdge(from, to);
+        } else {
+            throw new EbrException(String.format("can not add sequence of task[id:%s, url:%s]", id, url));
+        }
     }
 
     void updateState(TaskState newState) {
+        System.err.println(String.format("state changed->task:[%s] state:[%s -> %s]", id, state, newState));
         switch (state) {
             case INACTIVE: {
                 if (ACTIVE == newState) {

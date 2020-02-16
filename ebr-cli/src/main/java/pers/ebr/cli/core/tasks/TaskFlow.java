@@ -19,7 +19,6 @@ package pers.ebr.cli.core.tasks;
 
 import pers.ebr.cli.core.EbrException;
 import pers.ebr.cli.core.bus.AsyncMessageBus;
-import pers.ebr.cli.core.graph.DirectedGraph;
 import pers.ebr.cli.core.graph.GraphBuilder;
 
 import java.util.ArrayList;
@@ -43,19 +42,17 @@ public class TaskFlow {
     private AsyncMessageBus messageBus = null;
     private Task root = null;
     private final Map<String, Task> taskPool = new HashMap<>();
-    private final Map<String, DirectedGraph<Task>> taskGroups = new HashMap<>();
     private final List<Task> executableList = new ArrayList<>();
 
     TaskFlow() {}
 
     void addTask(Task task) {
         taskPool.put(task.id, task);
-        if ("/".equals(task.location)) {
+        if (task.parentId.isEmpty()) {
             root = task;
         }
         if (GROUP == task.type) {
-            DirectedGraph<Task> graph = GraphBuilder.directed().setAllowsSelfLoops(false).build();
-            taskGroups.put(task.url, graph);
+            task.subTasks = GraphBuilder.directed().setAllowsSelfLoops(false).build();
         }
     }
 
@@ -66,71 +63,63 @@ public class TaskFlow {
     TaskFlow build() {
         for (var entry : taskPool.entrySet()) {
             Task task = entry.getValue();
-            if ("/".equals(task.location)) {
+            if (task.parentId.isEmpty()) {
                 continue;
             }
-            DirectedGraph<Task> graph = taskGroups.get(task.location);
-            if(graph == null) {
-                throw new EbrException(String.format("unknown task structure [id: %s, location: %s, url: %s]",
-                        task.id, task.location, task.url));
+            Task parent = taskPool.get(task.parentId);
+            if(parent == null) {
+                throw new EbrException(String.format("unknown task structure [id: %s, url: %s]", task.id, task.url));
             }
-            graph.addVertex(task);
+            parent.addSubTask(task);
             for (String dependId : task.depends) {
                 Task preTask = taskPool.get(dependId);
                 if (preTask == null) {
-                    throw new EbrException(String.format("unknown dependency [id: %s, location: %s, url: %s]",
-                            task.id, task.location, task.url));
+                    throw new EbrException(String.format("unknown dependency [id: %s, url: %s]", task.id, task.url));
                 }
-                if (!preTask.location.equalsIgnoreCase(task.location)) {
-                    throw new EbrException(String.format("the group of prerequires must be the same one with [id: %s, location: %s, url: %s]",
-                            task.id, task.location, task.url));
+                if (!preTask.parentId.equalsIgnoreCase(task.parentId)) {
+                    throw new EbrException(String.format("the parent of prerequires must be the same one [id: %s, url: %s]",
+                            task.id, task.url));
                 }
-                graph.putEdge(preTask, task);
+                parent.addSequence(preTask, task);
             }
         }
         return this;
     }
 
-    void gatherExecutableTasks(DirectedGraph<Task> group, Task target) {
-        if (group == null || target == null) {
-            throw new IllegalArgumentException();
-        }
+    void gatherExecutableTasks(Task parent, Task target) {
+        checkNotNull(parent);
+        checkNotNull(target);
+
         if (target.type == GROUP && target.state != COMPLETE) {
             target.updateState(ACTIVE);
-            group.vertexes().forEach(subTask -> {
+            target.getSubTasks().forEach(subTask -> {
                 if (subTask.depends.isEmpty() && subTask.state == INACTIVE) {
                     subTask.updateState(ACTIVE);
                     executableList.add(subTask);
                 }
             });
-        } else {
-            for (var postTask : group.successors(target)) {
-                if (postTask.type == GROUP) {
-                    DirectedGraph<Task> postGroup = taskGroups.get(postTask.url);
-                    gatherExecutableTasks(postGroup, postTask);
-                } else {
-                    long cnt = group.predecessors(postTask).stream().filter(t -> t.state != COMPLETE).count();
-                    if (cnt == 0) {
-                        postTask.updateState(ACTIVE);
-                        executableList.add(postTask);
-                    }
+            return;
+        }
+
+        for (var postTask : parent.getSuccessors(target)) {
+            if (postTask.type == GROUP) {
+                gatherExecutableTasks(taskPool.get(postTask.parentId), postTask);
+            } else {
+                if (parent.getPredecessors(postTask).stream().filter(t -> t.state != COMPLETE).count() == 0) {
+                    postTask.updateState(ACTIVE);
+                    executableList.add(postTask);
                 }
             }
         }
     }
 
     public void updateTaskState(String taskId, TaskState newState) {
-        System.err.println(String.format("state changed->task:[%s] new state:[%s]", taskId, newState));
         Task target = taskPool.get(taskId);
         checkNotNull(target);
         target.updateState(newState);
-        // check task group
-        String groupId = "/".equals(target.location) ? target.url : target.location;
-        DirectedGraph<Task> group = taskGroups.get(groupId);
-        if (group == null) {
-            throw new EbrException(String.format("no task group named:[%s]", groupId));
-        }
-        // notice the group is dead
+        Task parent = target.parentId.isEmpty() ? target : taskPool.get(target.parentId);
+        checkNotNull(parent);
+        // notice the parent is dead
         if (FAILED == newState) {
             HashMap<String, Object> param = new HashMap<>();
             param.put(TOPIC_DATA_TASK_ID, target.parentId);
@@ -139,7 +128,7 @@ public class TaskFlow {
             return;
         }
         // otherwise check state of the group
-        long cnt = group.vertexes().stream().filter(t -> t.state != COMPLETE).count();
+        long cnt = parent.getSubTasks().stream().filter(t -> t.state != COMPLETE).count();
         if (cnt == 0 && !target.parentId.isEmpty() && messageBus != null) {
             HashMap<String, Object> param = new HashMap<>();
             param.put(TOPIC_DATA_TASK_ID, target.parentId);
@@ -148,7 +137,7 @@ public class TaskFlow {
         }
         // find the executable task for next step
         executableList.clear();
-        gatherExecutableTasks(group, target);
+        gatherExecutableTasks(parent, target);
         if (!executableList.isEmpty()) {
             HashMap<String, Object> param = new HashMap<>();
             if (executableList.size() == 1) {
