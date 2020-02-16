@@ -19,7 +19,7 @@
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
     <sonar.java.binaries>${project.basedir}/target/classes</sonar.java.binaries>
-    <main.clazz>ebr.cli.Launcher</main.clazz>
+    <main.clazz>pers.ebr.cli.Launcher</main.clazz>
   </properties>
 
   <dependencies>
