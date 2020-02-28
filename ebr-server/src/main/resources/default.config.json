@@ -1,0 +1,17 @@
+{
+  "node": {
+    "id": "server-node",
+    "type": "server",
+    "persist.db": {
+      "type": "sqlite"
+    },
+    "executable.pool": {
+      "type": "memory"
+    },
+    "http": {
+      "port": 8086,
+      "host": "*",
+      "acl": []
+    }
+  }
+}

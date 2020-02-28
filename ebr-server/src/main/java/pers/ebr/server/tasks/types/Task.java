@@ -15,17 +15,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package pers.ebr.server;
+package pers.ebr.server.tasks.types;
 
 /**
- * Define the constant variables which can be used in this whole application.
- * 
+ * <pre>
+ * Task in EBR
+ * </pre>
+ *
  * @author l.gong
  */
-public interface GlobalConstants {
-
-    /* 存放根目录的环境变量名 */
-    public final static String ENV_EBR_ROOT = "EBR_ROOT";
-
+public interface Task {
+    String url();
+    String type();
 }

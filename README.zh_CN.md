@@ -36,13 +36,24 @@ EBR(External Batch Runner) 是一个简单的工具，用来管理并执行若�
 
 - 执行以下命令
 
-```sh
-java -jar /${your_path}/ebr-cli.jar -f /${your_path}/your_define.xml
+```bash
+java -jar /${your_path}/ebr.jar -f /${your_path}/your_define.xml
 ```
 
 - EBR将会解析给定的依赖定义，并转换成如下的有向无环的图结构（DAG），然后按照顺序执行它们
 
 ![image](ebr-docs/sample_task_flow.jpg)
+
+PS: 为了更好的性能，可以使用GraalVM将其编译为二进制程序
+```bash
+cd ${your_path}/ebr-dist/lib
+native-image -H:ReflectionConfigurationFiles=../../ebr-cli/build/graal.json -jar ../ebr-cli.jar
+```
+还可以由cron来定时启动:
+```bash
+# 2:05 AM every day
+05 2 * * * /your_path/ebr -f your_define.xml
+```
 
 开发运行环境
 

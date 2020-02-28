@@ -15,33 +15,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
-package pers.ebr.server;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Future;
-import io.vertx.core.VertxOptions;
-
+package pers.ebr.server.com;
 
 /**
- * The Launcher of EBR-Server
+ * <pre>
+ * Define the constant variables which can be used in this whole application.
+ * </pre>
  * 
  * @author l.gong
  */
-public class MainVerticle extends AbstractVerticle {
+public interface GlobalConstants {
 
-    private final static Logger logger = LoggerFactory.getLogger(MainVerticle.class);
+    String ENV_EBR_ROOT = "EBR_ROOT";
 
-    /**
-     * Initialize and start the {@link MainVerticle}
-     * @param startFuture An instance of {@link Future} which allows us to report on the startup status.
-     */
-    @Override
-    public void start(Future<Void> startFuture) throws Exception {
-        logger.info("Starting EBR Server achieved by Vert.x(default event loop pool size is {})", VertxOptions.DEFAULT_EVENT_LOOP_POOL_SIZE);
-    }
+    String CONFIG_KEY_NODE = "node";
+    String CONFIG_KEY_ID = "id";
+    String CONFIG_KEY_TYPE = "type";
+    String CONFIG_KEY_PERSIST_DB = "persist.db";
+    String CONFIG_KEY_EXECUTABLE_POOL = "executable.pool";
+    String CONFIG_KEY_HTTP = "http";
+    String CONFIG_KEY_PORT = "port";
+    String CONFIG_KEY_HOST = "host";
+    String CONFIG_KEY_ACL = "acl";
 
 }

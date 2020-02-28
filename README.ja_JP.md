@@ -34,15 +34,24 @@ EBR(External Batch Runner)は明確な依存の関係を持つ外部プログラ
 
 下記コマンドを叩くと
 
-```sh
-java -jar /${your_path}/ebr-cli.jar -f /${your_path}/your_define.xml
+```bash
+java -jar /${your_path}/ebr.jar -f /${your_path}/your_define.xml
 ```
 
 指定されたコマンド間の依存関係を分析し、下記図のような有向非巡回グラフ（DAG）を作成する。そして、外部プログラムは定義に従って順次実行される。
 
 ![image](ebr-docs/sample_task_flow.jpg)
 
-
+PS: より良い性能のため、GraalVMでネイティブイメージにコンパイルする必要
+```bash
+cd ${your_path}/ebr-dist/lib
+native-image -H:ReflectionConfigurationFiles=../../ebr-cli/build/graal.json -jar ../ebr-cli.jar
+```
+そして、cronに任せて一定間隔で起動させるという利用シーンもある:
+```bash
+# 2:05 AM every day
+05 2 * * * /your_path/ebr -f your_define.xml
+```
 
 開発環境
 

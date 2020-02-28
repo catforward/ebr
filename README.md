@@ -36,13 +36,24 @@ we have a definition of program's dependencies like this below
 
 when we kick this command
 
-```sh
-java -jar /${your_path}/ebr-cli.jar -f /${your_path}/your_define.xml
+```bash
+java -jar /${your_path}/ebr.jar -f /${your_path}/your_define.xml
 ```
 
 EBR will parse the definition to a directed acyclic graph (DAG), and then, execute them as we defined.
 
 ![image](ebr-docs/sample_task_flow.jpg)
+
+PS: build a native-image by GraalVM for better performance
+```bash
+cd ${your_path}/ebr-dist/lib
+native-image -H:ReflectionConfigurationFiles=../../ebr-cli/build/graal.json -jar ../ebr-cli.jar
+```
+and then we can run it within cron like this blow:
+```bash
+# 2:05 AM every day
+05 2 * * * /your_path/ebr -f your_define.xml
+```
 
 Development Environment
 

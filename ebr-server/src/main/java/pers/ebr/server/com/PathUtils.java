@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.server.utils;
+package pers.ebr.server.com;
 
 import java.io.File;
 import java.net.URLDecoder;
@@ -23,12 +23,12 @@ import java.nio.charset.StandardCharsets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static pers.ebr.server.GlobalConstants.ENV_EBR_ROOT;
+import static pers.ebr.server.com.GlobalConstants.ENV_EBR_ROOT;
 
 /**
  * <pre>
  * The utility of EBR-Server's path.
- * Made by the imagination below this:
+ * Made the path info with the folder structure below this:
  *
  * ${EBR_ROOT}/
  *     |-- bin/
@@ -45,9 +45,9 @@ import static pers.ebr.server.GlobalConstants.ENV_EBR_ROOT;
  *
  * @author l.gong
  */
-public final class Paths {
+public final class PathUtils {
 
-    private final static Logger logger = LoggerFactory.getLogger(Paths.class);
+    private final static Logger logger = LoggerFactory.getLogger(PathUtils.class);
 
     private final String rootPath;
     private final String logsPath;
@@ -55,10 +55,10 @@ public final class Paths {
     private final String dataPath;
 
     private static class PathHolder {
-        private final static Paths INSTANCE = new Paths();
+        private final static PathUtils INSTANCE = new PathUtils();
     }
 
-    private Paths() {
+    private PathUtils() {
         rootPath = initRootPath();
         logsPath = String.format("%s%s%s", rootPath, File.separator, "logs");
         confPath = String.format("%s%s%s", rootPath, File.separator, "conf");
@@ -73,7 +73,7 @@ public final class Paths {
             logger.debug("Failed to get the environment parameter: {}", ENV_EBR_ROOT, ex);
         }
         if (rawPath == null || rawPath.isBlank()) {
-            rawPath = URLDecoder.decode(Paths.class.getProtectionDomain()
+            rawPath = URLDecoder.decode(PathUtils.class.getProtectionDomain()
                                 .getCodeSource().getLocation().getPath(), StandardCharsets.UTF_8);
             File jarFile = new File(rawPath);
             rawPath = URLDecoder.decode(jarFile.getParentFile()

@@ -51,7 +51,7 @@
               <goal>shade</goal>
             </goals>
             <configuration>
-              <outputFile>${project.basedir}/../ebr-dist/lib/${project.artifactId}.jar
+              <outputFile>${project.basedir}/../ebr-dist/lib/ebr.jar
               </outputFile>
               <minimizeJar>false</minimizeJar>
               <transformers>
