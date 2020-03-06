@@ -4,7 +4,6 @@
     "type": "server",
     "http": {
       "port": 8000,
-      "host": "*",
       "acl": []
     }
   }

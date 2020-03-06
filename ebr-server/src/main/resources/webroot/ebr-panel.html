@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+    <link rel="stylesheet" href="/static/css/ebr-panel.css">
+    <title>EBR-Server Test Page</title>
+</head>
+<body>
+<div class="ebr-container">
+    <div class="ebr-sidebar d-none d-md-block bg-light sidebar">
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <div class="ebr-sidebar-button"><i data-feather="server" class="ebr-icon-32"></i></div>
+                </li>
+                <li class="nav-item">
+                    <div class="ebr-sidebar-button"><i data-feather="layers" class="ebr-icon-32"></i></div>
+                </li>
+                <li class="nav-item">
+                    <div class="ebr-sidebar-button"><i data-feather="check-square" class="ebr-icon-32"></i></div>
+                </li>
+                <li class="nav-item">
+                    <div class="ebr-sidebar-button-bottom"><i data-feather="align-justify" class="ebr-icon-32"></i></div>
+                </li>
+            </ul>
+    </div>
+    <div class="ebr-main">
+        <div class="table-responsive">
+            <table class="table table-striped table-sm">
+                <colgroup>
+                    <col style="width: 5%;">
+                    <col>
+                    <col>
+                    <col>
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Action</th>
+                        <th>Request</th>
+                        <th>Response</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td><button type="button" class="btn btn-primary" onclick="ebr.sendTestMsg();">Test Function</button></td>
+                        <td>/func/SendTestMsg</td>
+                        <td></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+<script type="text/javascript" src="/static/js/jquery-3.4.1.min.js"></script>
+<script type="text/javascript" src="/static/js/bootstrap.bundle.min.js"></script>
+<script type="text/javascript" src="/static/js/feather.min.js"></script>
+<script>feather.replace()</script>
+<script type="text/javascript" src="/static/js/ebr-panel.js"></script>
+</body>
+</html>

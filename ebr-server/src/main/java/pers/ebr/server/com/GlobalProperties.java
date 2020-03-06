@@ -65,6 +65,10 @@ public final class GlobalProperties {
         System.out.println("Load Configuration ........... DONE");
     }
 
+    public static JsonObject getHttpConfig() {
+        return InstanceHolder.INSTANCE.config.getJsonObject(CONFIG_KEY_HTTP);
+    }
+
     private void loadConfigFile(Map<String, JsonObject> holder) throws IOException, URISyntaxException {
         String configFile = String.format("%s%s%s", PathUtils.getConfPath(), File.separator, "ebr-server.json");
         File cfgFile = new File(configFile);
@@ -83,8 +87,8 @@ public final class GlobalProperties {
             return;
         }
         // basic info
-        config.put(CONFIG_KEY_ID, extObj.getString(CONFIG_KEY_ID, defObj.getString(CONFIG_KEY_ID)));
-        config.put(CONFIG_KEY_TYPE, extObj.getString(CONFIG_KEY_TYPE, defObj.getString(CONFIG_KEY_TYPE)));
+        config.put(CONFIG_KEY_ID, extObj.getString(CONFIG_KEY_ID, defObj.getString(CONFIG_KEY_ID)).strip());
+        config.put(CONFIG_KEY_TYPE, extObj.getString(CONFIG_KEY_TYPE, defObj.getString(CONFIG_KEY_TYPE)).strip());
         // persist info
         config.mergeIn(extObj.getJsonObject(CONFIG_KEY_PERSIST_DB, defObj.getJsonObject(CONFIG_KEY_PERSIST_DB)).copy());
         // pool info
@@ -95,11 +99,11 @@ public final class GlobalProperties {
 
     private void validateConfig() throws InvalidPropertiesFormatException {
         // basic info
-        String value = config.getString(CONFIG_KEY_ID, "");
+        String value = config.getString(CONFIG_KEY_ID, "").strip();
         if (value.isEmpty()) {
             throw new InvalidPropertiesFormatException(String.format("property [%s] can not be empty...", CONFIG_KEY_ID));
         }
-        value = config.getString(CONFIG_KEY_TYPE, "");
+        value = config.getString(CONFIG_KEY_TYPE, "").strip();
         if (value.isEmpty()) {
             throw new InvalidPropertiesFormatException(String.format("property [%s] can not be empty...", CONFIG_KEY_TYPE));
         }
@@ -108,7 +112,7 @@ public final class GlobalProperties {
         if (L1JsonObj == null) {
             throw new InvalidPropertiesFormatException(String.format("property [%s] can not be empty...", CONFIG_KEY_PERSIST_DB));
         }
-        value = L1JsonObj.getString(CONFIG_KEY_TYPE, "");
+        value = L1JsonObj.getString(CONFIG_KEY_TYPE, "").strip();
         if (value.isEmpty()) {
             throw new InvalidPropertiesFormatException(String.format("property [%s.%s] can not be empty...", CONFIG_KEY_PERSIST_DB, CONFIG_KEY_TYPE));
         }
@@ -116,7 +120,7 @@ public final class GlobalProperties {
         if (L1JsonObj == null) {
             throw new InvalidPropertiesFormatException(String.format("property [%s] can not be empty...", CONFIG_KEY_EXECUTABLE_POOL));
         }
-        value = L1JsonObj.getString(CONFIG_KEY_TYPE, "");
+        value = L1JsonObj.getString(CONFIG_KEY_TYPE, "").strip();
         if (value.isEmpty()) {
             throw new InvalidPropertiesFormatException(String.format("property [%s.%s] can not be empty...", CONFIG_KEY_EXECUTABLE_POOL, CONFIG_KEY_TYPE));
         }
@@ -125,13 +129,9 @@ public final class GlobalProperties {
         if (L1JsonObj == null) {
             throw new InvalidPropertiesFormatException(String.format("property [%s] can not be empty...", CONFIG_KEY_HTTP));
         }
-        int port = config.getInteger(CONFIG_KEY_PORT, 0);
+        int port = L1JsonObj.getInteger(CONFIG_KEY_PORT, 0);
         if (port <= 0) {
             throw new InvalidPropertiesFormatException(String.format("property [%s.%s] must be a positive number...", CONFIG_KEY_HTTP, CONFIG_KEY_PORT));
-        }
-        value = L1JsonObj.getString(CONFIG_KEY_HOST, "");
-        if (value.isEmpty()) {
-            throw new InvalidPropertiesFormatException(String.format("property [%s.%s] can not be empty...", CONFIG_KEY_HTTP, CONFIG_KEY_HOST));
         }
     }
 
