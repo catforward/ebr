@@ -22,7 +22,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import pers.ebr.server.com.GlobalProperties;
-import pers.ebr.server.http.HttpVerticle;
+import pers.ebr.server.web.HttpServerVerticle;
+import pers.ebr.server.web.ServerInfoVerticle;
 
 /**
  * The Launcher of EBR-Server
@@ -44,7 +45,8 @@ public class Main {
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 if (vertx != null) vertx.close();
             }));
-            deployVerticle();
+            deployWorkerVerticle();
+            deployHttpVerticle();
             logger.info("Starting EBR Server achieved by Vert.x(default event loop pool size is {})", VertxOptions.DEFAULT_EVENT_LOOP_POOL_SIZE);
         } catch (Exception ex) {
             logger.error("application error occurred!", ex);
@@ -58,11 +60,18 @@ public class Main {
         // TODO init pool
     }
 
-    private static void deployVerticle() {
+    private static void deployWorkerVerticle() {
+        DeploymentOptions serverInfoOpts = new DeploymentOptions()
+                .setConfig(GlobalProperties.getAllConfig())
+                .setInstances(1).setWorker(true);
+        vertx.deployVerticle(ServerInfoVerticle::new, serverInfoOpts);
+    }
+
+    private static void deployHttpVerticle() {
         DeploymentOptions httpOpts = new DeploymentOptions()
                 .setConfig(GlobalProperties.getHttpConfig())
                 .setInstances(1);
-        vertx.deployVerticle(HttpVerticle.class.getName(), httpOpts);
+        vertx.deployVerticle(HttpServerVerticle::new, httpOpts);
     }
 
 }

@@ -65,6 +65,10 @@ public final class GlobalProperties {
         System.out.println("Load Configuration ........... DONE");
     }
 
+    public static JsonObject getAllConfig() {
+        return InstanceHolder.INSTANCE.config.copy();
+    }
+
     public static JsonObject getHttpConfig() {
         return InstanceHolder.INSTANCE.config.getJsonObject(CONFIG_KEY_HTTP);
     }

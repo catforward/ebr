@@ -38,4 +38,11 @@ public interface GlobalConstants {
     String CONFIG_KEY_HOST = "host";
     String CONFIG_KEY_ACL = "acl";
 
+    String HTTP_PARAM_PATH = "path";
+    String HTTP_PARAM_PAYLOAD = "param";
+    String HTTP_PARAM_RESULT = "result";
+    String HTTP_PARAM_ENV = "env";
+
+    String TOPIC_PREFIX_INFO = "info";
+    String TOPIC_GET_SERVER_INFO = TOPIC_PREFIX_INFO + ".GetServerInfo";
 }
