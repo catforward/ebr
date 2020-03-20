@@ -21,7 +21,8 @@ import io.vertx.core.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import pers.ebr.server.com.GlobalProperties;
+import pers.ebr.server.com.Properties;
+import pers.ebr.server.tasks.SchedulerVerticle;
 import pers.ebr.server.web.HttpServerVerticle;
 import pers.ebr.server.web.ServerInfoVerticle;
 
@@ -55,21 +56,24 @@ public class Main {
     }
 
     private static void initBasicComponents() throws Exception {
-        GlobalProperties.load();
+        Properties.load();
         // TODO init db
         // TODO init pool
     }
 
     private static void deployWorkerVerticle() {
         DeploymentOptions serverInfoOpts = new DeploymentOptions()
-                .setConfig(GlobalProperties.getAllConfig())
+                .setConfig(Properties.getConfig())
                 .setInstances(1).setWorker(true);
         vertx.deployVerticle(ServerInfoVerticle::new, serverInfoOpts);
+        DeploymentOptions schdOpts = new DeploymentOptions()
+                .setInstances(1).setWorker(true);
+        vertx.deployVerticle(SchedulerVerticle::new, schdOpts);
     }
 
     private static void deployHttpVerticle() {
         DeploymentOptions httpOpts = new DeploymentOptions()
-                .setConfig(GlobalProperties.getHttpConfig())
+                .setConfig(Properties.getConfig())
                 .setInstances(1);
         vertx.deployVerticle(HttpServerVerticle::new, httpOpts);
     }

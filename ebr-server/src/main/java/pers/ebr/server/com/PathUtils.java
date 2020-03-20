@@ -23,7 +23,7 @@ import java.nio.charset.StandardCharsets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static pers.ebr.server.com.GlobalConstants.ENV_EBR_ROOT;
+import static pers.ebr.server.com.Constants.ENV_EBR_ROOT;
 
 /**
  * <pre>

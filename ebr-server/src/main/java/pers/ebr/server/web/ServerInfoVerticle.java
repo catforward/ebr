@@ -1,3 +1,20 @@
+/*
+ * Licensed to the Apache Software Foundation (ASF) under one
+ * or more contributor license agreements.  See the NOTICE file
+ * distributed with this work for additional information
+ * regarding copyright ownership.  The ASF licenses this file
+ * to you under the Apache License, Version 2.0 (the
+ * "License"); you may not use this file except in compliance
+ * with the License.  You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package pers.ebr.server.web;
 
 import io.vertx.core.AbstractVerticle;
@@ -7,8 +24,14 @@ import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static pers.ebr.server.com.GlobalConstants.*;
+import static pers.ebr.server.com.Constants.*;
+import static pers.ebr.server.com.Topic.INFO_GET_SERVER_INFO;
 
+/**
+ * The ServerInfoVerticle
+ *
+ * @author l.gong
+ */
 public class ServerInfoVerticle extends AbstractVerticle {
     private final static Logger logger = LoggerFactory.getLogger(ServerInfoVerticle.class);
 
@@ -16,7 +39,7 @@ public class ServerInfoVerticle extends AbstractVerticle {
     public void start() throws Exception {
         super.start();
         EventBus bus = vertx.eventBus();
-        bus.consumer(TOPIC_GET_SERVER_INFO, this::handleGetServerInfo);
+        bus.consumer(INFO_GET_SERVER_INFO, this::handleGetServerInfo);
     }
 
     @Override
@@ -28,13 +51,18 @@ public class ServerInfoVerticle extends AbstractVerticle {
         System.out.println("recv data->"+msg.body().toString());
         JsonObject result = new JsonObject();
         JsonObject resultBody = new JsonObject();
-        result.put(HTTP_PARAM_PATH, msg.body().getString(HTTP_PARAM_PATH));
-        result.put(HTTP_PARAM_RESULT, resultBody);
+        result.put(REQUEST_PARAM_PATH, msg.body().getString(REQUEST_PARAM_PATH));
+        result.put(RESPONSE_RESULT, resultBody);
 
         // get all environment variables
         JsonObject envVars = new JsonObject();
         System.getenv().forEach(envVars::put);
-        resultBody.put(HTTP_PARAM_ENV, envVars);
+        resultBody.put(RESPONSE_RESULT_INFO_ENV, envVars);
+
+        // get server config
+        JsonObject cfgVars = new JsonObject();
+        config().getMap().forEach(cfgVars::put);
+        resultBody.put(RESPONSE_RESULT_INFO_CONFIG, cfgVars);
 
         msg.reply(result);
     }

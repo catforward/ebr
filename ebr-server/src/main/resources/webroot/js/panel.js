@@ -6,7 +6,7 @@ ebr.reqHandlerMap = new Map();
 ebr.resHandlerMap = new Map();
 
 ebr.com = {
-    BindProc : function(pathStr, reqFunc, resFunc) {
+    BindQuery : function(pathStr, reqFunc, resFunc) {
         if (typeof pathStr !== "string" || pathStr.trim() === ""
             || typeof reqFunc !== "function" || typeof resFunc !== "function") {
             console.error("Invalid Params...");
@@ -16,7 +16,7 @@ ebr.com = {
         ebr.resHandlerMap.set(pathStr, resFunc);
     },
 
-    EmitProc : function(pathStr) {
+    EmitQuery : function(pathStr) {
         if (typeof pathStr !== "string" || pathStr.trim() === "") {
             console.error("Invalid Params...");
             return;
@@ -48,17 +48,45 @@ ebr.com = {
 };
 
 ebr.view = {
+    /* common */
+    ShiftPanel : function(panelId) {
+        if (panelId !== null) {
+            // replace the main panel
+            let mainPanelObj = $("#mainPanel");
+            mainPanelObj.empty();
+            let newPanel = $("#" + panelId).clone();
+            newPanel.attr("id", panelId + "Main");
+            newPanel.appendTo(mainPanelObj);
+        }
+    },
     /* ServerInfoPanel */
     AddServerInfoTableView : function(jsonResultData) {
+        ebr.view.ShiftPanel("serverInfoPanel");
+        let newPanel = $("#serverInfoPanelMain");
         // environment variables
         if (typeof jsonResultData.env === "object" && jsonResultData.env !== null) {
+            $("#envTableBody").empty();
             let rowNum = 1;
             for (var item in jsonResultData.env) {
                 let trHtml = $("<tr></tr>");
                 trHtml.append("<td>" + rowNum + "</td>");
                 trHtml.append("<td>" + item + "</td>");
                 trHtml.append("<td>" + jsonResultData.env[item] + "</td>");
-                trHtml.appendTo("#envTableBody");
+                trHtml.appendTo(newPanel.find("#envTableBody"));
+                rowNum++;
+                //console.log(item+":"+jsonResultData.env[item]);
+            }
+        }
+        // server config
+        if (typeof jsonResultData.config === "object" && jsonResultData.config !== null) {
+            $("#serverConfigTableBody").empty();
+            let rowNum = 1;
+            for (var item in jsonResultData.config) {
+                let trHtml = $("<tr></tr>");
+                trHtml.append("<td>" + rowNum + "</td>");
+                trHtml.append("<td>" + item + "</td>");
+                trHtml.append("<td>" + jsonResultData.config[item] + "</td>");
+                trHtml.appendTo(newPanel.find("#serverConfigTableBody"));
                 rowNum++;
                 //console.log(item+":"+jsonResultData.env[item]);
             }
@@ -79,5 +107,5 @@ ebr.ctl = {
 
 // run js source was loaded
 (function() {
-    ebr.com.BindProc("info.GetServerInfo", ebr.ctl.GetServerInfoRequest, ebr.ctl.GetServerInfoResponse);
+    ebr.com.BindQuery("info.GetServerInfo", ebr.ctl.GetServerInfoRequest, ebr.ctl.GetServerInfoResponse);
 })();

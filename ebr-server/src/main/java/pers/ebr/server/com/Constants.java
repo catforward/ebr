@@ -24,25 +24,17 @@ package pers.ebr.server.com;
  * 
  * @author l.gong
  */
-public interface GlobalConstants {
+public interface Constants {
 
     String ENV_EBR_ROOT = "EBR_ROOT";
 
-    String CONFIG_KEY_NODE = "node";
-    String CONFIG_KEY_ID = "id";
-    String CONFIG_KEY_TYPE = "type";
-    String CONFIG_KEY_PERSIST_DB = "persist.db";
-    String CONFIG_KEY_EXECUTABLE_POOL = "executable.pool";
-    String CONFIG_KEY_HTTP = "http";
-    String CONFIG_KEY_PORT = "port";
-    String CONFIG_KEY_HOST = "host";
-    String CONFIG_KEY_ACL = "acl";
+    String REQUEST_PARAM_PATH = "path";
+    String REQUEST_PARAM_PAYLOAD = "param";
+    String RESPONSE_ERROR = "error";
+    String RESPONSE_RESULT = "result";
+    String RESPONSE_RESULT_INFO_ENV = "env";
+    String RESPONSE_RESULT_INFO_CONFIG = "config";
 
-    String HTTP_PARAM_PATH = "path";
-    String HTTP_PARAM_PAYLOAD = "param";
-    String HTTP_PARAM_RESULT = "result";
-    String HTTP_PARAM_ENV = "env";
 
-    String TOPIC_PREFIX_INFO = "info";
-    String TOPIC_GET_SERVER_INFO = TOPIC_PREFIX_INFO + ".GetServerInfo";
+
 }

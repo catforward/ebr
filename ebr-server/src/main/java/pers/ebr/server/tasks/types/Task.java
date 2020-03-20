@@ -25,6 +25,6 @@ package pers.ebr.server.tasks.types;
  * @author l.gong
  */
 public interface Task {
-    String url();
+    String id();
     String type();
 }
