@@ -15,7 +15,7 @@ html, body {
 .ebr-main {
     /*width: 100%;
     height: 100%;*/
-    padding: 20px;
+    padding: 0px 20px 0px 20px;
     margin-left: 90px;
 }
 
@@ -36,12 +36,36 @@ html, body {
     display: inline-flex;
 }
 
+.ebr-panel {
+    display: inline-grid;
+}
+
 .ebr-panel-responsive {
     display: block;
     width: 100%;
     overflow-x: auto;
     overflow-y: auto;
 }
+
+.ebr-panel-navbar {
+    position: fixed;
+    display: inline-grid;
+    height: 65px;
+    width: 100%;
+    background: #FFFFFF;
+}
+
+.ebr-panel-navbar-items {
+    height: 100%;
+    width: 100%;
+    position:sticky;
+    top:50%;
+}
+
+.ebr-panel-content {
+    margin-top: 90px;
+}
+
 /* =========== component ========== */
 .ebr-sidebar-items {
     width: 100%;
@@ -64,6 +88,15 @@ html, body {
     background: lightgray !important;
     width: 1px !important;
     /*margin: 20px 0px 20px 90px;*/
+    z-index: 9;
+}
+
+.ebr-navbar-h-line {
+    background: lightgray !important;
+    height: 1px !important;
+    margin: 0px 20px 0px 0px;
+    position:sticky;
+    top:50%;
     z-index: 9;
 }
 

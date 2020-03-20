@@ -48,10 +48,9 @@ public class HttpServerVerticle extends AbstractVerticle {
         Router router = Router.router(vertx);
         StaticHandler staticHandler = StaticHandler.create().setAlwaysAsyncFS(true).setFilesReadOnly(true)
                 .setCachingEnabled(true).setDirectoryListing(false).setIncludeHidden(false)
-                .setEnableFSTuning(true).setIndexPage("panel.html");
+                .setEnableFSTuning(true).setIndexPage("e-panel.html");
         router.route().handler(BodyHandler.create());
         router.route().failureHandler(ErrorHandler.create());
-        router.get("/").handler(staticHandler);
         router.get("/*").handler(staticHandler);
         router.post("/proc").handler(new HttpProcHandler());
 

@@ -15,14 +15,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.server.tasks.types;
+package pers.ebr.server.com;
 
 /**
  * <pre>
- * Topics in EBR
+ * The Defines of Topic
  * </pre>
  *
  * @author l.gong
  */
 public interface Topic {
+    String PREFIX_INFO = "info";
+    String INFO_GET_SERVER_INFO = PREFIX_INFO + ".GetServerInfo";
+
+    String PREFIX_TASK = "task";
+    String TASK_VALIDATE_TASK_FLOW = PREFIX_TASK + ".ValidateTaskFlow";
 }
