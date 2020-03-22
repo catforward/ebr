@@ -52,17 +52,16 @@ ebr.view = {
     ShiftPanel : function(panelId) {
         if (panelId !== null) {
             // replace the main panel
-            let mainPanelObj = $("#mainPanel");
-            mainPanelObj.empty();
-            let newPanel = $("#" + panelId).clone();
-            newPanel.attr("id", panelId + "Main");
-            newPanel.appendTo(mainPanelObj);
+            $(".ebr-panel").each((index, element) => {
+                $(element).addClass("ebr-invisible");
+            });
+            $("#"+panelId).removeClass("ebr-invisible");
         }
     },
     /* ServerInfoPanel */
     AddServerInfoTableView : function(jsonResultData) {
         ebr.view.ShiftPanel("serverInfoPanel");
-        let newPanel = $("#serverInfoPanelMain");
+        let infoPanel = $("#serverInfoPanel");
         // environment variables
         if (typeof jsonResultData.env === "object" && jsonResultData.env !== null) {
             $("#envTableBody").empty();
@@ -72,7 +71,7 @@ ebr.view = {
                 trHtml.append("<td>" + rowNum + "</td>");
                 trHtml.append("<td>" + item + "</td>");
                 trHtml.append("<td>" + jsonResultData.env[item] + "</td>");
-                trHtml.appendTo(newPanel.find("#envTableBody"));
+                trHtml.appendTo(infoPanel.find("#envTableBody"));
                 rowNum++;
                 //console.log(item+":"+jsonResultData.env[item]);
             }
@@ -86,7 +85,7 @@ ebr.view = {
                 trHtml.append("<td>" + rowNum + "</td>");
                 trHtml.append("<td>" + item + "</td>");
                 trHtml.append("<td>" + jsonResultData.config[item] + "</td>");
-                trHtml.appendTo(newPanel.find("#serverConfigTableBody"));
+                trHtml.appendTo(infoPanel.find("#serverConfigTableBody"));
                 rowNum++;
                 //console.log(item+":"+jsonResultData.env[item]);
             }
