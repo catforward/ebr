@@ -1,15 +1,11 @@
 html, body {
     height: 100%;
-    padding: 0;
-    margin: 0;
     background: #FFFFFF;
 }
 /* =========== visible ========== */
 .ebr-invisible {
   visibility: hidden !important;
   display:none !important;
-  width: 0%;
-  height: 0%;
 }
 
 /* =========== layout ========== */
@@ -62,16 +58,21 @@ html, body {
     height: 100%;
     width: 100%;
     position:sticky;
-    top:50%;
+    display: flex;
+    align-items: center;
 }
 
 .ebr-panel-content {
-    margin-top: 90px;
+    margin-top: 70px;
+}
+
+.ebr-inner-card-body {
+    margin: 10px 20px 10px 30px;
 }
 
 .ebr-panel-flex-content {
     display: inline-flex;
-    margin-top: 90px;
+    margin-top: 70px;
 }
 
 .ebr-flex-col-2 {
@@ -127,27 +128,12 @@ html, body {
     padding-bottom: 10px;
 }
 
-.ebr-v-line {
-    background: #ADB5BD !important;
-    width: 1px !important;
-    /*margin: 20px 0px 20px 90px;*/
-    z-index: 9;
-}
-
-.ebr-h-line {
-    background: #ADB5BD !important;
-    height: 1px !important;
-    margin: 0px 20px 0px 0px;
-    position:sticky;
-    top:50%;
-    z-index: 9;
-}
-
 .ebr-icon-32 {
     display: block;
     margin: auto;
     width: 32px;
     height: 32px;
+    color: #6c757d;
 }
 
 .ebr-icon-32:hover {
@@ -155,5 +141,9 @@ html, body {
     margin: auto;
     width: 32px;
     height: 32px;
-    color: #FF6600;
+    color: #007bff !important;
+}
+
+.ebr-icon-32-current {
+    color: #FF6600 !important;;
 }

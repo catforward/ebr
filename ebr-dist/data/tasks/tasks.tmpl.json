@@ -1,45 +1,53 @@
 {
   "FLOW-1": {
-    "T1": {
-      "desc": "test task unit T1",
-      "cmd": "echo T1 Start; sleep 5; echo T1 End;",
-      "retry": 3
-    },
-    "T2": {
-      "desc": "test task unit T2",
-      "cmd": "echo T2 Start; sleep 5; echo T2 End;",
-      "retry": 3,
-      "depends": ["T1"],
-      "subs": {
-        "T2-1": {
-          "desc": "test task unit T2-1",
-          "cmd": "echo T2-1 Start; sleep 5; echo T2-1 End;",
-          "retry": 3
-        },
-        "T2-2": {
-          "desc": "test task unit T2-2",
-          "cmd": "echo T2-2 Start; sleep 5; echo T2-2 End;",
-          "retry": 3
-        },
-        "T2-3": {
-          "desc": "test task unit T2-3",
-          "cmd": "echo T2-3 Start; sleep 5; echo T2-3 End;",
-          "retry": 3,
-          "depends": ["T2-1","T2-2"]
-        }
-      }
-    },
-    "T3": {
-      "desc": "test task unit T3",
-      "cmd": "echo T3 Start; sleep 5; echo T3 End;",
-      "retry": 3,
-      "depends": ["T1","T2"]
-    },
-    "T4": {
-      "desc": "test task unit T4",
-      "cmd": "echo T4 Start; sleep 5; echo T4 End;",
-      "retry": 3,
-      "depends": ["T1"]
-    }
+    "desc": "template flow"
+  },
+  "T1": {
+    "group": "FLOW-1",
+    "desc": "test task unit T1",
+    "cmd": "echo T1 Start; sleep 5; echo T1 End;"
+  },
+  "T2": {
+    "group": "FLOW-1",
+    "desc": "test task unit T2",
+    "depends": [
+      "T1"
+    ]
+  },
+  "T2-1": {
+    "group": "T2",
+    "desc": "test task unit T2-1",
+    "cmd": "echo T2-1 Start; sleep 5; echo T2-1 End;"
+  },
+  "T2-2": {
+    "group": "T2",
+    "desc": "test task unit T2-2",
+    "cmd": "echo T2-2 Start; sleep 5; echo T2-2 End;"
+  },
+  "T2-3": {
+    "group": "T2",
+    "desc": "test task unit T2-3",
+    "cmd": "echo T2-3 Start; sleep 5; echo T2-3 End;",
+    "depends": [
+      "T2-1",
+      "T2-2"
+    ]
+  },
+  "T3": {
+    "group": "FLOW-1",
+    "desc": "test task unit T3",
+    "cmd": "echo T3 Start; sleep 5; echo T3 End;",
+    "depends": [
+      "T1",
+      "T2"
+    ]
+  },
+  "T4": {
+    "group": "FLOW-1",
+    "desc": "test task unit T4",
+    "cmd": "echo T4 Start; sleep 5; echo T4 End;",
+    "depends": [
+      "T1"
+    ]
   }
 }

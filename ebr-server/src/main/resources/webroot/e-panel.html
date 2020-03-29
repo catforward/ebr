@@ -9,29 +9,27 @@
 <body>
 <div class="ebr-container">
     <div class="ebr-sidebar">
-        <div class="ebr-sidebar-items d-none d-md-block sidebar">
+        <div class="ebr-sidebar-items d-none d-md-block sidebar border-right">
             <ul class="nav flex-column">
                 <li class="nav-item ebr-sidebar-button">
                     <a id="serverInfoPanelBtn" href="javascript:void(0);"><i data-feather="info" class="ebr-icon-32"></i></a>
                 </li>
                 <li class="nav-item ebr-sidebar-button">
-                    <a id="taskFlowInfoPanelBtn" href="javascript:void(0);"><i data-feather="layers" class="ebr-icon-32"></i></a>
+                    <a id="taskFlowStatusInfoPanelBtn" href="javascript:void(0);"><i data-feather="layers" class="ebr-icon-32"></i></a>
                 </li>
                 <li class="nav-item ebr-sidebar-button">
-                    <a id="taskFlowEditorPanelBtn" href="javascript:void(0);"><i data-feather="edit" class="ebr-icon-32"></i></a>
+                    <a id="taskFlowDefineViewerPanelBtn" href="javascript:void(0);"><i data-feather="edit" class="ebr-icon-32"></i></a>
                 </li>
             </ul>
         </div>
-        <span class="ebr-v-line"></span>
     </div>
     <div id="mainPanel" class="ebr-main">
         <!-- server info panel start -->
         <div id="serverInfoPanel" class="ebr-panel ebr-invisible">
-            <div class="ebr-panel-navbar">
+            <div class="ebr-panel-navbar border-bottom">
                 <div class="ebr-panel-navbar-items">
                     <h4>Server Info</h4>
                 </div>
-                <span class="ebr-h-line"></span>
             </div>
             <div class="ebr-panel-content ebr-panel-responsive">
                 <h5>Environment Variables</h5>
@@ -50,67 +48,83 @@
                 <br/>
             </div>
         </div><!-- server info panel end -->
-        <!-- task flow info panel start -->
-        <div id="taskFlowInfoPanel" class="ebr-panel ebr-invisible">
-            <div class="ebr-panel-navbar">
+        <!-- task flow status info panel start -->
+        <div id="taskFlowStatusInfoPanel" class="ebr-panel ebr-invisible">
+            <div class="ebr-panel-navbar border-bottom">
                 <div class="ebr-panel-navbar-items">
-                    <h4>TaskFlow Info</h4>
+                    <h4>TaskFlow Status Info</h4>
                 </div>
-                <span class="ebr-h-line"></span>
             </div>
             <div class="ebr-panel-flex-content ebr-panel-responsive">
-                <div class="ebr-flex-col-2">
-                    <h5>TEST TABLE</h5>
+                <div class="ebr-flex-col-2 border-right">
+                    <h5>Tasks</h5>
                     <ul class="list-group">
-                        <li class="list-group-item disabled" aria-disabled="true">Cras justo odio</li>
-                        <li class="list-group-item">Dapibus ac facilisis in</li>
-                        <li class="list-group-item">Morbi leo risus</li>
-                        <li class="list-group-item">Porta ac consectetur ac</li>
-                        <li class="list-group-item">Vestibulum at eros</li>
+                        <li class="list-group-item list-group-item-action">Cras justo odio</li>
+                        <li class="list-group-item list-group-item-action">Dapibus ac facilisis in</li>
+                        <li class="list-group-item list-group-item-action">Morbi leo risus</li>
+                        <li class="list-group-item list-group-item-action">Porta ac consectetur ac</li>
+                        <li class="list-group-item list-group-item-action">Vestibulum at eros</li>
                     </ul>
                 </div>
-                <span class="ebr-v-line"></span>
                 <div class="ebr-flex-col-8">
-                    <h5>TEST TABLE</h5>
+                    <h5>Status</h5>
                     <table class="table table-striped table-sm">
-                        <colgroup><col style="width: 5%;"><col style="width: 30%;"><col></colgroup>
-                        <thead class="thead-dark"><tr><th>ID</th><th>Properties</th></tr></thead>
+                        <colgroup><col style="width: 5%;"><col style="width: 5%;"><col style="width: 30%;"><col></colgroup>
+                        <thead class="thead-dark"><tr><th>Type</th><th>ID</th><th>Properties</th></tr></thead>
                         <tbody id="taskDefineTableBody"></tbody>
                     </table>
                 </div>   
             </div>
-        </div><!-- task flow info panel end -->
-        <!-- task flow editor panel start -->
-        <div id="taskFlowEditorPanel" class="ebr-panel ebr-invisible">
-            <div class="ebr-panel-navbar">
+        </div><!-- task flow status info panel end -->
+        <!-- task flow define viewer panel start -->
+        <div id="taskFlowDefineViewerPanel" class="ebr-panel ebr-invisible">
+            <div class="ebr-panel-navbar border-bottom">
                 <div class="ebr-panel-navbar-items">
-                    <h4>TaskFlow Editor</h4>
+                    <h4>TaskFlow Define Viewer Editor</h4>
+                    <ul class="nav justify-content-end" style="margin-left: 5em;">
+                        <li class="nav-item">
+                            <a id="fileSelectBtn" class="nav-link font-weight-bold text-success" href="javascript:void(0);">
+                            Select<input id="fileSelector" type="file" class="ebr-invisible" accept="application/json">
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                          <a id="fileClearBtn" class="nav-link font-weight-bold text-success" href="javascript:void(0);">Clear</a>
+                        </li>
+                        <li class="nav-item">
+                          <a id="fileValidateBtn" class="nav-link font-weight-bold text-success" href="javascript:void(0);">Validate</a>
+                        </li>
+                        <li class="nav-item">
+                          <a id="fileSaveBtn" class="nav-link font-weight-bold text-success" href="javascript:void(0);">Save</a>
+                        </li>
+                      </ul>
                 </div>
-                <span class="ebr-h-line"></span>
             </div>
             <div class="ebr-panel-flex-content ebr-panel-responsive">
-                <div class="ebr-flex-col-4" style="border-right: 1em;">
-                    <div class="container" style="width: 100%;">
-                        <div class="row">
-                            <span id="fileNameLabel" class="border-bottom col-8"></span>
-                            <button id="fileSelectBtn" class="col-2 btn btn-info" style="margin-left: 1em;" for="fileSelector">
-                                Select<input id="fileSelector" type="file" class="ebr-invisible" accept="application/json">
-                            </button>
-                        </div>
-                    </div>
-                    <textarea style="padding: 1em; margin: 2em 0em 2em 0em; height: 90%; width: 100%; border-style: dashed;" readonly>bbb</textarea>
-                </div>
-                <span class="ebr-v-line"></span>
-                <div class="ebr-flex-col-6">
-                    <h5>TEST TABLE</h5>
-                    <table class="table table-striped table-sm">
-                        <colgroup><col style="width: 5%;"><col style="width: 30%;"><col></colgroup>
-                        <thead class="thead-dark"><tr><th>ID</th><th>Properties</th></tr></thead>
-                        <tbody id="taskFlowTableBody"></tbody>
+                <div class="ebr-flex-col-4 border-right">
+                    <table class="container" style="width: 100%;">
+                    <colgroup><col style="width: 20%;"><col style="width: 80%;"></colgroup>
+                    <tbody>
+                        <tr><td>Name:</td><td id="fileNameLabel" class="border-bottom"></td></tr>
+                        <tr><td>Last Modified:</td><td id="lastModifiedDate" class="border-bottom"></td></tr>
+                    </tbody>
                     </table>
+                    <textarea id="fileContent" style="padding: 1em; margin: 2em 0em 2em 0em; height: 90%; width: 100%; border-style: dashed;" ></textarea>
+                </div>
+                <div id="taskCardContent" class="ebr-flex-col-6">
                 </div>
             </div>
-        </div><!-- task flow editor panel end -->
+        </div><!-- task flow define viewer panel end -->
+    </div>
+    <div id="templatePanel" class="ebr-invisible">
+        <div id="taskInfoCard" class="card">
+            <div id="taskInfoCardHeader" class="card-header"></div>
+            <div class="card-body">
+                <table class="container" style="width: 100%;">
+                    <colgroup><col style="width: 15%;"><col style="width: 85%;"></colgroup>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 <script type="text/javascript" src="/js/jquery-3.4.1.min.js"></script>
@@ -119,32 +133,7 @@
 <script type="text/javascript" src="/js/e-panel.js"></script>
 <script>
 feather.replace();
-(function() {
-    // sidebar
-    document.getElementById("serverInfoPanelBtn").onclick = () => {
-        ebr.com.EmitQuery("info.GetServerInfo");
-    }
-    document.getElementById("taskFlowInfoPanelBtn").onclick = () => {
-        ebr.view.ShiftPanel("taskFlowInfoPanel");
-       // TODO
-    }
-    document.getElementById("taskFlowEditorPanelBtn").onclick = () => {
-        ebr.view.ShiftPanel("taskFlowEditorPanel");
-    }
-    // file selector
-    document.getElementById("fileSelectBtn").onclick = () => {
-        document.getElementById("fileSelector").click();
-    };
-    document.getElementById("fileSelector").onchange = () => {
-        let updFile = document.getElementById("fileSelector").files;
-        let fileNameLabel = document.getElementById("fileNameLabel");
-        if (updFile[0] === undefined) {
-            fileNameLabel.innerHTML = "";
-        } else {
-            fileNameLabel.innerHTML = updFile[0].name;
-        }
-    }
-})();
+ebr.view.Init();
 </script>
 </body>
 </html>
