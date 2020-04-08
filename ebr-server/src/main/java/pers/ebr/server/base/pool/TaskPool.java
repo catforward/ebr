@@ -15,16 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.server.tasks.types;
+package pers.ebr.server.base.pool;
 
 /**
- * <pre>
- * Task in EBR
- * </pre>
+ * The TaskPool Interface
  *
  * @author l.gong
  */
-public interface Task {
-    String id();
-    String type();
+public interface TaskPool extends ModifiableTaskPool, ReadOnlyTaskPool {
+    TaskPool init();
+    void close();
 }

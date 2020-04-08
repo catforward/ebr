@@ -15,17 +15,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.server.web;
+package pers.ebr.server.verticle;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import static pers.ebr.server.com.Constants.*;
-import static pers.ebr.server.com.Topic.INFO_GET_SERVER_INFO;
+import static pers.ebr.server.constant.Global.*;
+import static pers.ebr.server.constant.Topic.REQ_INFO_GET_SERVER_INFO;
 
 /**
  * The ServerInfoVerticle
@@ -35,11 +36,14 @@ import static pers.ebr.server.com.Topic.INFO_GET_SERVER_INFO;
 public class ServerInfoVerticle extends AbstractVerticle {
     private final static Logger logger = LoggerFactory.getLogger(ServerInfoVerticle.class);
 
+    private final static String RESPONSE_RESULT_INFO_ENV = "env";
+    private final static String RESPONSE_RESULT_INFO_CONFIG = "config";
+
     @Override
     public void start() throws Exception {
         super.start();
         EventBus bus = vertx.eventBus();
-        bus.consumer(INFO_GET_SERVER_INFO, this::handleGetServerInfo);
+        bus.consumer(REQ_INFO_GET_SERVER_INFO, this::handleGetServerInfo);
     }
 
     @Override
@@ -48,7 +52,7 @@ public class ServerInfoVerticle extends AbstractVerticle {
     }
 
     private void handleGetServerInfo(Message<JsonObject> msg) {
-        System.out.println("recv data->"+msg.body().toString());
+        logger.info("recv data->{}", msg.body().toString());
         JsonObject result = new JsonObject();
         JsonObject resultBody = new JsonObject();
         result.put(REQUEST_PARAM_PATH, msg.body().getString(REQUEST_PARAM_PATH));

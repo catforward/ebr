@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.server.com;
+package pers.ebr.server.utils;
 
 import java.io.File;
 import java.net.URLDecoder;
@@ -23,7 +23,7 @@ import java.nio.charset.StandardCharsets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static pers.ebr.server.com.Constants.ENV_EBR_ROOT;
+import static pers.ebr.server.constant.Global.ENV_EBR_ROOT;
 
 /**
  * <pre>
@@ -68,7 +68,7 @@ public final class PathUtils {
     private String initRootPath() {
         String rawPath = "";
         try {
-            rawPath = System.getProperty(ENV_EBR_ROOT);
+            rawPath = System.getenv(ENV_EBR_ROOT);
         } catch (Exception ex) {
             logger.debug("Failed to get the environment parameter: {}", ENV_EBR_ROOT, ex);
         }

@@ -1,5 +1,9 @@
 "use strict";
 
+const REQ_INFO_GET_SERVER_INFO = "req.info.GetServerInfo";
+const REQ_TASK_VALIDATE_TASK_FLOW = "req.task.ValidateTaskFlow";
+const REQ_TASK_SAVE_TASK_FLOW = "req.task.SaveTaskFlow";
+
 var ebr = {};
 
 ebr.reqHandlerMap = new Map();
@@ -68,7 +72,7 @@ ebr.view = {
     initMainPanel : function() {
         // sidebar
         $("#serverInfoPanelBtn").on("click", () => {
-            ebr.com.EmitQuery("info.GetServerInfo");
+            ebr.com.EmitQuery(REQ_INFO_GET_SERVER_INFO);
         });
         $("#taskFlowStatusInfoPanelBtn").on("click", () => {
             ebr.view.ShiftPanel("taskFlowStatusInfoPanel");
@@ -115,10 +119,10 @@ ebr.view = {
             ebr.view.ClearJsonContent();
         });
         $("#fileValidateBtn").on("click", (e) => {
-            ebr.com.EmitQuery("task.ValidateTaskFlowDefine");
+            ebr.com.EmitQuery(REQ_TASK_VALIDATE_TASK_FLOW);
         });
         $("#fileSaveBtn").on("click", (e) => {
-            ebr.com.EmitQuery("task.SaveTaskFlowDefine");
+            ebr.com.EmitQuery(REQ_TASK_SAVE_TASK_FLOW);
         });
     },
 
@@ -172,8 +176,11 @@ ebr.view = {
     },
 
     /********************  Define Viewer Panel *********************/
+    GetTaskFlowDefineFileName : function() {
+        return $("#fileNameLabel").html();
+    },
     ClearJsonContent : function() {
-        let fileName = $("#fileNameLabel").html();
+        let fileName = ebr.view.GetTaskFlowDefineFileName();
         sessionStorage.removeItem(fileName);
         $("#fileNameLabel").empty();
         $("#lastModifiedDate").empty();
@@ -280,31 +287,32 @@ ebr.ctl = {
         }
     },
     /********************  Define Viewer Panel *********************/
-    ValidateTaskFlowDefineRequest : function() {
-        let strContent = sessionStorage.getItem(jsonFileName);
+    ValidateTaskFlowRequest : function() {
+        let fileName = ebr.view.GetTaskFlowDefineFileName();
+        let strContent = sessionStorage.getItem(fileName);
         if (typeof strContent !== "string" || strContent.trim() === "") {
             return null;
         }
         return JSON.parse(strContent);
     },
-    ValidateTaskFlowDefineResponse : function(jsonData) {
+    ValidateTaskFlowResponse : function(jsonData) {
         // TODO
     },
-    SaveTaskFlowDefineRequest : function() {
+    SaveTaskFlowRequest : function() {
         let strContent = sessionStorage.getItem(jsonFileName);
         if (typeof strContent !== "string" || strContent.trim() === "") {
             return null;
         }
         return JSON.parse(strContent);
     },
-    SaveTaskFlowDefineResponse : function(jsonData) {
+    SaveTaskFlowResponse : function(jsonData) {
         // TODO
     },
 };
 
 // run js source was loaded
 (function() {
-    ebr.com.BindQuery("info.GetServerInfo", ebr.ctl.GetServerInfoRequest, ebr.ctl.GetServerInfoResponse);
-    ebr.com.BindQuery("task.ValidateTaskFlowDefine", ebr.ctl.ValidateTaskFlowDefineRequest, ebr.ctl.ValidateTaskFlowDefineResponse);
-    ebr.com.BindQuery("task.SaveTaskFlowDefine", ebr.ctl.SaveTaskFlowDefineRequest, ebr.ctl.SaveTaskFlowDefineResponse);
+    ebr.com.BindQuery(REQ_INFO_GET_SERVER_INFO, ebr.ctl.GetServerInfoRequest, ebr.ctl.GetServerInfoResponse);
+    ebr.com.BindQuery(REQ_TASK_VALIDATE_TASK_FLOW, ebr.ctl.ValidateTaskFlowRequest, ebr.ctl.ValidateTaskFlowResponse);
+    ebr.com.BindQuery(REQ_TASK_TRY_SAVE_TASK_FLOW, ebr.ctl.SaveTaskFlowRequest, ebr.ctl.SaveTaskFlowResponse);
 })();

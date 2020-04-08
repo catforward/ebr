@@ -1,8 +1,8 @@
 {
   "node.id" :"server-node",
   "node.type" : "server",
-  "persist.db" : "sqlite",
-  "executable.pool" : "memory",
+  "repo.db" : "sqlite",
+  "repo.pool" : "memory",
   "http.port" : 8086,
   "http.acl" : []
 }

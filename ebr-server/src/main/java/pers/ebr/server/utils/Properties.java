@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.server.com;
+package pers.ebr.server.utils;
 
 import java.io.*;
 import java.net.URI;
@@ -26,10 +26,11 @@ import java.util.HashMap;
 import java.util.InvalidPropertiesFormatException;
 import java.util.Map;
 
-import io.vertx.core.json.JsonArray;
-import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 
 /**
  * <pre>
@@ -47,8 +48,8 @@ public final class Properties {
 
     public final static String KEY_NODE_ID = "node.id";
     public final static String KEY_NODE_TYPE = "node.type";
-    public final static String KEY_PERSIST_DB = "persist.db";
-    public final static String KEY_EXECUTABLE_POOL = "executable.pool";
+    public final static String KEY_REPO_DB = "repo.db";
+    public final static String KEY_REPO_POOL = "repo.pool";
     public final static String KEY_HTTP_PORT = "http.port";
     public final static String KEY_HTTP_ACL = "http.acl";
 
@@ -94,37 +95,37 @@ public final class Properties {
         // basic info
         config.put(KEY_NODE_ID, extObj.getString(KEY_NODE_ID, innerObj.getString(KEY_NODE_ID)).strip());
         config.put(KEY_NODE_TYPE, extObj.getString(KEY_NODE_TYPE, innerObj.getString(KEY_NODE_TYPE)).strip());
-        // persist info
-        config.put(KEY_PERSIST_DB, extObj.getString(KEY_PERSIST_DB, innerObj.getString(KEY_PERSIST_DB)).strip());
+        // base info
+        config.put(KEY_REPO_DB, extObj.getString(KEY_REPO_DB, innerObj.getString(KEY_REPO_DB)).strip());
 
         // pool info
-        config.put(KEY_EXECUTABLE_POOL, extObj.getString(KEY_EXECUTABLE_POOL, innerObj.getString(KEY_EXECUTABLE_POOL)).strip());
+        config.put(KEY_REPO_POOL, extObj.getString(KEY_REPO_POOL, innerObj.getString(KEY_REPO_POOL)).strip());
 
         // http info
-        config.put(KEY_HTTP_PORT, extObj.getString(KEY_HTTP_PORT, innerObj.getString(KEY_HTTP_PORT)).strip());
-        config.mergeIn(extObj.getJsonObject(KEY_HTTP_ACL, innerObj.getJsonObject(KEY_HTTP_ACL)).copy());
+        config.put(KEY_HTTP_PORT, extObj.getInteger(KEY_HTTP_PORT, innerObj.getInteger(KEY_HTTP_PORT)));
+        config.put(KEY_HTTP_ACL, extObj.getJsonArray(KEY_HTTP_ACL, innerObj.getJsonArray(KEY_HTTP_ACL)));
     }
 
     private void validateConfig() throws InvalidPropertiesFormatException {
         // basic info
         String value = config.getString(KEY_NODE_ID, "").strip();
         if (value.isEmpty()) {
-            throw new InvalidPropertiesFormatException(String.format("property [%s] can not be empty...", KEY_NODE_ID));
+            throw new InvalidPropertiesFormatException(String.format("property [%s] cannot be empty...", KEY_NODE_ID));
         }
         value = config.getString(KEY_NODE_TYPE, "").strip();
         if (value.isEmpty()) {
-            throw new InvalidPropertiesFormatException(String.format("property [%s] can not be empty...", KEY_NODE_TYPE));
+            throw new InvalidPropertiesFormatException(String.format("property [%s] cannot be empty...", KEY_NODE_TYPE));
         }
-        // persist info
-        value = config.getString(KEY_PERSIST_DB, "").strip();
+        // base info
+        value = config.getString(KEY_REPO_DB, "").strip();
         if (value.isEmpty()) {
-            throw new InvalidPropertiesFormatException(String.format("property [%s] can not be empty...", KEY_PERSIST_DB));
+            throw new InvalidPropertiesFormatException(String.format("property [%s] cannot be empty...", KEY_REPO_DB));
         }
 
         // executable pool
-        value = config.getString(KEY_EXECUTABLE_POOL, "").strip();
+        value = config.getString(KEY_REPO_POOL, "").strip();
         if (value.isEmpty()) {
-            throw new InvalidPropertiesFormatException(String.format("property [%s] can not be empty...", KEY_EXECUTABLE_POOL));
+            throw new InvalidPropertiesFormatException(String.format("property [%s] cannot be empty...", KEY_REPO_POOL));
         }
 
         // http info

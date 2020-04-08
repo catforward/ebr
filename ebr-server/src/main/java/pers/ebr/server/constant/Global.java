@@ -15,19 +15,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.server.com;
+package pers.ebr.server.constant;
 
 /**
  * <pre>
- * The Defines of Topic
+ * Define the constant variables which can be used in this whole application.
  * </pre>
- *
+ * 
  * @author l.gong
  */
-public interface Topic {
-    String PREFIX_INFO = "info";
-    String INFO_GET_SERVER_INFO = PREFIX_INFO + ".GetServerInfo";
+public interface Global {
 
-    String PREFIX_TASK = "task";
-    String TASK_VALIDATE_TASK_FLOW = PREFIX_TASK + ".ValidateTaskFlow";
+    String ENV_EBR_ROOT = "EBR_ROOT";
+
+    String REQUEST_PARAM_PATH = "path";
+    String REQUEST_PARAM_PARAM = "param";
+    String RESPONSE_ERROR = "error";
+    String RESPONSE_RESULT = "result";
+
 }

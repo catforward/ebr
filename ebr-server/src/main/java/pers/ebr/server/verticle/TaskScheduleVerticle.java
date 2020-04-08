@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.server.tasks;
+package pers.ebr.server.verticle;
 
 import io.vertx.core.AbstractVerticle;
 import org.slf4j.Logger;
@@ -26,8 +26,8 @@ import org.slf4j.LoggerFactory;
  *
  * @author l.gong
  */
-public class SchedulerVerticle extends AbstractVerticle {
-    private final static Logger logger = LoggerFactory.getLogger(SchedulerVerticle.class);
+public class TaskScheduleVerticle extends AbstractVerticle {
+    private final static Logger logger = LoggerFactory.getLogger(TaskScheduleVerticle.class);
 
     @Override
     public void start() throws Exception {

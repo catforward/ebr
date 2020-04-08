@@ -15,26 +15,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.server.com;
+package pers.ebr.server.base.db;
 
 /**
  * <pre>
- * Define the constant variables which can be used in this whole application.
+ * The Database Connection Interface
  * </pre>
- * 
+ *
  * @author l.gong
  */
-public interface Constants {
-
-    String ENV_EBR_ROOT = "EBR_ROOT";
-
-    String REQUEST_PARAM_PATH = "path";
-    String REQUEST_PARAM_PAYLOAD = "param";
-    String RESPONSE_ERROR = "error";
-    String RESPONSE_RESULT = "result";
-    String RESPONSE_RESULT_INFO_ENV = "env";
-    String RESPONSE_RESULT_INFO_CONFIG = "config";
-
-
-
+interface DBConnection {
+    DBConnection init();
+    void close();
 }
