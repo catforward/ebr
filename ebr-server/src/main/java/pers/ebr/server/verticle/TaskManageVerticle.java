@@ -23,7 +23,16 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pers.ebr.server.model.TaskFlow;
+import pers.ebr.server.service.TaskItemCreateService;
+import pers.ebr.server.service.TaskItemPersistService;
 
+import java.util.Optional;
+
+import static pers.ebr.server.constant.Global.REQUEST_PARAM_PATH;
+import static pers.ebr.server.constant.Global.REQUEST_PARAM_PARAM;
+import static pers.ebr.server.constant.Global.RESPONSE_RESULT;
+import static pers.ebr.server.constant.Global.RESPONSE_ERROR;
 import static pers.ebr.server.constant.Topic.REQ_TASK_SAVE_TASK_FLOW;
 import static pers.ebr.server.constant.Topic.REQ_TASK_VALIDATE_TASK_FLOW;
 
@@ -40,7 +49,7 @@ public class TaskManageVerticle extends AbstractVerticle {
         super.start();
         EventBus bus = vertx.eventBus();
         bus.consumer(REQ_TASK_VALIDATE_TASK_FLOW, this::handleValidateTaskFlow);
-        bus.consumer(REQ_TASK_SAVE_TASK_FLOW, this::handleTrySaveTaskFlow);
+        bus.consumer(REQ_TASK_SAVE_TASK_FLOW, this::handleSaveTaskFlow);
     }
 
     @Override
@@ -51,10 +60,44 @@ public class TaskManageVerticle extends AbstractVerticle {
     private void handleValidateTaskFlow(Message<JsonObject> msg) {
         logger.info("recv data->{}", msg.body().toString());
 
+        JsonObject result = new JsonObject();
+        result.put(REQUEST_PARAM_PATH, msg.body().getString(REQUEST_PARAM_PATH));
+
+        boolean ret = false;
+        try {
+            Optional<JsonObject> flowBody = Optional.ofNullable(msg.body().getJsonObject(REQUEST_PARAM_PARAM));
+            TaskItemCreateService creator = new TaskItemCreateService();
+            Optional<TaskFlow> flow = creator.createTaskFlowStruct(flowBody.orElseThrow());
+            creator.buildTaskFlow(flow.orElseThrow());
+            logger.info("create a task flow -> {}", flow.orElseThrow().toString());
+            ret = true;
+        } catch (Exception ex) {
+            logger.error("process failed...", ex);
+        }
+
+        result.put(ret ? RESPONSE_RESULT : RESPONSE_ERROR, new JsonObject());
+        msg.reply(result);
     }
 
-    private void handleTrySaveTaskFlow(Message<JsonObject> msg) {
+    private void handleSaveTaskFlow(Message<JsonObject> msg) {
         logger.info("recv data->{}", msg.body().toString());
 
+        JsonObject result = new JsonObject();
+        result.put(REQUEST_PARAM_PATH, msg.body().getString(REQUEST_PARAM_PATH));
+
+        boolean ret = false;
+        try {
+            Optional<JsonObject> flowBody = Optional.ofNullable(msg.body().getJsonObject(REQUEST_PARAM_PARAM));
+            TaskItemCreateService creator = new TaskItemCreateService();
+            Optional<TaskFlow> flow = creator.createTaskFlowStruct(flowBody.orElseThrow());
+            creator.buildTaskFlow(flow.orElseThrow());
+            TaskItemPersistService saver = new TaskItemPersistService();
+            ret = saver.saveTaskFlow(flow);
+        } catch (Exception ex) {
+            logger.error("process failed...", ex);
+        }
+
+        result.put(ret ? RESPONSE_RESULT : RESPONSE_ERROR, new JsonObject());
+        msg.reply(result);
     }
 }

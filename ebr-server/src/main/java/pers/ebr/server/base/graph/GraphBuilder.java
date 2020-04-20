@@ -15,34 +15,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.server.model;
-
-import pers.ebr.server.constant.TaskState;
-import pers.ebr.server.constant.TaskType;
-
-import java.util.Set;
+package pers.ebr.server.base.graph;
 
 /**
  * <pre>
- * Task Entity in EBR
+ * The Builder of Graph
  * </pre>
  *
  * @author l.gong
  */
-public interface Task extends ExternCmd {
+public class GraphBuilder {
+    boolean allowsSelfLoops = false;
 
-    String desc();
-    String groupId();
-    Set<String> depends();
-    TaskState status();
-    TaskType type();
+    private GraphBuilder() {}
 
-    void id(String newId);
-    void cmdLine(String cmd);
-    void desc(String value);
-    void groupId(String id);
-    void depends(String id);
-    void status(TaskState newStatus);
-    void type(TaskType newType);
+    public static GraphBuilder directed() {
+        return new GraphBuilder();
+    }
 
+    public GraphBuilder setAllowsSelfLoops(boolean allowsSelfLoops) {
+        this.allowsSelfLoops = allowsSelfLoops;
+        if (this.allowsSelfLoops) {
+            throw new UnsupportedOperationException("不好意思哦，还不支持自环图...");
+        }
+        return this;
+    }
+
+    public <V> DirectedGraph<V> build() {
+        return new DirectedGraphImpl<>(this);
+    }
 }

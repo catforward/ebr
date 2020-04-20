@@ -43,7 +43,7 @@ public class TaskStore {
         if (TaskStoreHolder.STORE.pool == null) {
             TaskStoreHolder.STORE.pool = new TaskPoolBuilder(config).build();
         }
-        System.out.println("TaskStore Init Success...");
+        logger.info("TaskStore Init Success...");
     }
 
     public static void finish() {

@@ -33,4 +33,10 @@ public interface Global {
     String RESPONSE_ERROR = "error";
     String RESPONSE_RESULT = "result";
 
+    String TASK_ID = "id";
+    String TASK_GROUP = "group";
+    String TASK_DESC = "desc";
+    String TASK_CMD_LINE = "cmd";
+    String TASK_DEPENDS_LIST = "depends";
+
 }

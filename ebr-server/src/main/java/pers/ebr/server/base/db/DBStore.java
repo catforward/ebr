@@ -44,7 +44,7 @@ public class DBStore {
                 DBStoreHolder.STORE.db = new DBConnectionBuilder(config).build();
             }
         }
-        System.out.println("DBStore Init Success...");
+        logger.info("DBStore Init Success...");
     }
 
     public static void finish() {

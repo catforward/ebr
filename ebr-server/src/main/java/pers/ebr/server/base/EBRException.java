@@ -15,34 +15,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.server.model;
-
-import pers.ebr.server.constant.TaskState;
-import pers.ebr.server.constant.TaskType;
-
-import java.util.Set;
+package pers.ebr.server.base;
 
 /**
  * <pre>
- * Task Entity in EBR
+ * Exception Class in EBR
  * </pre>
  *
  * @author l.gong
  */
-public interface Task extends ExternCmd {
+public final class EBRException extends RuntimeException {
+    public EBRException() {
+        super();
+    }
 
-    String desc();
-    String groupId();
-    Set<String> depends();
-    TaskState status();
-    TaskType type();
+    public EBRException(String message) {
+        super(message);
+    }
 
-    void id(String newId);
-    void cmdLine(String cmd);
-    void desc(String value);
-    void groupId(String id);
-    void depends(String id);
-    void status(TaskState newStatus);
-    void type(TaskType newType);
+    public EBRException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
+    public EBRException(Throwable cause) {
+        super(cause);
+    }
 }

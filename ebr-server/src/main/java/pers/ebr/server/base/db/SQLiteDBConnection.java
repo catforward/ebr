@@ -19,7 +19,7 @@ package pers.ebr.server.base.db;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pers.ebr.server.utils.PathUtils;
+import pers.ebr.server.base.Paths;
 
 import java.io.File;
 import java.sql.Connection;
@@ -48,7 +48,7 @@ public class SQLiteDBConnection implements DBConnection {
 
     @Override
     public DBConnection init() {
-        String connStr = String.format("jdbc:sqlite:%s%s%s", PathUtils.getDataPath(), File.separator, SCHEMA);
+        String connStr = String.format("jdbc:sqlite:%s%s%s", Paths.getDataPath(), File.separator, SCHEMA);
         try {
             connection = DriverManager.getConnection(connStr);
         } catch (SQLException ex) {

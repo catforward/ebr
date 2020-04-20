@@ -15,39 +15,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.server.base.db;
+package pers.ebr.server.service;
 
-import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pers.ebr.server.base.Properties;
+import pers.ebr.server.model.TaskFlow;
+
+import java.util.Optional;
 
 /**
- * <pre>
- * The Database Storage Builder
- * </pre>
+ * The TaskItemPersistService
  *
  * @author l.gong
  */
-class DBConnectionBuilder {
+public class TaskItemPersistService {
 
-    private final static Logger logger = LoggerFactory.getLogger(DBConnectionBuilder.class);
-    private final JsonObject config;
+    private final static Logger logger = LoggerFactory.getLogger(TaskItemPersistService.class);
 
-    DBConnectionBuilder(JsonObject config) {
-        this.config = config;
-    }
-
-    DBConnection build() {
-        String type = config.getString(Properties.KEY_REPO_DB, SQLiteDBConnection.TYPE);
-        switch (type) {
-            case SQLiteDBConnection.TYPE : {
-                return new SQLiteDBConnection(this).init();
-            }
-            default: {
-                logger.error("unknown db connection type:{}", type);
-                throw new RuntimeException(String.format("unknown db connection type: %s", type));
-            }
-        }
+    public boolean saveTaskFlow(Optional<TaskFlow> flow) {
+        return false;
     }
 }

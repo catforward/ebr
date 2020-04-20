@@ -20,7 +20,7 @@ package pers.ebr.server.base.pool;
 import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pers.ebr.server.utils.Properties;
+import pers.ebr.server.base.Properties;
 
 /**
  * The Builder of TaskPool

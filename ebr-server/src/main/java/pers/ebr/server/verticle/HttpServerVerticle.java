@@ -35,7 +35,7 @@ import io.vertx.ext.web.handler.StaticHandler;
 
 import static pers.ebr.server.constant.Global.REQUEST_PARAM_PATH;
 import static pers.ebr.server.constant.Topic.*;
-import static pers.ebr.server.utils.Properties.KEY_HTTP_PORT;
+import static pers.ebr.server.base.Properties.KEY_HTTP_PORT;
 
 /**
  * The HttpServerVerticle
@@ -67,9 +67,9 @@ public class HttpServerVerticle extends AbstractVerticle {
 
         server.requestHandler(router::handle).listen(config.getInteger(KEY_HTTP_PORT), res -> {
             if (res.succeeded()) {
-                System.out.println("HttpServer Start Success...");
+                logger.info("HttpServer Start Success...");
             } else {
-                System.err.println("HttpServer Start Failure...");
+                logger.info("HttpServer Start Failure...");
             }
         });
     }
@@ -86,14 +86,14 @@ class HttpProcHandler implements Handler<RoutingContext> {
 
     @Override
     public void handle(RoutingContext routingContext) {
-        JsonObject param = routingContext.getBodyAsJson();
-        logger.info("HTTP REQ PATH: {} BODY: {}", routingContext.normalisedPath(), param);
-        String address = param.getString(REQUEST_PARAM_PATH, "");
+        JsonObject reqBody = routingContext.getBodyAsJson();
+        logger.info("HTTP REQ PATH: {} BODY: {}", routingContext.normalisedPath(), reqBody);
+        String address = reqBody.getString(REQUEST_PARAM_PATH, "");
         switch (address) {
             case REQ_INFO_GET_SERVER_INFO:
             case REQ_TASK_VALIDATE_TASK_FLOW:
             case REQ_TASK_SAVE_TASK_FLOW: {
-                handleReqRequest(address, param, routingContext);
+                handleReqRequest(address, reqBody, routingContext);
                 break;
             }
             default: {
@@ -105,8 +105,8 @@ class HttpProcHandler implements Handler<RoutingContext> {
         }
     }
 
-    private void handleReqRequest(String address, JsonObject param, RoutingContext routingContext) {
-        routingContext.vertx().eventBus().request(address, param, (AsyncResult<Message<JsonObject>> res) -> {
+    private void handleReqRequest(String address, JsonObject reqBody, RoutingContext routingContext) {
+        routingContext.vertx().eventBus().request(address, reqBody, (AsyncResult<Message<JsonObject>> res) -> {
             if (res.failed()) {
                 routingContext.fail(res.cause());
             } else {

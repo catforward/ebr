@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.server.utils;
+package pers.ebr.server.base;
 
 import java.io.File;
 import java.net.URLDecoder;
@@ -40,14 +40,14 @@ import static pers.ebr.server.constant.Global.ENV_EBR_ROOT;
  *     |-- logs/
  *     |     |-- ebr-server.log
  *     |== data/
- *     |     |-- xxx.doc
+ *     |     |-- xxx.dat
  * </pre>
  *
  * @author l.gong
  */
-public final class PathUtils {
+public final class Paths {
 
-    private final static Logger logger = LoggerFactory.getLogger(PathUtils.class);
+    private final static Logger logger = LoggerFactory.getLogger(Paths.class);
 
     private final String rootPath;
     private final String logsPath;
@@ -55,10 +55,10 @@ public final class PathUtils {
     private final String dataPath;
 
     private static class PathHolder {
-        private final static PathUtils INSTANCE = new PathUtils();
+        private final static Paths INSTANCE = new Paths();
     }
 
-    private PathUtils() {
+    private Paths() {
         rootPath = initRootPath();
         logsPath = String.format("%s%s%s", rootPath, File.separator, "logs");
         confPath = String.format("%s%s%s", rootPath, File.separator, "conf");
@@ -73,7 +73,7 @@ public final class PathUtils {
             logger.debug("Failed to get the environment parameter: {}", ENV_EBR_ROOT, ex);
         }
         if (rawPath == null || rawPath.isBlank()) {
-            rawPath = URLDecoder.decode(PathUtils.class.getProtectionDomain()
+            rawPath = URLDecoder.decode(Paths.class.getProtectionDomain()
                                 .getCodeSource().getLocation().getPath(), StandardCharsets.UTF_8);
             File jarFile = new File(rawPath);
             rawPath = URLDecoder.decode(jarFile.getParentFile()

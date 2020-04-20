@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import pers.ebr.server.base.db.DBStore;
 import pers.ebr.server.base.pool.TaskStore;
-import pers.ebr.server.utils.Properties;
+import pers.ebr.server.base.Properties;
 import pers.ebr.server.verticle.TaskManageVerticle;
 import pers.ebr.server.verticle.TaskScheduleVerticle;
 import pers.ebr.server.verticle.HttpServerVerticle;

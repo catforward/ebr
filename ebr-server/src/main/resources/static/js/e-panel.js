@@ -179,6 +179,7 @@ ebr.view = {
     GetTaskFlowDefineFileName : function() {
         return $("#fileNameLabel").html();
     },
+
     ClearJsonContent : function() {
         let fileName = ebr.view.GetTaskFlowDefineFileName();
         sessionStorage.removeItem(fileName);
@@ -271,7 +272,7 @@ ebr.view = {
 
     createTaskSrcItem : function(taskId, taskContent, parentTaskId) {
         let jsonFileContent = $("#fileContent");
-        jsonFileContent.html(jsonFileContent.html() + "\r" + JSON.stringify(taskContent));
+        jsonFileContent.html(jsonFileContent.html() + "\r" + taskId + " : " +JSON.stringify(taskContent));
     },
 
 };
@@ -296,17 +297,30 @@ ebr.ctl = {
         return JSON.parse(strContent);
     },
     ValidateTaskFlowResponse : function(jsonData) {
-        // TODO
+        let resultStr = "unknown result...";
+        if (typeof jsonData.result === "object") {
+            resultStr = "success...";
+        } else if (typeof jsonData.error === "object") {
+            resultStr = "failed...";
+        }
+        alert("validate result : " + resultStr);
     },
     SaveTaskFlowRequest : function() {
-        let strContent = sessionStorage.getItem(jsonFileName);
+        let fileName = ebr.view.GetTaskFlowDefineFileName();
+        let strContent = sessionStorage.getItem(fileName);
         if (typeof strContent !== "string" || strContent.trim() === "") {
             return null;
         }
         return JSON.parse(strContent);
     },
     SaveTaskFlowResponse : function(jsonData) {
-        // TODO
+        let resultStr = "unknown result...";
+        if (typeof jsonData.result === "object") {
+            resultStr = "success...";
+        } else if (typeof jsonData.error === "object") {
+            resultStr = "failed...";
+        }
+        alert("save result : " + resultStr);
     },
 };
 
@@ -314,5 +328,5 @@ ebr.ctl = {
 (function() {
     ebr.com.BindQuery(REQ_INFO_GET_SERVER_INFO, ebr.ctl.GetServerInfoRequest, ebr.ctl.GetServerInfoResponse);
     ebr.com.BindQuery(REQ_TASK_VALIDATE_TASK_FLOW, ebr.ctl.ValidateTaskFlowRequest, ebr.ctl.ValidateTaskFlowResponse);
-    ebr.com.BindQuery(REQ_TASK_TRY_SAVE_TASK_FLOW, ebr.ctl.SaveTaskFlowRequest, ebr.ctl.SaveTaskFlowResponse);
+    ebr.com.BindQuery(REQ_TASK_SAVE_TASK_FLOW, ebr.ctl.SaveTaskFlowRequest, ebr.ctl.SaveTaskFlowResponse);
 })();

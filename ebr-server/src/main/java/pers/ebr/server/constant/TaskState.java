@@ -15,34 +15,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.server.model;
-
-import pers.ebr.server.constant.TaskState;
-import pers.ebr.server.constant.TaskType;
-
-import java.util.Set;
+package pers.ebr.server.constant;
 
 /**
  * <pre>
- * Task Entity in EBR
+ * Task Type in EBR
  * </pre>
  *
  * @author l.gong
  */
-public interface Task extends ExternCmd {
+public enum TaskState {
+    /** 任务待机时 */
+    INACTIVE(1),
+    /** 任务执行跳过时 */
+    SKIP(2),
+    /** 任务执行时 */
+    ACTIVE(3),
+    /** 任务执行成功时 */
+    COMPLETE(4),
+    /** 任务执行异常时 */
+    FAILED(5);
 
-    String desc();
-    String groupId();
-    Set<String> depends();
-    TaskState status();
-    TaskType type();
+    private final int state;
 
-    void id(String newId);
-    void cmdLine(String cmd);
-    void desc(String value);
-    void groupId(String id);
-    void depends(String id);
-    void status(TaskState newStatus);
-    void type(TaskType newType);
-
+    TaskState(int state) {
+        this.state = state;
+    }
 }

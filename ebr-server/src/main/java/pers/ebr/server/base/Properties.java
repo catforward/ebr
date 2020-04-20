@@ -15,13 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.server.utils;
+package pers.ebr.server.base;
 
 import java.io.*;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.InvalidPropertiesFormatException;
 import java.util.Map;
@@ -76,13 +75,13 @@ public final class Properties {
     }
 
     private void loadConfigFile(Map<String, JsonObject> holder) throws IOException, URISyntaxException {
-        String configFile = String.format("%s%s%s", PathUtils.getConfPath(), File.separator, "ebr-server.json");
+        String configFile = String.format("%s%s%s", Paths.getConfPath(), File.separator, "ebr-server.json");
         File cfgFile = new File(configFile);
         if (cfgFile.exists() && cfgFile.isFile() && cfgFile.canRead()) {
-            holder.put(CONFIG_EXT, new JsonObject(Files.readString(Paths.get(configFile))));
+            holder.put(CONFIG_EXT, new JsonObject(Files.readString(java.nio.file.Paths.get(configFile))));
         }
         URI innerConfigFile = getClass().getResource("/default.config.json").toURI();
-        holder.put(CONFIG_INNER, new JsonObject(Files.readString(Paths.get(innerConfigFile))));
+        holder.put(CONFIG_INNER, new JsonObject(Files.readString(java.nio.file.Paths.get(innerConfigFile))));
     }
 
     private void mergeConfig(Map<String, JsonObject> holder) {
