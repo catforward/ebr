@@ -17,6 +17,10 @@
  */
 package pers.ebr.server.base;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+
 /**
  * <pre>
  * 未分类的工具函数集合
@@ -94,5 +98,21 @@ public final class MiscUtils {
                 throw new IllegalArgumentException(String.format("存在非法的字符[%s]", c));
             }
         }
+    }
+
+    /**
+     * 将输入流转成字符串
+     * @param is 输入流
+     * @return 转换后的字符串
+     * @throws IOException
+     */
+    public static String toString(InputStream is) throws IOException {
+        ByteArrayOutputStream result = new ByteArrayOutputStream();
+        byte[] buffer = new byte[1024];
+        int length;
+        while ((length = is.read(buffer)) != -1) {
+            result.write(buffer, 0, length);
+        }
+        return result.toString("UTF-8");
     }
 }

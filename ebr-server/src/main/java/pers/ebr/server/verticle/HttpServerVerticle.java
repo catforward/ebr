@@ -35,7 +35,7 @@ import io.vertx.ext.web.handler.StaticHandler;
 
 import static pers.ebr.server.constant.Global.REQUEST_PARAM_PATH;
 import static pers.ebr.server.constant.Topic.*;
-import static pers.ebr.server.base.Properties.KEY_HTTP_PORT;
+import static pers.ebr.server.base.Configs.KEY_HTTP_PORT;
 
 /**
  * The HttpServerVerticle

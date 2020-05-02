@@ -92,7 +92,7 @@ public class TaskManageVerticle extends AbstractVerticle {
             Optional<TaskFlow> flow = creator.createTaskFlowStruct(flowBody.orElseThrow());
             creator.buildTaskFlow(flow.orElseThrow());
             TaskItemPersistService saver = new TaskItemPersistService();
-            ret = saver.saveTaskFlow(flow);
+            ret = saver.saveTaskFlow(flow.orElseThrow());
         } catch (Exception ex) {
             logger.error("process failed...", ex);
         }

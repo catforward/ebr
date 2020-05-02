@@ -20,7 +20,9 @@ package pers.ebr.server.base.db;
 import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pers.ebr.server.base.Properties;
+import pers.ebr.server.base.Configs;
+
+import java.io.IOException;
 
 /**
  * <pre>
@@ -29,20 +31,20 @@ import pers.ebr.server.base.Properties;
  *
  * @author l.gong
  */
-class DBConnectionBuilder {
+class DBBuilder {
 
-    private final static Logger logger = LoggerFactory.getLogger(DBConnectionBuilder.class);
+    private final static Logger logger = LoggerFactory.getLogger(DBBuilder.class);
     private final JsonObject config;
 
-    DBConnectionBuilder(JsonObject config) {
+    DBBuilder(JsonObject config) {
         this.config = config;
     }
 
-    DBConnection build() {
-        String type = config.getString(Properties.KEY_REPO_DB, SQLiteDBConnection.TYPE);
+    DBManager build() throws IOException {
+        String type = config.getString(Configs.KEY_REPO_DB, SQLiteDBManager.TYPE);
         switch (type) {
-            case SQLiteDBConnection.TYPE : {
-                return new SQLiteDBConnection(this).init();
+            case SQLiteDBManager.TYPE : {
+                return new SQLiteDBManager();
             }
             default: {
                 logger.error("unknown db connection type:{}", type);

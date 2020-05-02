@@ -21,7 +21,6 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pers.ebr.server.base.EBRException;
 import pers.ebr.server.base.graph.DirectedGraph;
 import pers.ebr.server.base.graph.GraphBuilder;
 import pers.ebr.server.model.TaskFlow;
@@ -72,7 +71,7 @@ public class TaskItemCreateService {
             if (item.isFlowItem()) {
                 if (flow.flowItem().isPresent()) {
                     logger.error("only one flow can be define in a signal file. id:{}", item.id());
-                    throw new EBRException(String.format("only one flow can be define in a signal file. id:[%s]", item.id()));
+                    throw new RuntimeException(String.format("only one flow can be define in a signal file. id:[%s]", item.id()));
                 }
                 flow.flowItem(item);
                 flow.addTaskGraph(item.id(), makeEmptyGraph());

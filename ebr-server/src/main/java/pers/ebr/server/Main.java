@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import pers.ebr.server.base.db.DBStore;
 import pers.ebr.server.base.pool.TaskStore;
-import pers.ebr.server.base.Properties;
+import pers.ebr.server.base.Configs;
 import pers.ebr.server.verticle.TaskManageVerticle;
 import pers.ebr.server.verticle.TaskScheduleVerticle;
 import pers.ebr.server.verticle.HttpServerVerticle;
@@ -62,14 +62,14 @@ public class Main {
     }
 
     private static void initBasicComponents() throws Exception {
-        Properties.load();
-        DBStore.init(Properties.getConfig());
-        TaskStore.init(Properties.getConfig());
+        Configs.load();
+        DBStore.init(Configs.get());
+        TaskStore.init(Configs.get());
     }
 
     private static void deployWorkerVerticle() {
         DeploymentOptions serverInfoOpts = new DeploymentOptions()
-                .setConfig(Properties.getConfig())
+                .setConfig(Configs.get())
                 .setInstances(1).setWorker(true);
         vertx.deployVerticle(ServerInfoVerticle::new, serverInfoOpts);
 
@@ -82,7 +82,7 @@ public class Main {
 
     private static void deployHttpVerticle() {
         DeploymentOptions httpOpts = new DeploymentOptions()
-                .setConfig(Properties.getConfig())
+                .setConfig(Configs.get())
                 .setInstances(1);
         vertx.deployVerticle(HttpServerVerticle::new, httpOpts);
     }

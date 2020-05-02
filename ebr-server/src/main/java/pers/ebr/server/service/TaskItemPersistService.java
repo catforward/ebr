@@ -32,7 +32,7 @@ public class TaskItemPersistService {
 
     private final static Logger logger = LoggerFactory.getLogger(TaskItemPersistService.class);
 
-    public boolean saveTaskFlow(Optional<TaskFlow> flow) {
+    public boolean saveTaskFlow(TaskFlow flow) {
         return false;
     }
 }

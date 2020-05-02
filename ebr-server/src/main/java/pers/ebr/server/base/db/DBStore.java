@@ -21,6 +21,8 @@ import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+
 /**
  * <pre>
  * The Database Storage utility
@@ -28,9 +30,9 @@ import org.slf4j.LoggerFactory;
  *
  * @author l.gong
  */
-public class DBStore {
+public final class DBStore {
     private final static Logger logger = LoggerFactory.getLogger(DBStore.class);
-    private DBConnection db;
+    private DBManager mng;
 
     private static class DBStoreHolder {
         static final DBStore STORE = new DBStore();
@@ -38,20 +40,29 @@ public class DBStore {
 
     private DBStore() {}
 
-    public static void init(JsonObject config) {
+    public static void init(JsonObject config) throws IOException {
         synchronized (DBStoreHolder.STORE) {
-            if (DBStoreHolder.STORE.db == null) {
-                DBStoreHolder.STORE.db = new DBConnectionBuilder(config).build();
+            if (DBStoreHolder.STORE.mng == null) {
+                DBStoreHolder.STORE.mng = new DBBuilder(config).build();
             }
+            DBStoreHolder.STORE.mng.init();
         }
         logger.info("DBStore Init Success...");
     }
 
     public static void finish() {
         synchronized (DBStoreHolder.STORE) {
-            if (DBStoreHolder.STORE.db != null) {
-                DBStoreHolder.STORE.db.close();
+            if (DBStoreHolder.STORE.mng != null) {
+                DBStoreHolder.STORE.mng.finish();
             }
         }
     }
+
+    public static DBConnection getConnection() {
+        if (DBStoreHolder.STORE.mng == null) {
+            throw new RuntimeException("database is not initialized...");
+        }
+        return DBStoreHolder.STORE.mng.getConnection();
+    }
+
 }

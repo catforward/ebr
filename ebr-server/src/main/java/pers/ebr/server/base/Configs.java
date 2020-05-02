@@ -38,9 +38,9 @@ import io.vertx.core.json.JsonObject;
  *
  * @author l.gong
  */
-public final class Properties {
+public final class Configs {
 
-    private final static Logger logger = LoggerFactory.getLogger(Properties.class);
+    private final static Logger logger = LoggerFactory.getLogger(Configs.class);
 
     private final static String CONFIG_EXT = "extConfig";
     private final static String CONFIG_INNER = "innerConfig";
@@ -55,10 +55,10 @@ public final class Properties {
     private final JsonObject config = new JsonObject();
 
     private static class InstanceHolder {
-        private final static Properties INSTANCE = new Properties();
+        private final static Configs INSTANCE = new Configs();
     }
 
-    private Properties() {}
+    private Configs() {}
 
     public static void load() throws Exception {
         HashMap<String, JsonObject> map = new HashMap<>(2);
@@ -70,7 +70,7 @@ public final class Properties {
         map.clear();
     }
 
-    public static JsonObject getConfig() {
+    public static JsonObject get() {
         return InstanceHolder.INSTANCE.config.copy();
     }
 

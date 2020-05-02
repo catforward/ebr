@@ -22,9 +22,11 @@ import org.slf4j.LoggerFactory;
 import pers.ebr.server.base.Paths;
 
 import java.io.File;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.*;
+
+import static pers.ebr.server.constant.DBConst.TABLE_EXISTS;
+import static pers.ebr.server.constant.DBConst.VIEW_EXISTS;
 
 /**
  * <pre>
@@ -34,33 +36,28 @@ import java.sql.SQLException;
  * @author l.gong
  */
 public class SQLiteDBConnection implements DBConnection {
-    final static String TYPE = "sqlite";
-    final static String SCHEMA = "ebr.dat";
-
     private final static Logger logger = LoggerFactory.getLogger(SQLiteDBConnection.class);
-
-    private DBConnectionBuilder builder;
+    private final Properties sqlTpl;
     private Connection connection = null;
 
-    SQLiteDBConnection(DBConnectionBuilder builder) {
-        this.builder = builder;
+    SQLiteDBConnection(Properties sqlTpl) {
+        this.sqlTpl = sqlTpl;
     }
 
     @Override
-    public DBConnection init() {
-        String connStr = String.format("jdbc:sqlite:%s%s%s", Paths.getDataPath(), File.separator, SCHEMA);
+    public void connect() {
+        String connStr = String.format("jdbc:sqlite:%s%s%s",
+                Paths.getDataPath(), File.separator, SQLiteDBManager.SCHEMA);
         try {
             connection = DriverManager.getConnection(connStr);
+            connection.setAutoCommit(false);
         } catch (SQLException ex) {
-            logger.error("database error occurred...", ex);
             throw new RuntimeException(ex);
         }
-        // TODO
-        return this;
     }
 
     @Override
-    public void close() {
+    public void release() {
         try {
             if (connection != null) {
                 connection.close();
@@ -70,6 +67,88 @@ public class SQLiteDBConnection implements DBConnection {
         }
     }
 
+    @Override
+    public void commit() {
+        try {
+            if (connection != null) {
+                connection.commit();
+            }
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
 
+    @Override
+    public void rollback() {
+        try {
+            if (connection != null) {
+                connection.rollback();
+            }
+        } catch (SQLException ex) {
+            throw new RuntimeException(ex);
+        }
+    }
+
+    public void execute(String sql) throws SQLException {
+        try (Statement statement = connection.createStatement();) {
+            statement.setQueryTimeout(30);  // set timeout to 30 sec.
+            statement.executeUpdate(sql);
+        } finally {
+            commit();
+        }
+    }
+
+    public List<Map<String, String>> query(String tplSql, String... params) throws SQLException {
+        try (PreparedStatement statement = connection.prepareStatement(tplSql);) {
+            for (int i = 0; i < params.length; i++) {
+                statement.setString(i, params[i]);
+            }
+            return innerQuery(statement, tplSql);
+        }
+    }
+
+    public List<Map<String, String>> query(String sql) throws SQLException {
+        try (Statement statement = connection.createStatement();) {
+            return innerQuery(statement, sql);
+        }
+    }
+
+    private List<Map<String, String>> innerQuery(Statement statement, String sql) throws SQLException {
+        statement.setQueryTimeout(30); // set timeout to 30 sec.
+        List<Map<String, String>> rows = new ArrayList<>();
+        try (ResultSet rs = (statement instanceof PreparedStatement) ?
+                ((PreparedStatement) statement).executeQuery() : statement.executeQuery(sql);) {
+            ResultSetMetaData md = rs.getMetaData();
+            int columns = md.getColumnCount();
+            while (rs.next()) {
+                HashMap<String, String> row = new HashMap<>();
+                for (int i = 1; i <= columns; i++) {
+                    row.put(md.getColumnLabel(i), rs.getString(i));
+                }
+                rows.add(row);
+            }
+        }
+        return rows;
+    }
+
+    boolean isTableExist(String tableName) throws SQLException {
+        String existSql = sqlTpl.getProperty(TABLE_EXISTS);
+        var result = query(String.format(existSql, tableName));
+        if (result == null || result.isEmpty()) {
+            return false;
+        }
+        int cnt = Integer.parseInt(result.get(0).get("cnt"));
+        return cnt >= 1;
+    }
+
+    boolean isViewExist(String viewName) throws SQLException {
+        String existSql = sqlTpl.getProperty(VIEW_EXISTS);
+        var result = query(String.format(existSql, viewName));
+        if (result == null || result.isEmpty()) {
+            return false;
+        }
+        int cnt = Integer.parseInt(result.get(0).get("cnt"));
+        return cnt >= 1;
+    }
 
 }

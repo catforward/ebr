@@ -15,29 +15,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.server.base;
+package pers.ebr.server.constant;
 
 /**
  * <pre>
- * Exception Class in EBR
+ * The Defines of DataBase
  * </pre>
  *
  * @author l.gong
  */
-public final class EBRException extends RuntimeException {
-    public EBRException() {
-        super();
-    }
-
-    public EBRException(String message) {
-        super(message);
-    }
-
-    public EBRException(String message, Throwable cause) {
-        super(message, cause);
-    }
-
-    public EBRException(Throwable cause) {
-        super(cause);
-    }
+public interface DBConst {
+    String VIEW_EXISTS = "VIEW_EXISTS";
+    String CREATE_VIEW = "CREATE_VIEW";
+    String DROP_VIEW = "DROP_VIEW";
+    String TABLE_EXISTS = "TABLE_EXISTS";
+    String DROP_TABLE = "DROP_TABLE";
+    String RENAME_TABLE = "RENAME_TABLE";
 }

@@ -20,7 +20,7 @@ package pers.ebr.server.base.pool;
 import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pers.ebr.server.base.Properties;
+import pers.ebr.server.base.Configs;
 
 /**
  * The Builder of TaskPool
@@ -36,7 +36,7 @@ class TaskPoolBuilder {
     }
 
     TaskPool build() {
-        String type = config.getString(Properties.KEY_REPO_POOL, InMemoryTaskPool.TYPE);
+        String type = config.getString(Configs.KEY_REPO_POOL, InMemoryTaskPool.TYPE);
         switch (type) {
             case InMemoryTaskPool.TYPE : {
                 return new InMemoryTaskPool(this).init();

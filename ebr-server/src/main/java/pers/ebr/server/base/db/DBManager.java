@@ -19,14 +19,13 @@ package pers.ebr.server.base.db;
 
 /**
  * <pre>
- * The Database Connection Interface
+ * The Database Manager Interface
  * </pre>
  *
  * @author l.gong
  */
-public interface DBConnection {
-    void connect();
-    void release();
-    void commit();
-    void rollback();
+interface DBManager {
+    void init();
+    void finish();
+    DBConnection getConnection();
 }
