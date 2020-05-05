@@ -17,6 +17,8 @@
  */
 package pers.ebr.server.base.db;
 
+import java.util.List;
+
 /**
  * <pre>
  * The Database Connection Interface
@@ -25,8 +27,11 @@ package pers.ebr.server.base.db;
  * @author l.gong
  */
 public interface DBConnection {
-    void connect();
-    void release();
-    void commit();
-    void rollback();
+    void connect() throws DBException;
+    void release() throws DBException;
+    void saveFlow(String key, String value) throws DBException;
+    String loadFlow(String key) throws DBException;
+    List<String> loadAllFlow() throws DBException;
+    void commit() throws DBException;
+    void rollback() throws DBException;
 }

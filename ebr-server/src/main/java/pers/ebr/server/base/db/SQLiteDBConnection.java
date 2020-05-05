@@ -25,8 +25,7 @@ import java.io.File;
 import java.sql.*;
 import java.util.*;
 
-import static pers.ebr.server.constant.DBConst.TABLE_EXISTS;
-import static pers.ebr.server.constant.DBConst.VIEW_EXISTS;
+import static pers.ebr.server.constant.DBConst.*;
 
 /**
  * <pre>
@@ -45,26 +44,71 @@ public class SQLiteDBConnection implements DBConnection {
     }
 
     @Override
-    public void connect() {
+    public void connect() throws DBException {
         String connStr = String.format("jdbc:sqlite:%s%s%s",
                 Paths.getDataPath(), File.separator, SQLiteDBManager.SCHEMA);
         try {
             connection = DriverManager.getConnection(connStr);
             connection.setAutoCommit(false);
         } catch (SQLException ex) {
-            throw new RuntimeException(ex);
+            throw new DBException(ex);
         }
     }
 
     @Override
-    public void release() {
+    public void release() throws DBException {
         try {
             if (connection != null) {
                 connection.close();
             }
         } catch (SQLException ex) {
              logger.error("database error occurred...", ex);
+             throw new DBException(ex);
         }
+    }
+
+    @Override
+    public void saveFlow(String key, String value) throws DBException{
+        String saveSql = sqlTpl.getProperty(SAVE_FLOW);
+        try {
+            execute(String.format(saveSql, key, value));
+            commit();
+        } catch (SQLException ex) {
+            rollback();
+            logger.error("database error occurred...", ex);
+            throw new DBException(ex);
+        }
+    }
+
+    @Override
+    public String loadFlow(String key) throws DBException {
+        String loadSql = sqlTpl.getProperty(LOAD_FLOW);
+        try {
+            List<Map<String, String>> result = query(String.format(loadSql, key));
+            if (result.isEmpty()) {
+                return "";
+            }
+            return result.get(0).getOrDefault("value", "");
+        } catch (SQLException ex) {
+            logger.error("database error occurred...", ex);
+            throw new DBException(ex);
+        }
+    }
+
+    @Override
+    public List<String> loadAllFlow() throws DBException {
+        String loadAllSql = sqlTpl.getProperty(LOAD_ALL_FLOW);
+        try {
+            List<Map<String, String>> result = query(loadAllSql);
+            List<String> flows = new ArrayList<>();
+            for (var row : result) {
+                flows.add(row.getOrDefault("value", ""));
+            }
+        } catch (SQLException ex) {
+            logger.error("database error occurred...", ex);
+            throw new DBException(ex);
+        }
+        return null;
     }
 
     @Override

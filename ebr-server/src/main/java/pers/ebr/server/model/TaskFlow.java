@@ -17,6 +17,8 @@
  */
 package pers.ebr.server.model;
 
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pers.ebr.server.base.graph.DirectedGraph;
@@ -35,7 +37,7 @@ import java.util.stream.Stream;
 public class TaskFlow {
 
     private final static Logger logger = LoggerFactory.getLogger(TaskFlow.class);
-    private TaskImpl flow = null;
+    private String flowId = null;
     private HashMap<String, TaskImpl> taskMap = new HashMap<>();
     private HashMap<String, DirectedGraph<TaskImpl>> graphMap = new HashMap<>();
 
@@ -47,8 +49,8 @@ public class TaskFlow {
         graphMap.put(graphId, graph);
     }
 
-    public void flowItem(TaskImpl item) {
-        flow = item;
+    public void flowId(String id) {
+        flowId = id;
     }
 
     public Optional<TaskImpl> getTask(String id) {
@@ -59,8 +61,8 @@ public class TaskFlow {
         return Optional.ofNullable(graphMap.get(id));
     }
 
-    public Optional<TaskImpl> flowItem() {
-        return Optional.ofNullable(flow);
+    public Optional<String> flowId() {
+        return Optional.ofNullable(flowId);
     }
 
     public Stream<String> taskIdStream() {
@@ -73,6 +75,30 @@ public class TaskFlow {
 
     public boolean contains(String id) {
         return taskMap.containsKey(id);
+    }
+
+    public String toJsonString() {
+        JsonObject flowObj = new JsonObject();
+        // TODO
+        taskMap.forEach((id, task) -> {
+            JsonObject taskObj = new JsonObject();
+            if (task.desc() != null && !task.desc().isBlank()) {
+                taskObj.put("desc", task.desc());
+            }
+            if (task.groupId() != null && !task.groupId().isBlank()) {
+                taskObj.put("group", task.groupId());
+            }
+            if (task.cmdLine() != null && !task.cmdLine().isBlank()) {
+                taskObj.put("cmd", task.cmdLine());
+            }
+            if (!task.depends().isEmpty()) {
+                JsonArray arr = new JsonArray();
+                task.depends().forEach(arr::add);
+                taskObj.put("depends", arr);
+            }
+            flowObj.put(id, taskObj);
+        });
+        return flowObj.toString();
     }
 
     @Override

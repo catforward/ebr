@@ -40,7 +40,7 @@ public final class DBStore {
 
     private DBStore() {}
 
-    public static void init(JsonObject config) throws IOException {
+    public static void init(JsonObject config) throws IOException, DBException {
         synchronized (DBStoreHolder.STORE) {
             if (DBStoreHolder.STORE.mng == null) {
                 DBStoreHolder.STORE.mng = new DBBuilder(config).build();
@@ -50,7 +50,7 @@ public final class DBStore {
         logger.info("DBStore Init Success...");
     }
 
-    public static void finish() {
+    public static void finish() throws DBException {
         synchronized (DBStoreHolder.STORE) {
             if (DBStoreHolder.STORE.mng != null) {
                 DBStoreHolder.STORE.mng.finish();

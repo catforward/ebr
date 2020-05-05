@@ -15,24 +15,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.server.constant;
+package pers.ebr.server.base.db;
 
 /**
  * <pre>
- * The Defines of DataBase
+ * The Database Exception Interface
  * </pre>
  *
  * @author l.gong
  */
-public interface DBConst {
-    String VIEW_EXISTS = "VIEW_EXISTS";
-    String CREATE_VIEW = "CREATE_VIEW";
-    String DROP_VIEW = "DROP_VIEW";
-    String TABLE_EXISTS = "TABLE_EXISTS";
-    String DROP_TABLE = "DROP_TABLE";
-    String RENAME_TABLE = "RENAME_TABLE";
-    String GET_TABLE_NAME = "GET_TABLE_NAME";
-    String SAVE_FLOW = "SAVE_FLOW";
-    String LOAD_FLOW = "LOAD_FLOW";
-    String LOAD_ALL_FLOW = "LOAD_ALL_FLOW";
+public class DBException extends Exception {
+    public DBException(Throwable cause) {
+        super(cause);
+    }
+
+    public DBException(String message, Throwable cause) {
+        super(message, cause);
+    }
 }

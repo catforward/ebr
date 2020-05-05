@@ -24,10 +24,11 @@ import pers.ebr.server.base.MiscUtils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.sql.SQLException;
+import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
-import static pers.ebr.server.constant.DBConst.CREATE_VIEW;
-import static pers.ebr.server.constant.DBConst.DROP_VIEW;
+import static pers.ebr.server.constant.DBConst.*;
 
 /**
  * <pre>
@@ -39,7 +40,7 @@ import static pers.ebr.server.constant.DBConst.DROP_VIEW;
 class SQLiteDBManager implements DBManager {
     private final static Logger logger = LoggerFactory.getLogger(SQLiteDBManager.class);
     final static String TYPE = "sqlite";
-    final static String SCHEMA = "ebr.dat";
+    final static String SCHEMA = "flows.edat";
     final Properties tableVer = new Properties();
     final Properties sqlTpl = new Properties();
     final SQLiteDBConnection db;
@@ -47,7 +48,7 @@ class SQLiteDBManager implements DBManager {
     SQLiteDBManager() throws IOException {
         try (
             InputStream tableVerFile = getClass().getResourceAsStream("/db_table_ver.properties");
-            InputStream sqlFile = getClass().getResourceAsStream("/db_sql_tpl.properties");
+            InputStream sqlFile = getClass().getResourceAsStream("/db_sql_tpl.properties")
         ) {
             tableVer.load(tableVerFile);
             sqlTpl.load(sqlFile);
@@ -56,7 +57,7 @@ class SQLiteDBManager implements DBManager {
     }
 
     @Override
-    public void init() {
+    public void init() throws DBException {
         if (db != null) {
             db.connect();
             initOrUpdateSchema();
@@ -64,7 +65,7 @@ class SQLiteDBManager implements DBManager {
     }
 
     @Override
-    public void finish() {
+    public void finish() throws DBException {
         if (db != null) {
             db.release();
         }
@@ -97,18 +98,19 @@ class SQLiteDBManager implements DBManager {
 
     private void execTableCreate(String tableName, String fullTableName) throws IOException, SQLException {
         execTableCreateDDLFile(String.format("DDL_%s.sql", fullTableName));
-        execMigrationDDLFile(String.format("MIGRATE_%s.sql", fullTableName));
+        execMigrationDDLFile(String.format("MIGRATE_%s.sql", tableName));
+        execDropOldTable(tableName, fullTableName);
         execViewCreate(tableName, fullTableName);
     }
 
     private void execTableCreateDDLFile(String fileName) throws IOException, SQLException {
-        try (InputStream is = getClass().getResourceAsStream(String.format("/sql/%s", fileName));) {
+        try (InputStream is = getClass().getResourceAsStream(String.format("/sql/%s", fileName))) {
             db.execute(MiscUtils.toString(is));
         }
     }
 
     private void execMigrationDDLFile(String fileName) throws SQLException {
-        try (InputStream is = getClass().getResourceAsStream(String.format("/sql/%s", fileName));) {
+        try (InputStream is = getClass().getResourceAsStream(String.format("/sql/%s", fileName))) {
             if (is != null) {
                 db.execute(MiscUtils.toString(is));
             } else {
@@ -117,6 +119,18 @@ class SQLiteDBManager implements DBManager {
         } catch (IOException ex) {
             logger.error("table migration error...", ex);
             logger.info("skip migration of {}", fileName);
+        }
+    }
+
+    private void execDropOldTable(String tableName, String fullTableName) throws SQLException {
+        String getTableNameSql = sqlTpl.getProperty(GET_TABLE_NAME);
+        String dropTableSql = sqlTpl.getProperty(DROP_TABLE);
+        List<Map<String, String>> ret = db.query(String.format(getTableNameSql, String.format("%s_ver", tableName) + "%"));
+        for (var row : ret) {
+            String tbl = row.get("name");
+            if (!tbl.equalsIgnoreCase(fullTableName)) {
+                db.execute(String.format(dropTableSql, tbl));
+            }
         }
     }
 

@@ -23,7 +23,6 @@ import pers.ebr.server.constant.TaskState;
 import pers.ebr.server.constant.TaskType;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import static pers.ebr.server.constant.TaskState.INACTIVE;

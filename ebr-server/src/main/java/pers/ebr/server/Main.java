@@ -48,8 +48,12 @@ public class Main {
             vertx = Vertx.vertx();
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 if (vertx != null) vertx.close();
-                DBStore.finish();
-                TaskStore.finish();
+                try {
+                    DBStore.finish();
+                    TaskStore.finish();
+                } catch (Exception ex) {
+                    logger.error("error occurred!", ex);
+                }
             }));
             deployWorkerVerticle();
             deployHttpVerticle();

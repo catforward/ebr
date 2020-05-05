@@ -1,6 +1,6 @@
 ebr-dist/lib/
 ebr-dist/logs/
-ebr-dist/data/ebr.dat
+ebr-dist/data/flows.edat
 ebr-cli/target/
 ebr-server/target/
 

@@ -25,7 +25,7 @@ package pers.ebr.server.base.db;
  * @author l.gong
  */
 interface DBManager {
-    void init();
-    void finish();
+    void init() throws DBException;
+    void finish() throws DBException;
     DBConnection getConnection();
 }

@@ -69,11 +69,11 @@ public class TaskItemCreateService {
             // 更新Flow信息
             // 判断是否是flow元素
             if (item.isFlowItem()) {
-                if (flow.flowItem().isPresent()) {
+                if (flow.flowId().isPresent()) {
                     logger.error("only one flow can be define in a signal file. id:{}", item.id());
                     throw new RuntimeException(String.format("only one flow can be define in a signal file. id:[%s]", item.id()));
                 }
-                flow.flowItem(item);
+                flow.flowId(item.id());
                 flow.addTaskGraph(item.id(), makeEmptyGraph());
             }
             // 更新依赖Task的类型

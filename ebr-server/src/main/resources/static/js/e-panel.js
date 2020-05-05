@@ -198,7 +198,9 @@ ebr.view = {
             $("#taskCardContent").empty()
         } else {
             $("#fileNameLabel").html(jsonFile.name);
-            $("#lastModifiedDate").html(jsonFile.lastModifiedDate.toLocaleDateString());
+            if (jsonFile.lastModifiedDate) { // firefox
+                $("#lastModifiedDate").html(jsonFile.lastModifiedDate.toLocaleDateString());
+            }
             let reader = new FileReader();
             reader.readAsText(jsonFile);
             reader.onload = (e) => {
