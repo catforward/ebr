@@ -3,6 +3,7 @@
 const REQ_INFO_GET_SERVER_INFO = "req.info.GetServerInfo";
 const REQ_TASK_VALIDATE_TASK_FLOW = "req.task.ValidateTaskFlow";
 const REQ_TASK_SAVE_TASK_FLOW = "req.task.SaveTaskFlow";
+const REQ_TASK_GET_ALL_TASK_FLOW = "req.task.GetAllTaskFlow";
 
 var ebr = {};
 
@@ -108,7 +109,9 @@ ebr.view = {
     },
 
     initStatusInfoPanel : function() {
-
+        $("#refreshFlowListBtn").on("click", (e) => {
+            ebr.com.EmitQuery(REQ_TASK_GET_ALL_TASK_FLOW);
+        });
     },
 
     initDefineViewerPanel : function() {
@@ -172,6 +175,16 @@ ebr.view = {
                 rowNum++;
                 //console.log(item+":"+jsonResultData.env[item]);
             }
+        }
+    },
+
+    /******************** TaskFlow Status Info Panel ********************/
+    AddTaskFlowInfoListView : function(jsonResultData) {
+        let taskFlowList = $("#taskFlowList");
+        taskFlowList.empty();
+        for (var item in jsonResultData) {
+            let liHtml = $("<li class='list-group-item list-group-item-action'>" + jsonResultData[item] + "</li>");
+            liHtml.appendTo(taskFlowList);
         }
     },
 
@@ -289,6 +302,17 @@ ebr.ctl = {
             ebr.view.AddServerInfoTableView(jsonData.result);
         }
     },
+
+    /********************  TaskFlow Status Info Panel *********************/
+    GetAllTaskFlowRequest : () => {
+        return {};
+    },
+    GetAllTaskFlowResponse : (jsonData) => {
+        if (typeof jsonData.result === "object" && jsonData.result !== null) {
+            ebr.view.AddTaskFlowInfoListView(jsonData.result);
+        }
+    },
+
     /********************  Define Viewer Panel *********************/
     ValidateTaskFlowRequest : function() {
         let fileName = ebr.view.GetTaskFlowDefineFileName();
@@ -328,7 +352,14 @@ ebr.ctl = {
 
 // run js source was loaded
 (function() {
+    /********************  ServerInfoPanel *********************/
     ebr.com.BindQuery(REQ_INFO_GET_SERVER_INFO, ebr.ctl.GetServerInfoRequest, ebr.ctl.GetServerInfoResponse);
+
+    /********************  TaskFlow Status Info Panel *********************/
+    ebr.com.BindQuery(REQ_TASK_GET_ALL_TASK_FLOW, ebr.ctl.GetAllTaskFlowRequest, ebr.ctl.GetAllTaskFlowResponse);
+
+    /********************  Define Viewer Panel *********************/
     ebr.com.BindQuery(REQ_TASK_VALIDATE_TASK_FLOW, ebr.ctl.ValidateTaskFlowRequest, ebr.ctl.ValidateTaskFlowResponse);
     ebr.com.BindQuery(REQ_TASK_SAVE_TASK_FLOW, ebr.ctl.SaveTaskFlowRequest, ebr.ctl.SaveTaskFlowResponse);
+
 })();

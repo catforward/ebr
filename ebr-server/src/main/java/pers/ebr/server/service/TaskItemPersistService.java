@@ -19,10 +19,12 @@ package pers.ebr.server.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pers.ebr.server.base.db.DBConnection;
 import pers.ebr.server.base.db.DBException;
 import pers.ebr.server.base.db.DBStore;
 import pers.ebr.server.model.TaskFlow;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The TaskItemPersistService
@@ -34,12 +36,25 @@ public class TaskItemPersistService {
     private final static Logger logger = LoggerFactory.getLogger(TaskItemPersistService.class);
 
     public boolean saveTaskFlow(TaskFlow flow) {
-        DBConnection conn = DBStore.getConnection();
         try {
-            conn.saveFlow(flow.flowId().orElseThrow(), flow.toJsonString());
+            DBStore.getConnection().saveFlow(flow.flowId().orElseThrow(), flow.toJsonString());
         } catch (DBException ex) {
+            logger.error("procedure [saveTaskFlow] error...");
             return false;
         }
         return true;
+    }
+
+    public List<String> getAllTaskFlow() {
+        List<String> arr = null;
+        try {
+            arr = DBStore.getConnection().loadAllFlow();
+        } catch(DBException ex) {
+            arr = new ArrayList<>();
+            logger.error("procedure [saveTaskFlow] error...");
+        } finally {
+            return arr;
+        }
+
     }
 }

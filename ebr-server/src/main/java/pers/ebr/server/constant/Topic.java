@@ -29,5 +29,5 @@ public interface Topic {
     String REQ_INFO_GET_SERVER_INFO = "req.info.GetServerInfo";
     String REQ_TASK_VALIDATE_TASK_FLOW = "req.task.ValidateTaskFlow";
     String REQ_TASK_SAVE_TASK_FLOW = "req.task.SaveTaskFlow";
-
+    String REQ_TASK_GET_ALL_TASK_FLOW = "req.task.GetAllTaskFlow";
 }

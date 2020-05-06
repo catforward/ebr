@@ -53,18 +53,17 @@
             <div class="ebr-panel-navbar border-bottom">
                 <div class="ebr-panel-navbar-items">
                     <h4>TaskFlow Status Info</h4>
+                    <ul class="nav justify-content-end" style="margin-left: 5em;">
+                        <li class="nav-item">
+                            <a id="refreshFlowListBtn" class="nav-link font-weight-bold text-success" href="javascript:void(0);">Refresh</a>
+                        </li>
+                    </ul>
                 </div>
             </div>
             <div class="ebr-panel-flex-content ebr-panel-responsive">
                 <div class="ebr-flex-col-2 border-right">
                     <h5>Task Flow</h5>
-                    <ul class="list-group">
-                        <li class="list-group-item list-group-item-action">Cras justo odio</li>
-                        <li class="list-group-item list-group-item-action">Dapibus ac facilisis in</li>
-                        <li class="list-group-item list-group-item-action">Morbi leo risus</li>
-                        <li class="list-group-item list-group-item-action">Porta ac consectetur ac</li>
-                        <li class="list-group-item list-group-item-action">Vestibulum at eros</li>
-                    </ul>
+                    <ul id="taskFlowList" class="list-group list-group-flush"></ul>
                 </div>
                 <div class="ebr-flex-col-8">
                     <h5>Status</h5>
@@ -96,7 +95,7 @@
                         <li class="nav-item">
                           <a id="fileSaveBtn" class="nav-link font-weight-bold text-success" href="javascript:void(0);">Save</a>
                         </li>
-                      </ul>
+                    </ul>
                 </div>
             </div>
             <div class="ebr-panel-flex-content ebr-panel-responsive">

@@ -22,6 +22,7 @@ import io.vertx.core.Handler;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.ext.web.RoutingContext;
+import io.vertx.ext.web.handler.FaviconHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -47,6 +48,8 @@ public class HttpServerVerticle extends AbstractVerticle {
     final static String WEB_ROOT = "static";
     final static String INDEX_HTML = "e-panel.html";
     final static String PROC_URL = "/proc";
+    final static String FAVICON = "/favicon.ico";
+    final static String REQ_ALL = "/*";
 
     private final static Logger logger = LoggerFactory.getLogger(HttpServerVerticle.class);
     private HttpServer server;
@@ -57,12 +60,13 @@ public class HttpServerVerticle extends AbstractVerticle {
         JsonObject config = config();
         server = vertx.createHttpServer();
         Router router = Router.router(vertx);
+        router.route(FAVICON).handler(FaviconHandler.create());
         StaticHandler staticHandler = StaticHandler.create().setWebRoot(WEB_ROOT).setIndexPage(INDEX_HTML)
                 .setAlwaysAsyncFS(true).setFilesReadOnly(true).setCachingEnabled(true)
                 .setDirectoryListing(false).setIncludeHidden(false).setEnableFSTuning(true);
         router.route().handler(BodyHandler.create());
         router.route().failureHandler(ErrorHandler.create());
-        router.get("/*").handler(staticHandler);
+        router.get(REQ_ALL).handler(staticHandler);
         router.post(PROC_URL).handler(new HttpProcHandler());
 
         server.requestHandler(router::handle).listen(config.getInteger(KEY_HTTP_PORT), res -> {
@@ -92,7 +96,8 @@ class HttpProcHandler implements Handler<RoutingContext> {
         switch (address) {
             case REQ_INFO_GET_SERVER_INFO:
             case REQ_TASK_VALIDATE_TASK_FLOW:
-            case REQ_TASK_SAVE_TASK_FLOW: {
+            case REQ_TASK_SAVE_TASK_FLOW:
+            case REQ_TASK_GET_ALL_TASK_FLOW: {
                 handleReqRequest(address, reqBody, routingContext);
                 break;
             }

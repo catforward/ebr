@@ -97,18 +97,18 @@ public class SQLiteDBConnection implements DBConnection {
 
     @Override
     public List<String> loadAllFlow() throws DBException {
+        List<String> flows = new ArrayList<>();
         String loadAllSql = sqlTpl.getProperty(LOAD_ALL_FLOW);
         try {
             List<Map<String, String>> result = query(loadAllSql);
-            List<String> flows = new ArrayList<>();
             for (var row : result) {
-                flows.add(row.getOrDefault("value", ""));
+                flows.add(row.getOrDefault("NAME", ""));
             }
         } catch (SQLException ex) {
             logger.error("database error occurred...", ex);
             throw new DBException(ex);
         }
-        return null;
+        return flows;
     }
 
     @Override
@@ -134,7 +134,7 @@ public class SQLiteDBConnection implements DBConnection {
     }
 
     public void execute(String sql) throws SQLException {
-        try (Statement statement = connection.createStatement();) {
+        try (Statement statement = connection.createStatement()) {
             statement.setQueryTimeout(30);  // set timeout to 30 sec.
             statement.executeUpdate(sql);
         } finally {
@@ -143,7 +143,7 @@ public class SQLiteDBConnection implements DBConnection {
     }
 
     public List<Map<String, String>> query(String tplSql, String... params) throws SQLException {
-        try (PreparedStatement statement = connection.prepareStatement(tplSql);) {
+        try (PreparedStatement statement = connection.prepareStatement(tplSql)) {
             for (int i = 0; i < params.length; i++) {
                 statement.setString(i, params[i]);
             }
@@ -152,7 +152,7 @@ public class SQLiteDBConnection implements DBConnection {
     }
 
     public List<Map<String, String>> query(String sql) throws SQLException {
-        try (Statement statement = connection.createStatement();) {
+        try (Statement statement = connection.createStatement()) {
             return innerQuery(statement, sql);
         }
     }
@@ -161,7 +161,7 @@ public class SQLiteDBConnection implements DBConnection {
         statement.setQueryTimeout(30); // set timeout to 30 sec.
         List<Map<String, String>> rows = new ArrayList<>();
         try (ResultSet rs = (statement instanceof PreparedStatement) ?
-                ((PreparedStatement) statement).executeQuery() : statement.executeQuery(sql);) {
+                ((PreparedStatement) statement).executeQuery() : statement.executeQuery(sql)) {
             ResultSetMetaData md = rs.getMetaData();
             int columns = md.getColumnCount();
             while (rs.next()) {
