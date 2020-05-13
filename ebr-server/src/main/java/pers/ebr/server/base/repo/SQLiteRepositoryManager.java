@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.server.base.db;
+package pers.ebr.server.base.repo;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,32 +32,32 @@ import static pers.ebr.server.constant.DBConst.*;
 
 /**
  * <pre>
- * The SQLite SQLiteDBManager
+ * The SQLite RepositoryManager
  * </pre>
  *
  * @author l.gong
  */
-class SQLiteDBManager implements DBManager {
-    private final static Logger logger = LoggerFactory.getLogger(SQLiteDBManager.class);
+class SQLiteRepositoryManager implements IRepositoryManager {
+    private final static Logger logger = LoggerFactory.getLogger(SQLiteRepositoryManager.class);
     final static String TYPE = "sqlite";
     final static String SCHEMA = "flows.edat";
     final Properties tableVer = new Properties();
     final Properties sqlTpl = new Properties();
-    final SQLiteDBConnection db;
+    final SQLiteRepository db;
 
-    SQLiteDBManager() throws IOException {
+    SQLiteRepositoryManager() throws IOException {
         try (
             InputStream tableVerFile = getClass().getResourceAsStream("/db_table_ver.properties");
             InputStream sqlFile = getClass().getResourceAsStream("/db_sql_tpl.properties")
         ) {
             tableVer.load(tableVerFile);
             sqlTpl.load(sqlFile);
-            db = new SQLiteDBConnection(sqlTpl);
+            db = new SQLiteRepository(sqlTpl);
         }
     }
 
     @Override
-    public void init() throws DBException {
+    public void init() throws RepositoryException {
         if (db != null) {
             db.connect();
             initOrUpdateSchema();
@@ -65,14 +65,14 @@ class SQLiteDBManager implements DBManager {
     }
 
     @Override
-    public void finish() throws DBException {
+    public void finish() throws RepositoryException {
         if (db != null) {
             db.release();
         }
     }
 
     @Override
-    public DBConnection getConnection() {
+    public IRepository getRepository() {
         return db;
     }
 

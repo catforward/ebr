@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.server.base.db;
+package pers.ebr.server.base.repo;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,46 +29,46 @@ import static pers.ebr.server.constant.DBConst.*;
 
 /**
  * <pre>
- * The SQLITE Database Storage Implementation
+ * The SQLITE Database Repository Implementation
  * </pre>
  *
  * @author l.gong
  */
-public class SQLiteDBConnection implements DBConnection {
-    private final static Logger logger = LoggerFactory.getLogger(SQLiteDBConnection.class);
+public class SQLiteRepository implements IRepository {
+    private final static Logger logger = LoggerFactory.getLogger(SQLiteRepository.class);
     private final Properties sqlTpl;
     private Connection connection = null;
 
-    SQLiteDBConnection(Properties sqlTpl) {
+    SQLiteRepository(Properties sqlTpl) {
         this.sqlTpl = sqlTpl;
     }
 
     @Override
-    public void connect() throws DBException {
+    public void connect() throws RepositoryException {
         String connStr = String.format("jdbc:sqlite:%s%s%s",
-                Paths.getDataPath(), File.separator, SQLiteDBManager.SCHEMA);
+                Paths.getDataPath(), File.separator, SQLiteRepositoryManager.SCHEMA);
         try {
             connection = DriverManager.getConnection(connStr);
             connection.setAutoCommit(false);
         } catch (SQLException ex) {
-            throw new DBException(ex);
+            throw new RepositoryException(ex);
         }
     }
 
     @Override
-    public void release() throws DBException {
+    public void release() throws RepositoryException {
         try {
             if (connection != null) {
                 connection.close();
             }
         } catch (SQLException ex) {
              logger.error("database error occurred...", ex);
-             throw new DBException(ex);
+             throw new RepositoryException(ex);
         }
     }
 
     @Override
-    public void saveFlow(String key, String value) throws DBException{
+    public void saveFlow(String key, String value) throws RepositoryException {
         String saveSql = sqlTpl.getProperty(SAVE_FLOW);
         try {
             execute(String.format(saveSql, key, value));
@@ -76,27 +76,27 @@ public class SQLiteDBConnection implements DBConnection {
         } catch (SQLException ex) {
             rollback();
             logger.error("database error occurred...", ex);
-            throw new DBException(ex);
+            throw new RepositoryException(ex);
         }
     }
 
     @Override
-    public String loadFlow(String key) throws DBException {
+    public String getTaskFlowDefineById(String flowId) throws RepositoryException {
         String loadSql = sqlTpl.getProperty(LOAD_FLOW);
         try {
-            List<Map<String, String>> result = query(String.format(loadSql, key));
+            List<Map<String, String>> result = query(String.format(loadSql, flowId));
             if (result.isEmpty()) {
                 return "";
             }
-            return result.get(0).getOrDefault("value", "");
+            return result.get(0).getOrDefault("DETAIL", "");
         } catch (SQLException ex) {
             logger.error("database error occurred...", ex);
-            throw new DBException(ex);
+            throw new RepositoryException(ex);
         }
     }
 
     @Override
-    public List<String> loadAllFlow() throws DBException {
+    public List<String> loadAllFlowId() throws RepositoryException {
         List<String> flows = new ArrayList<>();
         String loadAllSql = sqlTpl.getProperty(LOAD_ALL_FLOW);
         try {
@@ -106,7 +106,7 @@ public class SQLiteDBConnection implements DBConnection {
             }
         } catch (SQLException ex) {
             logger.error("database error occurred...", ex);
-            throw new DBException(ex);
+            throw new RepositoryException(ex);
         }
         return flows;
     }

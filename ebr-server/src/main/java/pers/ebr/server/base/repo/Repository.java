@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.server.base.db;
+package pers.ebr.server.base.repo;
 
 import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
@@ -30,39 +30,39 @@ import java.io.IOException;
  *
  * @author l.gong
  */
-public final class DBStore {
-    private final static Logger logger = LoggerFactory.getLogger(DBStore.class);
-    private DBManager mng;
+public final class Repository {
+    private final static Logger logger = LoggerFactory.getLogger(Repository.class);
+    private IRepositoryManager mng;
 
     private static class DBStoreHolder {
-        static final DBStore STORE = new DBStore();
+        static final Repository REPO = new Repository();
     }
 
-    private DBStore() {}
+    private Repository() {}
 
-    public static void init(JsonObject config) throws IOException, DBException {
-        synchronized (DBStoreHolder.STORE) {
-            if (DBStoreHolder.STORE.mng == null) {
-                DBStoreHolder.STORE.mng = new DBBuilder(config).build();
+    public static void init(JsonObject config) throws IOException, RepositoryException {
+        synchronized (DBStoreHolder.REPO) {
+            if (DBStoreHolder.REPO.mng == null) {
+                DBStoreHolder.REPO.mng = new RepositoryBuilder(config).build();
             }
-            DBStoreHolder.STORE.mng.init();
+            DBStoreHolder.REPO.mng.init();
         }
         logger.info("DBStore Init Success...");
     }
 
-    public static void finish() throws DBException {
-        synchronized (DBStoreHolder.STORE) {
-            if (DBStoreHolder.STORE.mng != null) {
-                DBStoreHolder.STORE.mng.finish();
+    public static void finish() throws RepositoryException {
+        synchronized (DBStoreHolder.REPO) {
+            if (DBStoreHolder.REPO.mng != null) {
+                DBStoreHolder.REPO.mng.finish();
             }
         }
     }
 
-    public static DBConnection getConnection() {
-        if (DBStoreHolder.STORE.mng == null) {
+    public static IRepository get() {
+        if (DBStoreHolder.REPO.mng == null) {
             throw new RuntimeException("database is not initialized...");
         }
-        return DBStoreHolder.STORE.mng.getConnection();
+        return DBStoreHolder.REPO.mng.getRepository();
     }
 
 }

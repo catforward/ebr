@@ -19,8 +19,8 @@ package pers.ebr.server.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pers.ebr.server.base.db.DBException;
-import pers.ebr.server.base.db.DBStore;
+import pers.ebr.server.base.repo.Repository;
+import pers.ebr.server.base.repo.RepositoryException;
 import pers.ebr.server.model.TaskFlow;
 
 import java.util.ArrayList;
@@ -35,26 +35,37 @@ public class TaskItemPersistService {
 
     private final static Logger logger = LoggerFactory.getLogger(TaskItemPersistService.class);
 
-    public boolean saveTaskFlow(TaskFlow flow) {
+    public boolean save(TaskFlow flow) {
         try {
-            DBStore.getConnection().saveFlow(flow.flowId().orElseThrow(), flow.toJsonString());
-        } catch (DBException ex) {
+            Repository.get().saveFlow(flow.flowId().orElseThrow(), flow.toJsonString());
+        } catch (RepositoryException ex) {
             logger.error("procedure [saveTaskFlow] error...");
             return false;
         }
         return true;
     }
 
-    public List<String> getAllTaskFlow() {
+    public List<String> getAllTaskFlowId() {
         List<String> arr = null;
         try {
-            arr = DBStore.getConnection().loadAllFlow();
-        } catch(DBException ex) {
+            arr = Repository.get().loadAllFlowId();
+        } catch(RepositoryException ex) {
             arr = new ArrayList<>();
             logger.error("procedure [saveTaskFlow] error...");
         } finally {
             return arr;
         }
-
     }
+
+    public String getTaskFlowDefineById(String flowId) {
+        String flowDefine = "";
+        try {
+            flowDefine = Repository.get().getTaskFlowDefineById(flowId);
+        } catch (RepositoryException ex) {
+            logger.error("procedure [getTaskFlowDefineById] error...");
+        } finally {
+            return flowDefine;
+        }
+    }
+
 }

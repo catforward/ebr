@@ -1,9 +1,15 @@
 "use strict";
 
+/* 获取服务器信息 */
 const REQ_INFO_GET_SERVER_INFO = "req.info.GetServerInfo";
+/* 服务器端验证taskflow的定义合法性 */
 const REQ_TASK_VALIDATE_TASK_FLOW = "req.task.ValidateTaskFlow";
+/* 保存taskflow定义 */
 const REQ_TASK_SAVE_TASK_FLOW = "req.task.SaveTaskFlow";
+/* 获取所有taskflow的定义 */
 const REQ_TASK_GET_ALL_TASK_FLOW = "req.task.GetAllTaskFlow";
+/* 获取指定id的taskflow定义及运行状态 */
+const REQ_TASK_GET_TASK_FLOW_STATUS = "req.task.GetTaskFlowStatus";
 
 var ebr = {};
 
@@ -11,31 +17,31 @@ ebr.reqHandlerMap = new Map();
 ebr.resHandlerMap = new Map();
 
 ebr.com = {
-    BindQuery : function(pathStr, reqFunc, resFunc) {
-        if (typeof pathStr !== "string" || pathStr.trim() === ""
+    BindQuery : function(topic, reqFunc, resFunc) {
+        if (typeof topic !== "string" || topic.trim() === ""
             || typeof reqFunc !== "function" || typeof resFunc !== "function") {
             alert("Error: [BindQuery] Invalid Params...");
             return;
         }
-        ebr.reqHandlerMap.set(pathStr, reqFunc);
-        ebr.resHandlerMap.set(pathStr, resFunc);
+        ebr.reqHandlerMap.set(topic, reqFunc);
+        ebr.resHandlerMap.set(topic, resFunc);
     },
 
-    EmitQuery : function(pathStr) {
-        if (typeof pathStr !== "string" || pathStr.trim() === "") {
+    EmitQuery : function(topic) {
+        if (typeof topic !== "string" || topic.trim() === "") {
             alert("Error: [EmitQuery] Invalid Params...");
             return;
         }
-        if (!ebr.reqHandlerMap.has(pathStr) || !ebr.resHandlerMap.has(pathStr)) {
-            alert("Error: [EmitQuery] no handler for [" + pathStr + "]");
+        if (!ebr.reqHandlerMap.has(topic) || !ebr.resHandlerMap.has(topic)) {
+            alert("Error: [EmitQuery] no handler for [" + topic + "]");
             return;
         }
-        let reqData = ebr.reqHandlerMap.get(pathStr)();
+        let reqData = ebr.reqHandlerMap.get(topic)();
         if (reqData === undefined || reqData === null) {
             alert("Error: [EmitQuery] request data can not be null or undefined...");
             return;
         }
-        ebr.com.postMsg({ path: pathStr, param: reqData}, ebr.resHandlerMap.get(pathStr));
+        ebr.com.postMsg({ path: topic, param: reqData}, ebr.resHandlerMap.get(topic));
     },
 
     postMsg : function(jsonData, resHandler) {
@@ -60,8 +66,8 @@ ebr.view = {
 
     /******************** common *********************/
     Init : function() {
-        // main panel
-        ebr.view.initMainPanel();
+        // sidebar
+        ebr.view.initSideBar();
         // server info panel
         ebr.view.initServerInfoPanel();
         // task flow status info panel
@@ -70,15 +76,14 @@ ebr.view = {
         ebr.view.initDefineViewerPanel();
     },
 
-    initMainPanel : function() {
-        // sidebar
-        $("#serverInfoPanelBtn").on("click", () => {
+    initSideBar : function() {
+        $("#serverInfoPanelBtn").click(() => {
             ebr.com.EmitQuery(REQ_INFO_GET_SERVER_INFO);
         });
-        $("#taskFlowStatusInfoPanelBtn").on("click", () => {
+        $("#taskFlowStatusInfoPanelBtn").click(() => {
             ebr.view.ShiftPanel("taskFlowStatusInfoPanel");
         });
-        $("#taskFlowDefineViewerPanelBtn").on("click", () => {
+        $("#taskFlowDefineViewerPanelBtn").click(() => {
             ebr.view.ShiftPanel("taskFlowDefineViewerPanel");
         });
     },
@@ -130,7 +135,7 @@ ebr.view = {
     },
 
     ShiftPanel : function(panelId) {
-        if (panelId !== null) {
+        if (panelId) {
             // replace the main panel
             $(".ebr-panel").each((index, element) => {
                 $(element).addClass("ebr-invisible");
@@ -182,9 +187,94 @@ ebr.view = {
     AddTaskFlowInfoListView : function(jsonResultData) {
         let taskFlowList = $("#taskFlowList");
         taskFlowList.empty();
-        for (var item in jsonResultData) {
-            let liHtml = $("<li class='list-group-item list-group-item-action'>" + jsonResultData[item] + "</li>");
+        for (let item in jsonResultData) {
+            let flowId = jsonResultData[item];
+            let liHtml = $("<li class=\"list-group-item list-group-item-action\" " +
+                            "onclick=\"ebr.view.FlowIdSelect('" + flowId + "')\">" + flowId + "</li>");
             liHtml.appendTo(taskFlowList);
+        }
+    },
+    FlowIdSelect : function(flowId) {
+        sessionStorage.setItem("current_flow_id", flowId);
+        ebr.com.EmitQuery(REQ_TASK_GET_TASK_FLOW_STATUS);
+    },
+    AddTaskStatusInfoToView : function(jsonResultData) {
+        let currentFlowId = sessionStorage.getItem("current_flow_id");
+        let defineJsonContent = ebr.view.getTaskFlowDefine(currentFlowId, jsonResultData);
+        if (defineJsonContent) {
+            ebr.view.updateTaskStatusInfoView(currentFlowId, defineJsonContent);
+        }
+        sessionStorage.removeItem("current_flow_id");
+    },
+    getTaskFlowDefine : function(currentFlowId, jsonResultData) {
+        for (let flowId in jsonResultData) {
+            if (currentFlowId === flowId) {
+                return jsonResultData[flowId];
+            }
+        }
+        return "";
+    },
+    updateTaskStatusInfoView : function(currentFlowId, defineJsonContent) {
+        $("#taskStatusCardContent").empty()
+        let itemMap = new Map();
+        try {
+            // create a item map pool
+            for (let taskKey in defineJsonContent) {
+                let taskContent = defineJsonContent[taskKey];
+                itemMap.set(taskKey, taskContent);
+            }
+            for (let [taskKey, taskContent] of itemMap) {
+                let parentTaskId = null;
+                if (itemMap.has(taskContent.group)) {
+                    parentTaskId = taskContent.group;
+                }
+                ebr.view.createTaskStatusCardItem(taskKey, taskContent, parentTaskId, itemMap);
+            };
+        } catch(err) {
+            alert(err.name + " : " + err.message);
+        } finally {
+            itemMap.clear();
+        }
+    },
+    createTaskStatusCardItem : function(taskId, taskContent, parentTaskId, itemMap) {
+        let myTmpCard = $("#taskStatusCard-" + taskId);
+        if (myTmpCard.length !== 0) return;
+        let tmpCard = $("#taskStatusCard").clone();
+        tmpCard.attr("id", "taskStatusCard-" + taskId);
+        tmpCard.addClass("ebr-inner-card-body");
+        let tmpCardHeader = tmpCard.find("#taskStatusCardHeader");
+        tmpCardHeader.attr("id", "taskStatusCardHeader-" + taskId);
+        // body
+        if (taskContent) {
+            for (let innerElemKey in taskContent) {
+                let trHtml = $("<tr></tr>");
+                trHtml.append("<td>" + innerElemKey + "</td>");
+                trHtml.append("<td class='border-bottom'>" + taskContent[innerElemKey] + "</td>");
+                trHtml.appendTo(tmpCard.find("tbody"));
+            }
+        }
+        // header & place
+        if (parentTaskId && parentTaskId !== taskId) {
+            let headHtml = $("<span class='badge badge-warning'>Unit</span><span style='margin-left: 20px;'><b>" + taskId + "</b></span>");
+            headHtml.appendTo(tmpCard.find(".card-header"));
+            // parentTask
+            let parentTask = $("#taskStatusCard-" + parentTaskId);
+            if (parentTask.length === 0) {
+                let parentContent = itemMap.get(parentTaskId);
+                let ppTaskId = parentContent.group ? parentContent.group : "";
+                // create parent card
+                ebr.view.createTaskStatusCardItem(parentTaskId, parentContent, ppTaskId, itemMap);
+                // get parent card again
+                parentTask = $("#taskStatusCard-" + parentTaskId);
+            }
+            tmpCard.appendTo(parentTask);
+            let parentHead = parentTask.find("#taskStatusCardHeader-" + parentTaskId);
+            parentHead.find(".badge").remove();
+            $("<span class='badge badge-info'>Group</span>").prependTo(parentHead);
+        } else if (!parentTaskId || parentTaskId === taskId) {
+            let headHtml = $("<span class='badge badge-info'>Group</span><span style='margin-left: 20px;'><b>" + taskId + "</b></span>");
+            headHtml.appendTo(tmpCard.find(".card-header"));
+            tmpCard.appendTo($("#taskStatusCardContent"));
         }
     },
 
@@ -227,6 +317,8 @@ ebr.view = {
     },
 
     updateTaskFlowDefineView : function(jsonFileName) {
+        $("#fileContent").empty();
+        $("#taskCardContent").empty()
         let strContent = sessionStorage.getItem(jsonFileName);
         if (typeof strContent === "string" && strContent.trim() !== "") {
             let itemMap = new Map();
@@ -235,14 +327,16 @@ ebr.view = {
                 for (let taskKey in jsonContent) {
                     //console.log(taskKey + ":" + JSON.stringify(jsonContent[taskKey]));
                     let taskContent = jsonContent[taskKey];
+                    itemMap.set(taskKey, taskContent);
+                }
+                for (let [taskKey, taskContent] of itemMap) {
                     let parentTaskId = null;
                     if (itemMap.has(taskContent.group)) {
                         parentTaskId = taskContent.group;
                     }
-                    ebr.view.createTaskCardItem(taskKey, taskContent, parentTaskId);
-                    ebr.view.createTaskSrcItem(taskKey, taskContent, parentTaskId);
-                    itemMap.set(taskKey, taskContent);
-                }
+                    ebr.view.createTaskCardItem(taskKey, taskContent, parentTaskId, itemMap);
+                    ebr.view.createTaskSrcItem(taskKey, taskContent, parentTaskId, itemMap);
+                };
             } catch(err) {
                 alert(err.name + " : " + err.message);
             } finally {
@@ -253,7 +347,9 @@ ebr.view = {
         }
     },
 
-    createTaskCardItem : function(taskId, taskContent, parentTaskId) {
+    createTaskCardItem : function(taskId, taskContent, parentTaskId, itemMap) {
+        let myTmpCard = $("#taskInfoCard-" + taskId);
+        if (myTmpCard.length !== 0) return;
         let tmpCard = $("#taskInfoCard").clone();
         tmpCard.attr("id", "taskInfoCard-" + taskId);
         tmpCard.addClass("ebr-inner-card-body");
@@ -269,16 +365,24 @@ ebr.view = {
             }
         }
         // header & place
-        if (parentTaskId !== undefined && parentTaskId !== null) {
+        if (parentTaskId && parentTaskId !== taskId) {
             let headHtml = $("<span class='badge badge-warning'>Unit</span><span style='margin-left: 20px;'><b>" + taskId + "</b></span>");
             headHtml.appendTo(tmpCard.find(".card-header"));
             // parentTask
             let parentTask = $("#taskInfoCard-" + parentTaskId);
+            if (parentTask.length === 0) {
+                let parentContent = itemMap.get(parentTaskId);
+                let ppTaskId = parentContent.group ? parentContent.group : "";
+                // create parent card
+                ebr.view.createTaskCardItem(parentTaskId, parentContent, ppTaskId, itemMap);
+                // get parent card again
+                parentTask = $("#taskInfoCard-" + parentTaskId);
+            }
             tmpCard.appendTo(parentTask);
             let parentHead = parentTask.find("#taskInfoCardHeader-" + parentTaskId);
             parentHead.find(".badge").remove();
             $("<span class='badge badge-info'>Group</span>").prependTo(parentHead);
-        } else {
+        } else if (!parentTaskId || parentTaskId === taskId) {
             let headHtml = $("<span class='badge badge-info'>Group</span><span style='margin-left: 20px;'><b>" + taskId + "</b></span>");
             headHtml.appendTo(tmpCard.find(".card-header"));
             tmpCard.appendTo($("#taskCardContent"));
@@ -304,12 +408,32 @@ ebr.ctl = {
     },
 
     /********************  TaskFlow Status Info Panel *********************/
-    GetAllTaskFlowRequest : () => {
+    GetAllTaskFlowRequest : function() {
         return {};
     },
-    GetAllTaskFlowResponse : (jsonData) => {
+    GetAllTaskFlowResponse : function(jsonData) {
         if (typeof jsonData.result === "object" && jsonData.result !== null) {
             ebr.view.AddTaskFlowInfoListView(jsonData.result);
+        }
+    },
+    GetTaskFlowStatusRequest : function() {
+        let flowId = sessionStorage.getItem("current_flow_id");
+        if (typeof flowId === "string" && flowId.trim() !== "") {
+            return { fid : flowId };
+        } else {
+            alert("Error: [GetTaskFlowStatusRequest] The Content of [current_flow_id] is empty...");
+        }
+    },
+    GetTaskFlowStatusResponse : function(jsonData) {
+        if (typeof jsonData.result === "object") {
+            if (jsonData.result) {
+                ebr.view.AddTaskStatusInfoToView(jsonData.result);
+            } else if (jsonData.error) {
+                alert("load result : failed...");
+                if (jsonData.error.info) {
+                    alert("error message : " + jsonData.error.info);
+                }
+            }
         }
     },
 
@@ -335,7 +459,7 @@ ebr.ctl = {
         let fileName = ebr.view.GetTaskFlowDefineFileName();
         let strContent = sessionStorage.getItem(fileName);
         if (typeof strContent !== "string" || strContent.trim() === "") {
-            return null;
+            alert("Error: [SaveTaskFlowRequest] The Content of JSON file is empty...");
         }
         return JSON.parse(strContent);
     },
@@ -357,6 +481,7 @@ ebr.ctl = {
 
     /********************  TaskFlow Status Info Panel *********************/
     ebr.com.BindQuery(REQ_TASK_GET_ALL_TASK_FLOW, ebr.ctl.GetAllTaskFlowRequest, ebr.ctl.GetAllTaskFlowResponse);
+    ebr.com.BindQuery(REQ_TASK_GET_TASK_FLOW_STATUS, ebr.ctl.GetTaskFlowStatusRequest, ebr.ctl.GetTaskFlowStatusResponse);
 
     /********************  Define Viewer Panel *********************/
     ebr.com.BindQuery(REQ_TASK_VALIDATE_TASK_FLOW, ebr.ctl.ValidateTaskFlowRequest, ebr.ctl.ValidateTaskFlowResponse);

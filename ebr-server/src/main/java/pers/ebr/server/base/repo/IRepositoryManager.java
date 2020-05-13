@@ -15,21 +15,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.server.base.db;
+package pers.ebr.server.base.repo;
 
 /**
  * <pre>
- * The Database Exception Interface
+ * The Repository Manager Interface
  * </pre>
  *
  * @author l.gong
  */
-public class DBException extends Exception {
-    public DBException(Throwable cause) {
-        super(cause);
-    }
-
-    public DBException(String message, Throwable cause) {
-        super(message, cause);
-    }
+interface IRepositoryManager {
+    void init() throws RepositoryException;
+    void finish() throws RepositoryException;
+    IRepository getRepository();
 }

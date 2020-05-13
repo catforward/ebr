@@ -15,23 +15,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.server.base.db;
+package pers.ebr.server.base.repo;
 
 import java.util.List;
 
 /**
  * <pre>
- * The Database Connection Interface
+ * The Repository Interface
  * </pre>
  *
  * @author l.gong
  */
-public interface DBConnection {
-    void connect() throws DBException;
-    void release() throws DBException;
-    void saveFlow(String key, String value) throws DBException;
-    String loadFlow(String key) throws DBException;
-    List<String> loadAllFlow() throws DBException;
-    void commit() throws DBException;
-    void rollback() throws DBException;
+public interface IRepository {
+    void connect() throws RepositoryException;
+    void release() throws RepositoryException;
+    void saveFlow(String key, String value) throws RepositoryException;
+    String getTaskFlowDefineById(String flowId) throws RepositoryException;
+    List<String> loadAllFlowId() throws RepositoryException;
+    void commit() throws RepositoryException;
+    void rollback() throws RepositoryException;
 }

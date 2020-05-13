@@ -32,11 +32,14 @@ public interface Global {
     String REQUEST_PARAM_PARAM = "param";
     String RESPONSE_ERROR = "error";
     String RESPONSE_RESULT = "result";
+    String RESPONSE_INFO = "info";
 
     String TASK_ID = "id";
     String TASK_GROUP = "group";
     String TASK_DESC = "desc";
     String TASK_CMD_LINE = "cmd";
     String TASK_DEPENDS_LIST = "depends";
+
+    String TASK_FLOW_ID = "fid";
 
 }

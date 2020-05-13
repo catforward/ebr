@@ -21,7 +21,7 @@ import io.vertx.core.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import pers.ebr.server.base.db.DBStore;
+import pers.ebr.server.base.repo.Repository;
 import pers.ebr.server.base.pool.TaskStore;
 import pers.ebr.server.base.Configs;
 import pers.ebr.server.verticle.TaskManageVerticle;
@@ -49,7 +49,7 @@ public class Main {
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 if (vertx != null) vertx.close();
                 try {
-                    DBStore.finish();
+                    Repository.finish();
                     TaskStore.finish();
                 } catch (Exception ex) {
                     logger.error("error occurred!", ex);
@@ -67,7 +67,7 @@ public class Main {
 
     private static void initBasicComponents() throws Exception {
         Configs.load();
-        DBStore.init(Configs.get());
+        Repository.init(Configs.get());
         TaskStore.init(Configs.get());
     }
 

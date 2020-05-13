@@ -26,8 +26,14 @@ package pers.ebr.server.constant;
  */
 public interface Topic {
 
+    /* 获取服务器信息 */
     String REQ_INFO_GET_SERVER_INFO = "req.info.GetServerInfo";
+    /* 服务器端验证taskflow的定义合法性 */
     String REQ_TASK_VALIDATE_TASK_FLOW = "req.task.ValidateTaskFlow";
+    /* 保存taskflow定义 */
     String REQ_TASK_SAVE_TASK_FLOW = "req.task.SaveTaskFlow";
+    /* 获取所有taskflow的定义 */
     String REQ_TASK_GET_ALL_TASK_FLOW = "req.task.GetAllTaskFlow";
+    /* 获取指定id的taskflow定义及运行状态 */
+    String REQ_TASK_GET_TASK_FLOW_STATUS = "req.task.GetTaskFlowStatus";
 }

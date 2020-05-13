@@ -97,7 +97,8 @@ class HttpProcHandler implements Handler<RoutingContext> {
             case REQ_INFO_GET_SERVER_INFO:
             case REQ_TASK_VALIDATE_TASK_FLOW:
             case REQ_TASK_SAVE_TASK_FLOW:
-            case REQ_TASK_GET_ALL_TASK_FLOW: {
+            case REQ_TASK_GET_ALL_TASK_FLOW:
+            case REQ_TASK_GET_TASK_FLOW_STATUS: {
                 handleReqRequest(address, reqBody, routingContext);
                 break;
             }

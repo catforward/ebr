@@ -31,10 +31,7 @@ import pers.ebr.server.service.TaskItemPersistService;
 import java.util.List;
 import java.util.Optional;
 
-import static pers.ebr.server.constant.Global.REQUEST_PARAM_PATH;
-import static pers.ebr.server.constant.Global.REQUEST_PARAM_PARAM;
-import static pers.ebr.server.constant.Global.RESPONSE_RESULT;
-import static pers.ebr.server.constant.Global.RESPONSE_ERROR;
+import static pers.ebr.server.constant.Global.*;
 import static pers.ebr.server.constant.Topic.*;
 
 /**
@@ -52,6 +49,7 @@ public class TaskManageVerticle extends AbstractVerticle {
         bus.consumer(REQ_TASK_VALIDATE_TASK_FLOW, this::handleValidateTaskFlow);
         bus.consumer(REQ_TASK_SAVE_TASK_FLOW, this::handleSaveTaskFlow);
         bus.consumer(REQ_TASK_GET_ALL_TASK_FLOW, this::handleGetAllTaskFlow);
+        bus.consumer(REQ_TASK_GET_TASK_FLOW_STATUS,  this:: handleGetTaskFlowStatus);
     }
 
     @Override
@@ -87,7 +85,7 @@ public class TaskManageVerticle extends AbstractVerticle {
             Optional<TaskFlow> flow = creator.createTaskFlowStruct(flowBody.orElseThrow());
             creator.buildTaskFlow(flow.orElseThrow());
             TaskItemPersistService saver = new TaskItemPersistService();
-            ret = saver.saveTaskFlow(flow.orElseThrow());
+            ret = saver.save(flow.orElseThrow());
         } finally {
             result.put(ret ? RESPONSE_RESULT : RESPONSE_ERROR, new JsonObject());
             msg.reply(result);
@@ -100,7 +98,7 @@ public class TaskManageVerticle extends AbstractVerticle {
         result.put(REQUEST_PARAM_PATH, msg.body().getString(REQUEST_PARAM_PATH));
         try {
             TaskItemPersistService persist = new TaskItemPersistService();
-            List<String> flows = persist.getAllTaskFlow();
+            List<String> flows = persist.getAllTaskFlowId();
             if (!flows.isEmpty()) {
                 JsonArray array = new JsonArray();
                 flows.forEach(array::add);
@@ -111,6 +109,33 @@ public class TaskManageVerticle extends AbstractVerticle {
         } catch (Exception ex) {
             logger.error("error at [handleGetAllTaskFlow]");
             result.put(RESPONSE_ERROR, new JsonObject());
+        } finally {
+            msg.reply(result);
+        }
+    }
+
+    private void handleGetTaskFlowStatus(Message<JsonObject> msg) {
+        JsonObject result = new JsonObject();
+        result.put(REQUEST_PARAM_PATH, msg.body().getString(REQUEST_PARAM_PATH));
+        try {
+            JsonObject reqBody = Optional.ofNullable(msg.body().getJsonObject(REQUEST_PARAM_PARAM)).orElse(new JsonObject());
+            String flowId = reqBody.getString(TASK_FLOW_ID, "");
+            if (!flowId.isBlank()) {
+                TaskItemPersistService persist = new TaskItemPersistService();
+                String flowDefine = persist.getTaskFlowDefineById(flowId);
+                JsonObject retInfo = new JsonObject();
+                retInfo.put(flowId, new JsonObject(flowDefine));
+                result.put(RESPONSE_RESULT, retInfo);
+            } else {
+                JsonObject errInfo = new JsonObject();
+                errInfo.put(RESPONSE_INFO, String.format("invalid task flow id: [%s]", flowId));
+                result.put(RESPONSE_ERROR, errInfo);
+            }
+        } catch (Exception ex) {
+            logger.error("error at [handleGetTaskFlowStatus]");
+            JsonObject errInfo = new JsonObject();
+            errInfo.put(RESPONSE_INFO, ex.getMessage());
+            result.put(RESPONSE_ERROR, errInfo);
         } finally {
             msg.reply(result);
         }

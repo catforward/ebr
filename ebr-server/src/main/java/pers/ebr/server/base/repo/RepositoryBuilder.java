@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.server.base.db;
+package pers.ebr.server.base.repo;
 
 import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
@@ -26,25 +26,25 @@ import java.io.IOException;
 
 /**
  * <pre>
- * The Database Storage Builder
+ * The Repository Storage Builder
  * </pre>
  *
  * @author l.gong
  */
-class DBBuilder {
+class RepositoryBuilder {
 
-    private final static Logger logger = LoggerFactory.getLogger(DBBuilder.class);
+    private final static Logger logger = LoggerFactory.getLogger(RepositoryBuilder.class);
     private final JsonObject config;
 
-    DBBuilder(JsonObject config) {
+    RepositoryBuilder(JsonObject config) {
         this.config = config;
     }
 
-    DBManager build() throws IOException {
-        String type = config.getString(Configs.KEY_REPO_DB, SQLiteDBManager.TYPE);
+    IRepositoryManager build() throws IOException {
+        String type = config.getString(Configs.KEY_REPO_DB, SQLiteRepositoryManager.TYPE);
         switch (type) {
-            case SQLiteDBManager.TYPE : {
-                return new SQLiteDBManager();
+            case SQLiteRepositoryManager.TYPE : {
+                return new SQLiteRepositoryManager();
             }
             default: {
                 logger.error("unknown db connection type:{}", type);
