@@ -185,6 +185,8 @@ ebr.view = {
 
     /******************** TaskFlow Status Info Panel ********************/
     AddTaskFlowInfoListView : function(jsonResultData) {
+        $("#taskFlowList").empty();
+        $("#taskStatusCardContent").empty();
         let taskFlowList = $("#taskFlowList");
         taskFlowList.empty();
         for (let item in jsonResultData) {
@@ -199,6 +201,7 @@ ebr.view = {
         ebr.com.EmitQuery(REQ_TASK_GET_TASK_FLOW_STATUS);
     },
     AddTaskStatusInfoToView : function(jsonResultData) {
+        $("#taskStatusCardContent").empty();
         let currentFlowId = sessionStorage.getItem("current_flow_id");
         let defineJsonContent = ebr.view.getTaskFlowDefine(currentFlowId, jsonResultData);
         if (defineJsonContent) {
@@ -244,6 +247,11 @@ ebr.view = {
         tmpCard.addClass("ebr-inner-card-body");
         let tmpCardHeader = tmpCard.find("#taskStatusCardHeader");
         tmpCardHeader.attr("id", "taskStatusCardHeader-" + taskId);
+        // update collapse info
+        tmpCardHeader.attr("data-target", "#collapseOne-" + taskId);
+        tmpCardHeader.attr("aria-controls", "collapseOne-" + taskId);
+        let tmpCollapseDiv = tmpCard.find("#collapseOne");
+        tmpCollapseDiv.attr("id", "collapseOne-" + taskId);
         // body
         if (taskContent) {
             for (let innerElemKey in taskContent) {
@@ -256,7 +264,7 @@ ebr.view = {
         // header & place
         if (parentTaskId && parentTaskId !== taskId) {
             let headHtml = $("<span class='badge badge-warning'>Unit</span><span style='margin-left: 20px;'><b>" + taskId + "</b></span>");
-            headHtml.appendTo(tmpCard.find(".card-header"));
+            headHtml.appendTo(tmpCard.find("#taskStatusCardHeader-" + taskId));
             // parentTask
             let parentTask = $("#taskStatusCard-" + parentTaskId);
             if (parentTask.length === 0) {
@@ -273,7 +281,7 @@ ebr.view = {
             $("<span class='badge badge-info'>Group</span>").prependTo(parentHead);
         } else if (!parentTaskId || parentTaskId === taskId) {
             let headHtml = $("<span class='badge badge-info'>Group</span><span style='margin-left: 20px;'><b>" + taskId + "</b></span>");
-            headHtml.appendTo(tmpCard.find(".card-header"));
+            headHtml.appendTo(tmpCard.find("#taskStatusCardHeader-" + taskId));
             tmpCard.appendTo($("#taskStatusCardContent"));
         }
     },

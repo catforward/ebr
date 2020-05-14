@@ -118,13 +118,35 @@
                 </table>
             </div>
         </div>
-        <div id="taskStatusCard" class="card">
-            <div id="taskStatusCardHeader" class="card-header"></div>
-            <div class="card-body">
-                <table class="container" style="width: 100%;">
-                    <colgroup><col style="width: 15%;"><col style="width: 85%;"></colgroup>
-                    <tbody></tbody>
-                </table>
+        <div class="accordion" id="accordionTaskStatus">
+            <div id="taskStatusCard" class="card">
+                <div class="card-header ebr-card-flex-bar">
+                    <button id="taskStatusCardHeader" class="btn btn-link btn-block text-left" type="button"
+                            data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                    </button>
+                    <ul class="ebr-card-flex-bar-btn-ul">
+                        <li>
+                            <a href="javascript:void(0);" title="start"><i data-feather="play" class="ebr-icon-24"></i></a>
+                        </li>
+                        <li>
+                            <a href="javascript:void(0);" title="pause here"><i data-feather="pause" class="ebr-icon-24"></i></a>
+                        </li>
+                        <li>
+                            <a href="javascript:void(0);" title="skip"><i data-feather="skip-forward" class="ebr-icon-24"></i></a>
+                        </li>
+                        <li>
+                            <a href="javascript:void(0);" title="log"><i data-feather="file-text" class="ebr-icon-24"></i></a>
+                        </li>
+                    </ul>
+                </div>
+                <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionTaskStatus">
+                    <div class="card-body">
+                    <table class="container" style="width: 100%;">
+                        <colgroup><col style="width: 15%;"><col style="width: 85%;"></colgroup>
+                        <tbody></tbody>
+                    </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
