@@ -17,10 +17,10 @@
     <maven.compiler.source>${java.version}</maven.compiler.source>
     <maven.compiler.target>${java.version}</maven.compiler.target>
     <sonar.java.binaries>${project.basedir}/target/classes</sonar.java.binaries>
-    <verticle.main>pers.ebr.server.EbrLauncher</verticle.main>
-    <vertx.version>3.8.5</vertx.version>
-    <log4j2.version>2.12.1</log4j2.version>
-    <sqlite-jdbc.version>3.30.1</sqlite-jdbc.version>
+    <verticle.main>pers.ebr.server.MainLauncher</verticle.main>
+    <vertx.version>3.9.0</vertx.version>
+    <log4j2.version>2.13.3</log4j2.version>
+    <sqlite-jdbc.version>3.31.1</sqlite-jdbc.version>
   </properties>
 
   <dependencies>

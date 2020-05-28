@@ -10,6 +10,10 @@ const REQ_TASK_SAVE_TASK_FLOW = "req.task.SaveTaskFlow";
 const REQ_TASK_GET_ALL_TASK_FLOW = "req.task.GetAllTaskFlow";
 /* 获取指定id的taskflow定义及运行状态 */
 const REQ_TASK_GET_TASK_FLOW_STATUS = "req.task.GetTaskFlowStatus";
+/* 获取指定ID的task的日志信息 */
+const REQ_SHOW_LOG = "req.task.ShowLog";
+/* 启动指定ID的task */
+const REQ_START_TASK = "req.task.StartTask";
 
 var ebr = {};
 
@@ -114,7 +118,7 @@ ebr.view = {
     },
 
     initStatusInfoPanel : function() {
-        $("#refreshFlowListBtn").on("click", (e) => {
+        $("#getAllTaskFlowBtn").on("click", (e) => {
             ebr.com.EmitQuery(REQ_TASK_GET_ALL_TASK_FLOW);
         });
     },
@@ -200,6 +204,18 @@ ebr.view = {
         sessionStorage.setItem("current_flow_id", flowId);
         ebr.com.EmitQuery(REQ_TASK_GET_TASK_FLOW_STATUS);
     },
+    ShowLogOf : function(taskHeaderItem) {
+        if (taskHeaderItem && taskHeaderItem.name) {
+            sessionStorage.setItem("current_cmd_target", taskHeaderItem.name);
+            ebr.com.EmitQuery(REQ_SHOW_LOG);
+        }
+    },
+    RunTask : function(taskHeaderItem) {
+        if (taskHeaderItem && taskHeaderItem.name) {
+            sessionStorage.setItem("current_cmd_target", taskHeaderItem.name);
+            ebr.com.EmitQuery(REQ_START_TASK);
+        }
+    },
     AddTaskStatusInfoToView : function(jsonResultData) {
         $("#taskStatusCardContent").empty();
         let currentFlowId = sessionStorage.getItem("current_flow_id");
@@ -227,11 +243,11 @@ ebr.view = {
                 itemMap.set(taskKey, taskContent);
             }
             for (let [taskKey, taskContent] of itemMap) {
-                let parentTaskId = null;
+                let groupId = null;
                 if (itemMap.has(taskContent.group)) {
-                    parentTaskId = taskContent.group;
+                    groupId = taskContent.group;
                 }
-                ebr.view.createTaskStatusCardItem(taskKey, taskContent, parentTaskId, itemMap);
+                ebr.view.createTaskStatusCardItem(taskKey, taskContent, groupId, itemMap);
             };
         } catch(err) {
             alert(err.name + " : " + err.message);
@@ -239,9 +255,9 @@ ebr.view = {
             itemMap.clear();
         }
     },
-    createTaskStatusCardItem : function(taskId, taskContent, parentTaskId, itemMap) {
-        let myTmpCard = $("#taskStatusCard-" + taskId);
-        if (myTmpCard.length !== 0) return;
+    createTaskStatusCardItem : function(taskId, taskContent, groupId, itemMap) {
+        let existCard = $("#taskStatusCard-" + taskId);
+        if (existCard.length !== 0) return;
         let tmpCard = $("#taskStatusCard").clone();
         tmpCard.attr("id", "taskStatusCard-" + taskId);
         tmpCard.addClass("ebr-inner-card-body");
@@ -262,24 +278,30 @@ ebr.view = {
             }
         }
         // header & place
-        if (parentTaskId && parentTaskId !== taskId) {
+        if (groupId && groupId !== taskId) {
+            // delete card btn ul
+            tmpCard.find(".ebr-card-flex-bar-btn-ul").remove();
             let headHtml = $("<span class='badge badge-warning'>Unit</span><span style='margin-left: 20px;'><b>" + taskId + "</b></span>");
             headHtml.appendTo(tmpCard.find("#taskStatusCardHeader-" + taskId));
             // parentTask
-            let parentTask = $("#taskStatusCard-" + parentTaskId);
+            let parentTask = $("#taskStatusCard-" + groupId);
             if (parentTask.length === 0) {
-                let parentContent = itemMap.get(parentTaskId);
+                let parentContent = itemMap.get(groupId);
                 let ppTaskId = parentContent.group ? parentContent.group : "";
                 // create parent card
-                ebr.view.createTaskStatusCardItem(parentTaskId, parentContent, ppTaskId, itemMap);
+                ebr.view.createTaskStatusCardItem(groupId, parentContent, ppTaskId, itemMap);
                 // get parent card again
-                parentTask = $("#taskStatusCard-" + parentTaskId);
+                parentTask = $("#taskStatusCard-" + groupId);
             }
             tmpCard.appendTo(parentTask);
-            let parentHead = parentTask.find("#taskStatusCardHeader-" + parentTaskId);
+            let parentHead = parentTask.find("#taskStatusCardHeader-" + groupId);
             parentHead.find(".badge").remove();
             $("<span class='badge badge-info'>Group</span>").prependTo(parentHead);
-        } else if (!parentTaskId || parentTaskId === taskId) {
+        } else if (!groupId || groupId === taskId) {
+            // update card btn ul
+            tmpCard.find(".ebr-card-flex-bar-btn-link").each((index, element) => {
+                $(element).attr("name", taskId);
+            });
             let headHtml = $("<span class='badge badge-info'>Group</span><span style='margin-left: 20px;'><b>" + taskId + "</b></span>");
             headHtml.appendTo(tmpCard.find("#taskStatusCardHeader-" + taskId));
             tmpCard.appendTo($("#taskStatusCardContent"));
@@ -338,12 +360,12 @@ ebr.view = {
                     itemMap.set(taskKey, taskContent);
                 }
                 for (let [taskKey, taskContent] of itemMap) {
-                    let parentTaskId = null;
+                    let groupId = null;
                     if (itemMap.has(taskContent.group)) {
-                        parentTaskId = taskContent.group;
+                        groupId = taskContent.group;
                     }
-                    ebr.view.createTaskCardItem(taskKey, taskContent, parentTaskId, itemMap);
-                    ebr.view.createTaskSrcItem(taskKey, taskContent, parentTaskId, itemMap);
+                    ebr.view.createTaskCardItem(taskKey, taskContent, groupId, itemMap);
+                    ebr.view.createTaskSrcItem(taskKey, taskContent, groupId, itemMap);
                 };
             } catch(err) {
                 alert(err.name + " : " + err.message);
@@ -355,7 +377,7 @@ ebr.view = {
         }
     },
 
-    createTaskCardItem : function(taskId, taskContent, parentTaskId, itemMap) {
+    createTaskCardItem : function(taskId, taskContent, groupId, itemMap) {
         let myTmpCard = $("#taskInfoCard-" + taskId);
         if (myTmpCard.length !== 0) return;
         let tmpCard = $("#taskInfoCard").clone();
@@ -373,24 +395,24 @@ ebr.view = {
             }
         }
         // header & place
-        if (parentTaskId && parentTaskId !== taskId) {
+        if (groupId && groupId !== taskId) {
             let headHtml = $("<span class='badge badge-warning'>Unit</span><span style='margin-left: 20px;'><b>" + taskId + "</b></span>");
             headHtml.appendTo(tmpCard.find(".card-header"));
             // parentTask
-            let parentTask = $("#taskInfoCard-" + parentTaskId);
+            let parentTask = $("#taskInfoCard-" + groupId);
             if (parentTask.length === 0) {
-                let parentContent = itemMap.get(parentTaskId);
+                let parentContent = itemMap.get(groupId);
                 let ppTaskId = parentContent.group ? parentContent.group : "";
                 // create parent card
-                ebr.view.createTaskCardItem(parentTaskId, parentContent, ppTaskId, itemMap);
+                ebr.view.createTaskCardItem(groupId, parentContent, ppTaskId, itemMap);
                 // get parent card again
-                parentTask = $("#taskInfoCard-" + parentTaskId);
+                parentTask = $("#taskInfoCard-" + groupId);
             }
             tmpCard.appendTo(parentTask);
-            let parentHead = parentTask.find("#taskInfoCardHeader-" + parentTaskId);
+            let parentHead = parentTask.find("#taskInfoCardHeader-" + groupId);
             parentHead.find(".badge").remove();
             $("<span class='badge badge-info'>Group</span>").prependTo(parentHead);
-        } else if (!parentTaskId || parentTaskId === taskId) {
+        } else if (!groupId || groupId === taskId) {
             let headHtml = $("<span class='badge badge-info'>Group</span><span style='margin-left: 20px;'><b>" + taskId + "</b></span>");
             headHtml.appendTo(tmpCard.find(".card-header"));
             tmpCard.appendTo($("#taskCardContent"));
@@ -427,7 +449,7 @@ ebr.ctl = {
     GetTaskFlowStatusRequest : function() {
         let flowId = sessionStorage.getItem("current_flow_id");
         if (typeof flowId === "string" && flowId.trim() !== "") {
-            return { fid : flowId };
+            return { id : flowId };
         } else {
             alert("Error: [GetTaskFlowStatusRequest] The Content of [current_flow_id] is empty...");
         }
@@ -436,6 +458,26 @@ ebr.ctl = {
         if (typeof jsonData.result === "object") {
             if (jsonData.result) {
                 ebr.view.AddTaskStatusInfoToView(jsonData.result);
+            } else if (jsonData.error) {
+                alert("load result : failed...");
+                if (jsonData.error.info) {
+                    alert("error message : " + jsonData.error.info);
+                }
+            }
+        }
+    },
+    SendCmdRequest : function() {
+        let target = sessionStorage.getItem("current_cmd_target");
+        if (typeof target === "string" && target.trim() !== "") {
+            return { id : target };
+        } else {
+            alert("Error: [SendCmdRequest] The Content of [current_cmd_target] is empty...");
+        }
+    },
+    SendCmdResponse : function(jsonData) {
+        if (typeof jsonData.result === "object") {
+            if (jsonData.result) {
+                // TODO
             } else if (jsonData.error) {
                 alert("load result : failed...");
                 if (jsonData.error.info) {
@@ -490,6 +532,8 @@ ebr.ctl = {
     /********************  TaskFlow Status Info Panel *********************/
     ebr.com.BindQuery(REQ_TASK_GET_ALL_TASK_FLOW, ebr.ctl.GetAllTaskFlowRequest, ebr.ctl.GetAllTaskFlowResponse);
     ebr.com.BindQuery(REQ_TASK_GET_TASK_FLOW_STATUS, ebr.ctl.GetTaskFlowStatusRequest, ebr.ctl.GetTaskFlowStatusResponse);
+    ebr.com.BindQuery(REQ_SHOW_LOG, ebr.ctl.SendCmdRequest, ebr.ctl.SendCmdResponse);
+    ebr.com.BindQuery(REQ_START_TASK, ebr.ctl.SendCmdRequest, ebr.ctl.SendCmdResponse);
 
     /********************  Define Viewer Panel *********************/
     ebr.com.BindQuery(REQ_TASK_VALIDATE_TASK_FLOW, ebr.ctl.ValidateTaskFlowRequest, ebr.ctl.ValidateTaskFlowResponse);

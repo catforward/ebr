@@ -55,14 +55,13 @@
                     <h4>TaskFlow Status Info</h4>
                     <ul class="nav justify-content-end" style="margin-left: 5em;">
                         <li class="nav-item">
-                            <a id="refreshFlowListBtn" class="nav-link font-weight-bold text-success" href="javascript:void(0);">Refresh</a>
+                            <a id="getAllTaskFlowBtn" class="nav-link font-weight-bold text-success" href="javascript:void(0);">All</a>
                         </li>
                     </ul>
                 </div>
             </div>
             <div class="ebr-panel-flex-content ebr-panel-responsive">
                 <div class="ebr-flex-col-3 border-right">
-                    <h5>Task Flow</h5>
                     <ul id="taskFlowList" class="list-group list-group-flush"></ul>
                 </div>
                 <div id="taskStatusCardContent" class="ebr-flex-col-7">
@@ -101,7 +100,7 @@
                         <tr><td>Last Modified:</td><td id="lastModifiedDate" class="border-bottom"></td></tr>
                     </tbody>
                     </table>
-                    <textarea id="fileContent" style="padding: 1em; margin: 2em 0em 2em 0em; height: 90%; width: 100%; border-style: dashed;" ></textarea>
+                    <textarea id="fileContent" style="padding: 1em; margin: 2em 0em 2em 0em; height: 85%; width: 100%; border-style: dashed;" ></textarea>
                 </div>
                 <div id="taskCardContent" class="ebr-flex-col-6">
                 </div>
@@ -126,16 +125,16 @@
                     </button>
                     <ul class="ebr-card-flex-bar-btn-ul">
                         <li>
-                            <a href="javascript:void(0);" title="start"><i data-feather="play" class="ebr-icon-24"></i></a>
+                            <a class="ebr-card-flex-bar-btn-link" href="javascript:void(0);" title="log"
+                               onclick="ebr.view.ShowLogOf(this);">
+                                <i data-feather="file-text" class="ebr-icon-24"></i>
+                            </a>
                         </li>
                         <li>
-                            <a href="javascript:void(0);" title="pause here"><i data-feather="pause" class="ebr-icon-24"></i></a>
-                        </li>
-                        <li>
-                            <a href="javascript:void(0);" title="skip"><i data-feather="skip-forward" class="ebr-icon-24"></i></a>
-                        </li>
-                        <li>
-                            <a href="javascript:void(0);" title="log"><i data-feather="file-text" class="ebr-icon-24"></i></a>
+                            <a class="ebr-card-flex-bar-btn-link" href="javascript:void(0);" title="start"
+                                onclick="ebr.view.RunTask(this);">
+                                <i data-feather="play" class="ebr-icon-24"></i>
+                            </a>
                         </li>
                     </ul>
                 </div>
@@ -151,7 +150,7 @@
         </div>
     </div>
 </div>
-<script type="text/javascript" src="/js/jquery-3.4.1.min.js"></script>
+<script type="text/javascript" src="/js/jquery-3.5.1.min.js"></script>
 <script type="text/javascript" src="/js/bootstrap.bundle.min.js"></script>
 <script type="text/javascript" src="/js/feather.min.js"></script>
 <script type="text/javascript" src="/js/e-panel.js"></script>

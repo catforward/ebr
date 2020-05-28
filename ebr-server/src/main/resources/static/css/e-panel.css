@@ -78,36 +78,43 @@ html, body {
 .ebr-flex-col-2 {
     padding: 5px 10px 5px 10px;
     width: 25%;
+    overflow-y: auto;
 }
 
 .ebr-flex-col-3 {
     padding: 5px 10px 5px 10px;
     width: 30%;
+    overflow-y: auto;
 }
 
 .ebr-flex-col-4 {
     padding: 5px 10px 5px 10px;
     width: 40%;
+    overflow-y: auto;
 }
 
 .ebr-flex-col-5 {
     padding: 5px 10px 5px 10px;
     width: 50%;
+    overflow-y: auto;
 }
 
 .ebr-flex-col-6 {
     padding: 5px 10px 5px 10px;
     width: 60%;
+    overflow-y: auto;
 }
 
 .ebr-flex-col-7 {
     padding: 5px 10px 5px 10px;
     width: 70%;
+    overflow-y: auto;
 }
 
 .ebr-flex-col-8 {
     padding: 5px 10px 5px 10px;
     width: 85%;
+    overflow-y: auto;
 }
 
 .ebr-card-flex-bar {
@@ -127,6 +134,7 @@ html, body {
     cursor:pointer;
 }
 
+.ebr-card-flex-bar-btn-link,
 .ebr-card-flex-bar-btn-ul li a {
     display: inline-block;
     padding-top: 0.5em;

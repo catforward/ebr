@@ -1,8 +1,7 @@
 {
-  "node.id" :"server-node",
-  "node.type" : "server",
-  "repo.db" : "sqlite",
-  "repo.pool" : "memory",
-  "http.port" : 8086,
-  "http.acl" : []
+  "manager.repo" : "sqlite",
+  "executor.pool" : "memory",
+  "executor.num.min" : 4,
+  "executor.num.max" : 12,
+  "http.port" : 8114
 }

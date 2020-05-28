@@ -3,8 +3,22 @@
   
     <groupId>tsm</groupId>
     <artifactId>ebr</artifactId>
-    <version>537</version>
+    <version>3</version>
     <packaging>pom</packaging>
+
+    <name>EBR</name>
+    <description>External Batch Runner</description>
+    <url>https://github.com/catforward/ebr</url>
+    <licenses>
+        <license>
+            <name>Apache License, Version 2.0</name>
+            <url>http://www.apache.org/licenses/LICENSE-2.0</url>
+        </license>
+    </licenses>
+    <scm>
+        <url>https://github.com/catforward/ebr</url>
+        <connection>https://github.com/catforward/ebr.git</connection>
+    </scm>
 
     <modules>
         <module>ebr-cli</module>
