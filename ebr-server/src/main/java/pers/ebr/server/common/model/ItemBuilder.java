@@ -15,52 +15,53 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.server.service;
+package pers.ebr.server.common.model;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pers.ebr.server.base.graph.DirectedGraph;
-import pers.ebr.server.base.graph.GraphBuilder;
-import pers.ebr.server.model.TaskFlow;
-import pers.ebr.server.model.TaskImpl;
+import pers.ebr.server.common.graph.DirectedGraph;
+import pers.ebr.server.common.graph.GraphBuilder;
 
-import java.util.Optional;
-
-import static pers.ebr.server.constant.Global.*;
-import static pers.ebr.server.constant.TaskType.GROUP;
+import static pers.ebr.server.common.model.Task.*;
+import static pers.ebr.server.common.model.TaskType.GROUP;
 
 /**
- * The TaskItemCreateService
+ * The Builder Of Task Item
  *
  * @author l.gong
  */
-public class TaskItemCreateService {
+public class ItemBuilder {
+    private final static Logger logger = LoggerFactory.getLogger(ItemBuilder.class);
 
-    private final static Logger logger = LoggerFactory.getLogger(TaskItemCreateService.class);
+    public ItemBuilder() {}
 
-    public Optional<TaskFlow> createTaskFlowStruct(JsonObject flowObj) {
+    public TaskFlow buildTaskFlow(JsonObject define) {
+        // 创建一个空的flow结构
+        TaskFlow flow = createTaskFlowStruct(define);
+        // 更新Flow信息
+        updateTaskFlowInfo(flow);
+        // 更新DAG信息
+        updateTaskGraphInfo(flow);
+
+        return flow;
+    }
+
+    private TaskFlow createTaskFlowStruct(JsonObject define) {
         TaskFlow flow = new TaskFlow();
-        for (String id : flowObj.getMap().keySet()) {
-            JsonObject taskBody = flowObj.getJsonObject(id);
+        for (String id : define.getMap().keySet()) {
+            JsonObject taskBody = define.getJsonObject(id);
             // System.out.println(id + ":" + taskBody.toString());
             TaskImpl task = new TaskImpl(id);
             task.groupId(taskBody.getString(TASK_GROUP, id)); // 如果没有设定group，默认行为group=id
             task.desc(taskBody.getString(TASK_DESC));
             task.cmdLine(taskBody.getString(TASK_CMD_LINE));
             JsonArray dependsArray = taskBody.getJsonArray(TASK_DEPENDS_LIST, new JsonArray());
-            dependsArray.stream().forEach(dependTaskId -> task.depends(dependTaskId.toString()));
+            dependsArray.stream().forEach(dependTaskId -> task.deps(dependTaskId.toString()));
             flow.addTask(task);
         }
-        return Optional.of(flow);
-    }
-
-    public void buildTaskFlow(TaskFlow flow) {
-        // 更新Flow信息
-        updateTaskFlowInfo(flow);
-        // 更新DAG信息
-        updateTaskGraphInfo(flow);
+        return flow;
     }
 
     private void updateTaskFlowInfo(TaskFlow flow) {
@@ -68,7 +69,7 @@ public class TaskItemCreateService {
             TaskImpl item = flow.getTask(id).orElseThrow();
             // 更新Flow信息
             // 判断是否是flow元素
-            if (item.isFlowItem()) {
+            if (item.isRootTask()) {
                 if (flow.flowId().isPresent()) {
                     logger.error("only one flow can be define in a signal file. id:{}", item.id());
                     throw new RuntimeException(String.format("only one flow can be define in a signal file. id:[%s]", item.id()));
@@ -76,29 +77,32 @@ public class TaskItemCreateService {
                 flow.flowId(item.id());
                 flow.addTaskGraph(item.id(), makeEmptyGraph());
             }
-            // 更新依赖Task的类型
-            item.depends().forEach(depId -> flow.getTask(depId).orElseThrow().type(GROUP));
+            // 更新依赖Task的类型,及依赖Task的子Task集合
+            item.deps().forEach(depId -> {
+                TaskImpl depTask = flow.getTask(depId).orElseThrow();
+                depTask.type(GROUP);
+                depTask.subs(item);
+            });
         });
     }
 
     private void updateTaskGraphInfo(TaskFlow flow) {
         flow.taskIdStream().forEach(id -> {
             TaskImpl item = flow.getTask(id).orElseThrow();
-            if (item.isFlowItem()) return;
-            DirectedGraph<TaskImpl> groupGraph = flow.getMutableTaskGraph(item.groupId()).orElseGet(() -> {
+            if (item.isRootTask()) return;
+            DirectedGraph<Task> groupGraph = flow.getMutableTaskGraph(item.groupId()).orElseGet(() -> {
                 flow.addTaskGraph(item.groupId(), makeEmptyGraph());
                 return flow.getMutableTaskGraph(item.groupId()).orElseThrow();
             });
             groupGraph.addVertex(item);
-            item.depends().forEach(depTaskId -> {
+            item.deps().forEach(depTaskId -> {
                 TaskImpl predecessor = flow.getTask(depTaskId).orElseThrow();
                 groupGraph.putEdge(predecessor, item);
             });
         });
     }
 
-    private DirectedGraph<TaskImpl> makeEmptyGraph() {
+    private DirectedGraph<Task> makeEmptyGraph() {
         return GraphBuilder.directed().setAllowsSelfLoops(false).build();
     }
-
 }

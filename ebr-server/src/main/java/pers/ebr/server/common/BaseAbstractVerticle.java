@@ -15,13 +15,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.server.base.pool;
+package pers.ebr.server.common;
+
+import io.vertx.core.AbstractVerticle;
 
 /**
- * The Modifiable TaskPool Interface
+ * The BaseAbstractVerticle
  *
  * @author l.gong
  */
-public interface ModifiableTaskPool {
-
+public abstract class BaseAbstractVerticle extends AbstractVerticle {
+// TODO
 }
