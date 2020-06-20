@@ -1,19 +1,19 @@
 "use strict";
 
-/* 获取服务器信息 */
-const REQ_INFO_GET_SERVER_INFO = "req.info.GetServerInfo";
-/* 服务器端验证taskflow的定义合法性 */
-const REQ_TASK_VALIDATE_TASK_FLOW = "req.task.ValidateTaskFlow";
-/* 保存taskflow定义 */
-const REQ_TASK_SAVE_TASK_FLOW = "req.task.SaveTaskFlow";
-/* 获取所有taskflow的定义 */
-const REQ_TASK_GET_ALL_TASK_FLOW = "req.task.GetAllTaskFlow";
-/* 获取指定id的taskflow定义及运行状态 */
-const REQ_TASK_GET_TASK_FLOW_STATUS = "req.task.GetTaskFlowStatus";
-/* 获取指定ID的task的日志信息 */
-const REQ_SHOW_LOG = "req.task.ShowLog";
-/* 启动指定ID的task */
-const REQ_START_TASK = "req.task.StartTask";
+/** 获取服务器信息 */
+const REQ_GET_SERVER_INFO = "req.info.GetServerInfo";
+/** 服务器端验证task flow的定义合法性 */
+const REQ_VALIDATE_FLOW = "req.flow.ValidateFlow";
+/** 保存task flow定义 */
+const REQ_SAVE_FLOW = "req.flow.SaveFlow";
+/** 获取所有task flow的定义 */
+const REQ_GET_ALL_FLOW = "req.flow.GetAllFlow";
+/** 获取指定id的task flow定义及运行状态 */
+const REQ_GET_FLOW_STATUS = "req.flow.GetFlowStatus";
+/** 启动指定ID的task */
+const REQ_RUN_FLOW = "req.flow.RunFlow";
+/** 获取指定ID的task的日志信息 */
+const REQ_SHOW_FLOW_LOG = "req.flow.ShowLog";
 
 var ebr = {};
 
@@ -82,13 +82,13 @@ ebr.view = {
 
     initSideBar : function() {
         $("#serverInfoPanelBtn").click(() => {
-            ebr.com.EmitQuery(REQ_INFO_GET_SERVER_INFO);
+            ebr.com.EmitQuery(REQ_GET_SERVER_INFO);
         });
-        $("#taskFlowStatusInfoPanelBtn").click(() => {
-            ebr.view.ShiftPanel("taskFlowStatusInfoPanel");
+        $("#flowStatusInfoPanelBtn").click(() => {
+            ebr.view.ShiftPanel("flowStatusInfoPanel");
         });
-        $("#taskFlowDefineViewerPanelBtn").click(() => {
-            ebr.view.ShiftPanel("taskFlowDefineViewerPanel");
+        $("#flowDefineViewerPanelBtn").click(() => {
+            ebr.view.ShiftPanel("flowDefineViewerPanel");
         });
     },
 
@@ -111,15 +111,15 @@ ebr.view = {
             let updFiles = e.dataTransfer.files;
             ebr.view.saveJsonFileContent(updFiles[0]);
         }, false);
-        let defineViewerPanel = document.getElementById("taskFlowDefineViewerPanel");
+        let defineViewerPanel = document.getElementById("flowDefineViewerPanel");
         defineViewerPanel.addEventListener("fileStorageEvent", (e) => {
-            ebr.view.updateTaskFlowDefineView(e.detail.fileName);
+            ebr.view.updateFlowDefineView(e.detail.fileName);
         });
     },
 
     initStatusInfoPanel : function() {
-        $("#getAllTaskFlowBtn").on("click", (e) => {
-            ebr.com.EmitQuery(REQ_TASK_GET_ALL_TASK_FLOW);
+        $("#getAllFlowBtn").on("click", (e) => {
+            ebr.com.EmitQuery(REQ_GET_ALL_FLOW);
         });
     },
 
@@ -131,10 +131,10 @@ ebr.view = {
             ebr.view.ClearJsonContent();
         });
         $("#fileValidateBtn").on("click", (e) => {
-            ebr.com.EmitQuery(REQ_TASK_VALIDATE_TASK_FLOW);
+            ebr.com.EmitQuery(REQ_VALIDATE_FLOW);
         });
         $("#fileSaveBtn").on("click", (e) => {
-            ebr.com.EmitQuery(REQ_TASK_SAVE_TASK_FLOW);
+            ebr.com.EmitQuery(REQ_SAVE_FLOW);
         });
     },
 
@@ -188,11 +188,11 @@ ebr.view = {
     },
 
     /******************** TaskFlow Status Info Panel ********************/
-    AddTaskFlowInfoListView : function(jsonResultData) {
-        $("#taskFlowList").empty();
+    AddFlowInfoListView : function(jsonResultData) {
+        $("#flowList").empty();
         $("#taskStatusCardContent").empty();
-        let taskFlowList = $("#taskFlowList");
-        taskFlowList.empty();
+        let flowList = $("#flowList");
+        flowList.empty();
         for (let item in jsonResultData) {
             let flowId = jsonResultData[item];
             let liHtml = $("<li class=\"list-group-item list-group-item-action\" " +
@@ -202,7 +202,7 @@ ebr.view = {
     },
     FlowIdSelect : function(flowId) {
         sessionStorage.setItem("current_flow_id", flowId);
-        ebr.com.EmitQuery(REQ_TASK_GET_TASK_FLOW_STATUS);
+        ebr.com.EmitQuery(REQ_GET_FLOW_STATUS);
     },
     ShowLogOf : function(taskHeaderItem) {
         if (taskHeaderItem && taskHeaderItem.name) {
@@ -210,22 +210,22 @@ ebr.view = {
             ebr.com.EmitQuery(REQ_SHOW_LOG);
         }
     },
-    RunTask : function(taskHeaderItem) {
+    RunFlow : function(taskHeaderItem) {
         if (taskHeaderItem && taskHeaderItem.name) {
             sessionStorage.setItem("current_cmd_target", taskHeaderItem.name);
-            ebr.com.EmitQuery(REQ_START_TASK);
+            ebr.com.EmitQuery(REQ_RUN_FLOW);
         }
     },
     AddTaskStatusInfoToView : function(jsonResultData) {
         $("#taskStatusCardContent").empty();
         let currentFlowId = sessionStorage.getItem("current_flow_id");
-        let defineJsonContent = ebr.view.getTaskFlowDefine(currentFlowId, jsonResultData);
+        let defineJsonContent = ebr.view.getFlowDefine(currentFlowId, jsonResultData);
         if (defineJsonContent) {
             ebr.view.updateTaskStatusInfoView(currentFlowId, defineJsonContent);
         }
         sessionStorage.removeItem("current_flow_id");
     },
-    getTaskFlowDefine : function(currentFlowId, jsonResultData) {
+    getFlowDefine : function(currentFlowId, jsonResultData) {
         for (let flowId in jsonResultData) {
             if (currentFlowId === flowId) {
                 return jsonResultData[flowId];
@@ -309,12 +309,12 @@ ebr.view = {
     },
 
     /********************  Define Viewer Panel *********************/
-    GetTaskFlowDefineFileName : function() {
+    GetFlowDefineFileName : function() {
         return $("#fileNameLabel").html();
     },
 
     ClearJsonContent : function() {
-        let fileName = ebr.view.GetTaskFlowDefineFileName();
+        let fileName = ebr.view.GetFlowDefineFileName();
         sessionStorage.removeItem(fileName);
         $("#fileNameLabel").empty();
         $("#lastModifiedDate").empty();
@@ -340,13 +340,13 @@ ebr.view = {
                 let contentStr = e.target.result;
                 sessionStorage.removeItem(jsonFile.name);
                 sessionStorage.setItem(jsonFile.name, contentStr);
-                let defineViewerPanel = document.getElementById("taskFlowDefineViewerPanel");
+                let defineViewerPanel = document.getElementById("flowDefineViewerPanel");
                 defineViewerPanel.dispatchEvent(new CustomEvent('fileStorageEvent', { bubbles: true, detail: { fileName: jsonFile.name } }));
             };
         }
     },
 
-    updateTaskFlowDefineView : function(jsonFileName) {
+    updateFlowDefineView : function(jsonFileName) {
         $("#fileContent").empty();
         $("#taskCardContent").empty()
         let strContent = sessionStorage.getItem(jsonFileName);
@@ -373,7 +373,7 @@ ebr.view = {
                 itemMap.clear();
             }
         } else {
-            alert("Error: [updateTaskFlowDefineView] The Content of Json File is empty...");
+            alert("Error: [updateFlowDefineView] The Content of Json File is empty...");
         }
     },
 
@@ -437,16 +437,16 @@ ebr.ctl = {
         }
     },
 
-    /********************  TaskFlow Status Info Panel *********************/
-    GetAllTaskFlowRequest : function() {
+    /********************  Flow Status Info Panel *********************/
+    GetAllFlowRequest : function() {
         return {};
     },
-    GetAllTaskFlowResponse : function(jsonData) {
+    GetAllFlowResponse : function(jsonData) {
         if (typeof jsonData.result === "object" && jsonData.result !== null) {
-            ebr.view.AddTaskFlowInfoListView(jsonData.result);
+            ebr.view.AddFlowInfoListView(jsonData.result);
         }
     },
-    GetTaskFlowStatusRequest : function() {
+    GetFlowStatusRequest : function() {
         let flowId = sessionStorage.getItem("current_flow_id");
         if (typeof flowId === "string" && flowId.trim() !== "") {
             return { id : flowId };
@@ -454,7 +454,7 @@ ebr.ctl = {
             alert("Error: [GetTaskFlowStatusRequest] The Content of [current_flow_id] is empty...");
         }
     },
-    GetTaskFlowStatusResponse : function(jsonData) {
+    GetFlowStatusResponse : function(jsonData) {
         if (typeof jsonData.result === "object") {
             if (jsonData.result) {
                 ebr.view.AddTaskStatusInfoToView(jsonData.result);
@@ -488,15 +488,15 @@ ebr.ctl = {
     },
 
     /********************  Define Viewer Panel *********************/
-    ValidateTaskFlowRequest : function() {
-        let fileName = ebr.view.GetTaskFlowDefineFileName();
+    ValidateFlowRequest : function() {
+        let fileName = ebr.view.GetFlowDefineFileName();
         let strContent = sessionStorage.getItem(fileName);
         if (typeof strContent !== "string" || strContent.trim() === "") {
             return null;
         }
         return JSON.parse(strContent);
     },
-    ValidateTaskFlowResponse : function(jsonData) {
+    ValidateFlowResponse : function(jsonData) {
         let resultStr = "unknown result...";
         if (typeof jsonData.result === "object") {
             resultStr = "success...";
@@ -505,15 +505,15 @@ ebr.ctl = {
         }
         alert("validate result : " + resultStr);
     },
-    SaveTaskFlowRequest : function() {
-        let fileName = ebr.view.GetTaskFlowDefineFileName();
+    SaveFlowRequest : function() {
+        let fileName = ebr.view.GetFlowDefineFileName();
         let strContent = sessionStorage.getItem(fileName);
         if (typeof strContent !== "string" || strContent.trim() === "") {
-            alert("Error: [SaveTaskFlowRequest] The Content of JSON file is empty...");
+            alert("Error: [SaveFlowRequest] The Content of JSON file is empty...");
         }
         return JSON.parse(strContent);
     },
-    SaveTaskFlowResponse : function(jsonData) {
+    SaveFlowResponse : function(jsonData) {
         let resultStr = "unknown result...";
         if (typeof jsonData.result === "object") {
             resultStr = "success...";
@@ -527,16 +527,16 @@ ebr.ctl = {
 // run js source was loaded
 (function() {
     /********************  ServerInfoPanel *********************/
-    ebr.com.BindQuery(REQ_INFO_GET_SERVER_INFO, ebr.ctl.GetServerInfoRequest, ebr.ctl.GetServerInfoResponse);
+    ebr.com.BindQuery(REQ_GET_SERVER_INFO, ebr.ctl.GetServerInfoRequest, ebr.ctl.GetServerInfoResponse);
 
     /********************  TaskFlow Status Info Panel *********************/
-    ebr.com.BindQuery(REQ_TASK_GET_ALL_TASK_FLOW, ebr.ctl.GetAllTaskFlowRequest, ebr.ctl.GetAllTaskFlowResponse);
-    ebr.com.BindQuery(REQ_TASK_GET_TASK_FLOW_STATUS, ebr.ctl.GetTaskFlowStatusRequest, ebr.ctl.GetTaskFlowStatusResponse);
-    ebr.com.BindQuery(REQ_SHOW_LOG, ebr.ctl.SendCmdRequest, ebr.ctl.SendCmdResponse);
-    ebr.com.BindQuery(REQ_START_TASK, ebr.ctl.SendCmdRequest, ebr.ctl.SendCmdResponse);
+    ebr.com.BindQuery(REQ_GET_ALL_FLOW, ebr.ctl.GetAllFlowRequest, ebr.ctl.GetAllFlowResponse);
+    ebr.com.BindQuery(REQ_GET_FLOW_STATUS, ebr.ctl.GetFlowStatusRequest, ebr.ctl.GetFlowStatusResponse);
+    ebr.com.BindQuery(REQ_SHOW_FLOW_LOG, ebr.ctl.SendCmdRequest, ebr.ctl.SendCmdResponse);
+    ebr.com.BindQuery(REQ_RUN_FLOW, ebr.ctl.SendCmdRequest, ebr.ctl.SendCmdResponse);
 
     /********************  Define Viewer Panel *********************/
-    ebr.com.BindQuery(REQ_TASK_VALIDATE_TASK_FLOW, ebr.ctl.ValidateTaskFlowRequest, ebr.ctl.ValidateTaskFlowResponse);
-    ebr.com.BindQuery(REQ_TASK_SAVE_TASK_FLOW, ebr.ctl.SaveTaskFlowRequest, ebr.ctl.SaveTaskFlowResponse);
+    ebr.com.BindQuery(REQ_VALIDATE_FLOW, ebr.ctl.ValidateFlowRequest, ebr.ctl.ValidateFlowResponse);
+    ebr.com.BindQuery(REQ_SAVE_FLOW, ebr.ctl.SaveFlowRequest, ebr.ctl.SaveFlowResponse);
 
 })();

@@ -27,15 +27,15 @@ import pers.ebr.server.common.Configs;
  *
  * @author l.gong
  */
-public class TaskPool {
-    private final static Logger logger = LoggerFactory.getLogger(TaskPool.class);
-    private ITaskPool pool;
+public final class Pool {
+    private final static Logger logger = LoggerFactory.getLogger(Pool.class);
+    private IPool pool;
 
     private static class Holder {
-        static final TaskPool INSTANCE = new TaskPool();
+        static final Pool INSTANCE = new Pool();
     }
 
-    private TaskPool() {}
+    private Pool() {}
 
     public static void init(JsonObject config) {
         synchronized (Holder.INSTANCE) {
@@ -55,15 +55,15 @@ public class TaskPool {
         }
     }
 
-    public static ITaskPool get() {
+    public static IPool get() {
         return Holder.INSTANCE.pool;
     }
 
-    ITaskPool build(JsonObject config) {
-        String type = config.getString(Configs.KEY_EXECUTOR_POOL, MemoryITaskPoolImpl.TYPE);
+    IPool build(JsonObject config) {
+        String type = config.getString(Configs.KEY_EXECUTOR_POOL, InMemoryPoolImpl.TYPE);
         switch (type) {
-            case MemoryITaskPoolImpl.TYPE : {
-                return new MemoryITaskPoolImpl();
+            case InMemoryPoolImpl.TYPE : {
+                return new InMemoryPoolImpl();
             }
             default: {
                 logger.error("unknown task pool type:{}", type);

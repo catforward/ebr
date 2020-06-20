@@ -23,14 +23,14 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pers.ebr.server.common.model.Task;
-import pers.ebr.server.common.model.TaskFlow;
+import pers.ebr.server.common.model.ITask;
+import pers.ebr.server.common.model.DagFlow;
 import pers.ebr.server.common.model.TaskState;
-import pers.ebr.server.common.pool.ITaskPool;
-import pers.ebr.server.common.pool.TaskPool;
+import pers.ebr.server.common.pool.IPool;
+import pers.ebr.server.common.pool.Pool;
 
 import static pers.ebr.server.common.Const.*;
-import static pers.ebr.server.common.MiscUtils.checkNotNull;
+import static pers.ebr.server.common.Utils.checkNotNull;
 import static pers.ebr.server.common.Topic.*;
 import static pers.ebr.server.common.model.TaskState.*;
 import static pers.ebr.server.common.model.TaskType.GROUP;
@@ -40,8 +40,8 @@ import static pers.ebr.server.common.model.TaskType.GROUP;
  *
  * @author l.gong
  */
-public class DAGTaskScheduler extends AbstractVerticle {
-    private final static Logger logger = LoggerFactory.getLogger(DAGTaskScheduler.class);
+public class DAGScheduler extends AbstractVerticle {
+    private final static Logger logger = LoggerFactory.getLogger(DAGScheduler.class);
 
     @Override
     public void start() throws Exception {
@@ -56,66 +56,71 @@ public class DAGTaskScheduler extends AbstractVerticle {
     }
 
     private void handleTaskStateChanged(Message<JsonObject> msg) {
-        String taskId = msg.body().getString(MSG_PARAM_TASK_ID, "");
+        String taskUrl = msg.body().getString(MSG_PARAM_TASK_URL, "");
         TaskState newState = TaskState.valueOf(msg.body().getString(MSG_PARAM_TASK_STATE, "UNKNOWN"));
-        if (!taskId.isEmpty() && newState != UNKNOWN) {
-            updateTaskState(taskId, newState);
-        } else {
-            logger.warn("ignore this event ({}:{})", taskId, newState.name());
+        switch (newState) {
+            case ACTIVE:
+            case COMPLETE:
+            case FAILED: {
+                updateTaskState(taskUrl, newState);
+                break;
+            }
+            default: {
+                logger.warn("ignore this event ({}:{})", taskUrl, newState.name());
+            }
         }
     }
 
-    private void updateTaskState(String taskId, TaskState newState) {
-        ITaskPool pool = TaskPool.get();
-        TaskFlow flow = pool.getFlowItemOf(taskId);
-        Task target = pool.getTaskItem(taskId);
+    private void updateTaskState(String taskUrl, TaskState newState) {
+        IPool pool = Pool.get();
+        ITask target = pool.getTaskItem(taskUrl);
         checkNotNull(target);
-        target.status(newState);
-        Task parent = target.groupId().equals(target.id()) ? target : pool.getTaskItem(target.groupId());
+        ITask parent = target.groupId().equals(target.id()) ? target : pool.getTaskItem(target.groupId());
         checkNotNull(parent);
+        DagFlow flow = pool.getFlowItemOf(taskUrl);
+        checkNotNull(flow);
+
+        target.status(newState);
+
         // notice the parent is dead
-        if (FAILED == newState && !parent.id().equals(target.id())) {
+        if (FAILED == target.status() && !parent.id().equals(target.id())) {
             JsonObject param = new JsonObject();
-            param.put(MSG_PARAM_TASK_ID, target.groupId());
+            param.put(MSG_PARAM_TASK_URL, target.url());
             param.put(MSG_PARAM_TASK_STATE, FAILED);
             vertx.eventBus().publish(MSG_TASK_STATE_CHANGED, param);
             return;
         }
+
         // otherwise check state of the group
         long cnt = parent.subs().stream().filter(t -> t.status() != COMPLETE).count();
         if (cnt == 0 && !parent.id().equals(target.id())) {
             JsonObject param = new JsonObject();
-            param.put(MSG_PARAM_TASK_ID, target.groupId());
+            param.put(MSG_PARAM_TASK_URL, target.url());
             param.put(MSG_PARAM_TASK_STATE, COMPLETE);
             vertx.eventBus().publish(MSG_TASK_STATE_CHANGED, param);
         }
+
         // find the executable task for next step
         gatherExecutableTasks(flow, parent, target);
     }
 
-    private void gatherExecutableTasks(TaskFlow flow, Task parent, Task target) {
-        checkNotNull(flow);
-        checkNotNull(parent);
-        checkNotNull(target);
-        ITaskPool pool = TaskPool.get();
-        if (target.type() == GROUP && target.status() != COMPLETE) {
-            target.status(ACTIVE);
-            target.subs().forEach(subTask -> {
-                if (subTask.deps().isEmpty() && subTask.status() == INACTIVE) {
-                    subTask.status(ACTIVE);
-                    pool.putTaskQueue(subTask);
+    private void gatherExecutableTasks(DagFlow flow, ITask parent, ITask task) {
+        IPool pool = Pool.get();
+        if (GROUP == task.type() && COMPLETE != task.status()) {
+            task.subs().forEach(subTask -> {
+                if (subTask.deps().isEmpty() && INACTIVE == subTask.status()) {
+                    pool.addTaskQueue(subTask);
                 }
             });
             return;
         }
 
-        for (var postTask : flow.getSuccessors(parent, target)) {
-            if (postTask.type() == GROUP) {
+        for (var postTask : flow.getSuccessors(parent, task)) {
+            if (GROUP == postTask.type()) {
                 gatherExecutableTasks(flow, pool.getTaskItem(postTask.groupId()), postTask);
             } else {
-                if (flow.getPredecessors(parent, postTask).stream().filter(t -> t.status() != COMPLETE).count() == 0) {
-                    postTask.status(ACTIVE);
-                    pool.putTaskQueue(postTask);
+                if (flow.getPredecessors(parent, postTask).stream().noneMatch(t -> COMPLETE != t.status())) {
+                    pool.addTaskQueue(postTask);
                 }
             }
         }

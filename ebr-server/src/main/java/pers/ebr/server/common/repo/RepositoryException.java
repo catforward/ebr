@@ -24,7 +24,7 @@ package pers.ebr.server.common.repo;
  *
  * @author l.gong
  */
-public class RepositoryException extends Exception {
+public final class RepositoryException extends Exception {
     public RepositoryException(Throwable cause) {
         super(cause);
     }

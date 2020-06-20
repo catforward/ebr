@@ -28,7 +28,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import static pers.ebr.server.common.model.Task.*;
+import static pers.ebr.server.common.model.ITask.*;
 import static pers.ebr.server.common.model.TaskType.GROUP;
 
 /**
@@ -38,40 +38,46 @@ import static pers.ebr.server.common.model.TaskType.GROUP;
  *
  * @author l.gong
  */
-public class TaskFlow {
-    private final static Logger logger = LoggerFactory.getLogger(TaskFlow.class);
+public final class DagFlow {
+    private final static Logger logger = LoggerFactory.getLogger(DagFlow.class);
     private String flowId = null;
-    private String instanceId = null;
-
+    /**
+     * key : url
+     * value : task instance
+     */
     private final HashMap<String, TaskImpl> taskItems = new HashMap<>();
-    private final HashMap<String, DirectedGraph<Task>> graphItems = new HashMap<>();
+    /**
+     * key : url
+     * value : dag graph
+     */
+    private final HashMap<String, DirectedGraph<ITask>> graphItems = new HashMap<>();
 
-    public void addTask(TaskImpl task) {
-        taskItems.put(task.id(), task);
-    }
-
-    public void addTaskGraph(String graphId, DirectedGraph<Task> graph) {
-        graphItems.put(graphId, graph);
+    public DagFlow() {
     }
 
     public void flowId(String newId) {
         flowId = newId;
     }
 
-    public void instanceId(String newId) {
-        instanceId = newId;
+    public void addTask(TaskImpl task) {
+        taskItems.put(task.id(), task);
     }
 
-    public Optional<TaskImpl> getTask(String id) {
-        return Optional.ofNullable(taskItems.get(id));
+    public void addTaskGraph(String graphId, DirectedGraph<ITask> graph) {
+        graphItems.put(graphId, graph);
     }
 
-    public Optional<DirectedGraph<Task>> getMutableTaskGraph(String id) {
-        return Optional.ofNullable(graphItems.get(id));
+
+    public TaskImpl getTask(String id) {
+        return taskItems.get(id);
     }
 
-    public Set<Task> getSuccessors(Task parent, Task target) {
-        DirectedGraph<Task> subTasks = graphItems.get(parent.id());
+    public DirectedGraph<ITask> getMutableTaskGraph(String id) {
+        return graphItems.get(id);
+    }
+
+    public Set<ITask> getSuccessors(ITask parent, ITask target) {
+        DirectedGraph<ITask> subTasks = graphItems.get(parent.id());
         if (parent.type() == GROUP && subTasks != null) {
             return subTasks.successors(target);
         } else {
@@ -79,8 +85,8 @@ public class TaskFlow {
         }
     }
 
-    public Set<Task> getPredecessors(Task parent, Task target) {
-        DirectedGraph<Task> subTasks = graphItems.get(parent.id());
+    public Set<ITask> getPredecessors(ITask parent, ITask target) {
+        DirectedGraph<ITask> subTasks = graphItems.get(parent.id());
         if (parent.type() == GROUP && subTasks != null) {
             return subTasks.predecessors(target);
         } else {
@@ -88,12 +94,15 @@ public class TaskFlow {
         }
     }
 
-    public Optional<String> flowId() {
-        return Optional.ofNullable(flowId);
+    public String flowId() {
+        return flowId;
     }
 
-    public Optional<String> instanceId() {
-        return Optional.ofNullable(instanceId);
+    public String url() {
+        if (flowId == null || flowId.isBlank()) {
+            throw new RuntimeException("Flow ID is empty...");
+        }
+        return String.format("/%s", flowId);
     }
 
     public Stream<String> taskIdStream() {
@@ -105,33 +114,7 @@ public class TaskFlow {
     }
 
     public TaskState status() {
-        if (!taskItems.containsKey(flowId)) {
-            throw new RuntimeException(String.format("no task item exists (flowId: [%s])", flowId));
-        }
-        return taskItems.get(flowId).status();
-    }
-
-    public String toJsonString() {
-        JsonObject flowObj = new JsonObject();
-        taskItems.forEach((id, task) -> {
-            JsonObject taskObj = new JsonObject();
-            if (task.desc() != null && !task.desc().isBlank()) {
-                taskObj.put(TASK_DESC, task.desc());
-            }
-            if (task.groupId() != null && !task.groupId().isBlank()) {
-                taskObj.put(TASK_GROUP, task.groupId());
-            }
-            if (task.cmdLine() != null && !task.cmdLine().isBlank()) {
-                taskObj.put(TASK_CMD_LINE, task.cmdLine());
-            }
-            if (!task.deps().isEmpty()) {
-                JsonArray arr = new JsonArray();
-                task.deps().forEach(arr::add);
-                taskObj.put(TASK_DEPENDS_LIST, arr);
-            }
-            flowObj.put(id, taskObj);
-        });
-        return flowObj.toString();
+        return Optional.ofNullable(taskItems.get(flowId)).orElseThrow().status();
     }
 
     @Override

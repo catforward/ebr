@@ -27,7 +27,7 @@ import java.util.Set;
  *
  * @author l.gong
  */
-public interface Task {
+public interface ITask {
 
     String TASK_ID = "id";
     String TASK_GROUP = "group";
@@ -40,7 +40,7 @@ public interface Task {
     String desc();
     String groupId();
     Set<String> deps();
-    List<Task> subs();
+    List<ITask> subs();
 
     String url();
     TaskState status();
@@ -51,7 +51,7 @@ public interface Task {
     void desc(String value);
     void groupId(String id);
     void deps(String id);
-    void subs(Task other);
+    void subs(ITask other);
 
     void url(String newUrl);
     void status(TaskState newStatus);

@@ -26,22 +26,24 @@ package pers.ebr.server.common;
  */
 public interface Topic {
 
-    /* 获取服务器信息 */
-    String REQ_INFO_GET_SERVER_INFO = "req.info.GetServerInfo";
-    /* 服务器端验证taskflow的定义合法性 */
-    String REQ_TASK_VALIDATE_TASK_FLOW = "req.task.ValidateTaskFlow";
-    /* 保存taskflow定义 */
-    String REQ_TASK_SAVE_TASK_FLOW = "req.task.SaveTaskFlow";
-    /* 获取所有taskflow的定义 */
-    String REQ_TASK_GET_ALL_TASK_FLOW = "req.task.GetAllTaskFlow";
-    /* 获取指定id的taskflow定义及运行状态 */
-    String REQ_TASK_GET_TASK_FLOW_STATUS = "req.task.GetTaskFlowStatus";
-    /* 启动指定ID的task */
-    String REQ_START_TASK = "req.task.StartTask";
-    /* 获取指定ID的task的日志信息 */
-    String REQ_SHOW_LOG = "req.task.ShowLog";
+    /** 获取服务器信息 */
+    String REQ_GET_SERVER_INFO = "req.info.GetServerInfo";
+    /** 服务器端验证task flow的定义合法性 */
+    String REQ_VALIDATE_FLOW = "req.flow.ValidateFlow";
+    /** 保存task flow定义 */
+    String REQ_SAVE_FLOW = "req.flow.SaveFlow";
+    /** 获取所有task flow的定义 */
+    String REQ_GET_ALL_FLOW = "req.flow.GetAllFlow";
+    /** 获取指定id的task flow定义及运行状态 */
+    String REQ_GET_FLOW_STATUS = "req.flow.GetFlowStatus";
+    /** 启动指定ID的task */
+    String REQ_RUN_FLOW = "req.flow.RunFlow";
+    /** 获取指定ID的task的日志信息 */
+    String REQ_SHOW_FLOW_LOG = "req.flow.ShowLog";
 
-    /* 消息：通知指定ID的task的新状态 */
-    String MSG_TASK_STATE_CHANGED = "msg.task.TaskStateChanged";
+    /** 消息：通知运行指定ID的task */
+    String MSG_RUN_FLOW = "msg.schd.RunFlow";
+    /** 消息：通知指定ID的task的新状态 */
+    String MSG_TASK_STATE_CHANGED = "msg.schd.TaskStateChanged";
     
 }

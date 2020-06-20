@@ -19,7 +19,7 @@ package pers.ebr.server.common.graph;
 
 import java.util.Objects;
 
-import static pers.ebr.server.common.MiscUtils.checkNotNull;
+import static pers.ebr.server.common.Utils.checkNotNull;
 
 /**
  * <pre>

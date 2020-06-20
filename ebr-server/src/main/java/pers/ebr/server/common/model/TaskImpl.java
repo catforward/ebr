@@ -35,17 +35,17 @@ import static pers.ebr.server.common.model.TaskType.UNIT;
  *
  * @author l.gong
  */
-public class TaskImpl implements Task {
+public class TaskImpl implements ITask {
 
     private final static Logger logger = LoggerFactory.getLogger(TaskImpl.class);
-    /* defined attributes */
+    /** defined attributes */
     private String taskId;
     private String groupId;
     private String cmdLine;
     private String taskDesc;
-    private Set<String> depSet;
-    private List<Task> subList;
-    /* runtime attributes */
+    private final Set<String> depSet;
+    private final List<ITask> subList;
+    /** runtime attributes */
     private String taskUrl;
     private volatile TaskState taskState;
     private TaskType taskType;
@@ -98,7 +98,7 @@ public class TaskImpl implements Task {
     }
 
     @Override
-    public List<Task> subs() {
+    public List<ITask> subs() {
         return this.subList;
     }
 
@@ -143,30 +143,34 @@ public class TaskImpl implements Task {
     }
 
     @Override
-    public void subs(Task other) {
+    public void subs(ITask other) {
         subList.add(other);
     }
 
     @Override
-    public void status(TaskState status) {
-        logger.info("state changed->task:[{}] state:[{} -> {}]", taskId, taskState, status);
+    public void status(TaskState netState) {
+        if (taskState == null) {
+            taskState = netState;
+            return;
+        }
+        logger.info("state changed->task:[{}] state:[{} -> {}]", taskId, taskState, netState);
         switch (taskState) {
             case INACTIVE: {
-                if (ACTIVE == status) {
-                    taskState = status;
+                if (ACTIVE == netState) {
+                    taskState = netState;
                 }
                 break;
             }
             case ACTIVE: {
-                if (COMPLETE == status || FAILED == status) {
-                    taskState = status;
+                if (COMPLETE == netState || FAILED == netState) {
+                    taskState = netState;
                 }
                 break;
             }
             case COMPLETE:
             case FAILED:
             default: {
-                throw new RuntimeException(String.format("invalidate state task:[%s] state:[%s]->[%s]", taskId, taskState, status));
+                throw new RuntimeException(String.format("invalidate state task:[%s] state:[%s]->[%s]", taskId, taskState, netState));
             }
         }
     }
@@ -176,10 +180,6 @@ public class TaskImpl implements Task {
         if (this.taskType != newType) {
             this.taskType = newType;
         }
-    }
-
-    public boolean isRootTask() {
-        return id() == null || id().strip().isEmpty() || id().equalsIgnoreCase(groupId());
     }
 
 }

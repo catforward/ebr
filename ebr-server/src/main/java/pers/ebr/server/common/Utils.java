@@ -29,12 +29,12 @@ import java.nio.charset.StandardCharsets;
  *
  * @author l.gong
  */
-public final class MiscUtils {
+public final class Utils {
 
     /**
      * 命令行或者命令行参数中不应出现的字符
      */
-    private static final char[] commandBanList = {'|',
+    private static final char[] COMMAND_BAN_LIST = {'|',
             //';',
             '&',
             '$',
@@ -49,7 +49,7 @@ public final class MiscUtils {
             '\f',
             '\u0000'};
 
-    private MiscUtils() {
+    private Utils() {
     }
 
     /**
@@ -94,7 +94,7 @@ public final class MiscUtils {
      */
     public static void checkCommandBanList(String cmd) {
         checkNotNull(cmd);
-        for (char c : commandBanList) {
+        for (char c : COMMAND_BAN_LIST) {
             if (cmd.indexOf(c) != -1) {
                 throw new IllegalArgumentException(String.format("存在非法的字符[%s]", c));
             }

@@ -22,7 +22,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.http.HttpServer;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
@@ -36,7 +35,7 @@ import static pers.ebr.server.common.Configs.KEY_HTTP_PORT;
  *
  * @author l.gong
  */
-public class HttpServerVerticle extends AbstractVerticle {
+public class HttpServer extends AbstractVerticle {
 
     final static String WEB_ROOT = "static";
     final static String INDEX_HTML = "e-panel.html";
@@ -44,8 +43,8 @@ public class HttpServerVerticle extends AbstractVerticle {
     final static String FAVICON = "/favicon.ico";
     final static String GET_REQ_ALL = "/*";
 
-    private final static Logger logger = LoggerFactory.getLogger(HttpServerVerticle.class);
-    private HttpServer server;
+    private final static Logger logger = LoggerFactory.getLogger(HttpServer.class);
+    private io.vertx.core.http.HttpServer server;
 
     @Override
     public void start() throws Exception {
@@ -60,7 +59,7 @@ public class HttpServerVerticle extends AbstractVerticle {
         router.route().handler(BodyHandler.create());
         router.route().failureHandler(ErrorHandler.create());
         router.get(GET_REQ_ALL).handler(staticHandler);
-        router.post(PROC_URL).handler(new HttpProcHandler());
+        router.post(PROC_URL).handler(new HttpRequestProcessor());
 
         server.requestHandler(router::handle).listen(config.getInteger(KEY_HTTP_PORT), res -> {
             if (res.succeeded()) {

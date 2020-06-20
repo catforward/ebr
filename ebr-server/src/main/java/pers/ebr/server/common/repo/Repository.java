@@ -48,7 +48,7 @@ public final class Repository {
             }
             Holder.INSTANCE.mng.init();
         }
-        logger.info("DBStore Init Success...");
+        logger.info("Repository Init Success...");
     }
 
     public static void finish() throws RepositoryException {
@@ -67,10 +67,10 @@ public final class Repository {
     }
 
     IRepositoryManager build(JsonObject config) throws IOException {
-        String type = config.getString(Configs.KEY_MANAGER_REPO, SQLiteRepositoryManager.TYPE);
+        String type = config.getString(Configs.KEY_MANAGER_REPO, SqliteRepositoryManager.TYPE);
         switch (type) {
-            case SQLiteRepositoryManager.TYPE : {
-                return new SQLiteRepositoryManager();
+            case SqliteRepositoryManager.TYPE : {
+                return new SqliteRepositoryManager();
             }
             default: {
                 logger.error("unknown db connection type:{}", type);

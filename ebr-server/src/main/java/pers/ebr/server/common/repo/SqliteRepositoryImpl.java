@@ -25,7 +25,7 @@ import java.io.File;
 import java.sql.*;
 import java.util.*;
 
-import static pers.ebr.server.common.repo.SQLiteRepoConst.*;
+import static pers.ebr.server.common.repo.SqliteRepositoryConst.*;
 
 /**
  * <pre>
@@ -34,19 +34,19 @@ import static pers.ebr.server.common.repo.SQLiteRepoConst.*;
  *
  * @author l.gong
  */
-class SQLiteRepositoryImpl implements IRepository {
-    private final static Logger logger = LoggerFactory.getLogger(SQLiteRepositoryImpl.class);
+final class SqliteRepositoryImpl implements IRepository {
+    private final static Logger logger = LoggerFactory.getLogger(SqliteRepositoryImpl.class);
     private final Properties sqlTpl;
     private Connection connection = null;
 
-    SQLiteRepositoryImpl(Properties sqlTpl) {
+    SqliteRepositoryImpl(Properties sqlTpl) {
         this.sqlTpl = sqlTpl;
     }
 
     @Override
     public void connect() throws RepositoryException {
         String connStr = String.format("jdbc:sqlite:%s%s%s",
-                Paths.getDataPath(), File.separator, SQLiteRepositoryManager.SCHEMA);
+                Paths.getDataPath(), File.separator, SqliteRepositoryManager.SCHEMA);
         try {
             connection = DriverManager.getConnection(connStr);
             connection.setAutoCommit(false);
@@ -135,7 +135,8 @@ class SQLiteRepositoryImpl implements IRepository {
 
     public void execute(String sql) throws SQLException {
         try (Statement statement = connection.createStatement()) {
-            statement.setQueryTimeout(30);  // set timeout to 30 sec.
+            // set timeout to 30 sec.
+            statement.setQueryTimeout(30);
             statement.executeUpdate(sql);
         } finally {
             commit();
@@ -158,14 +159,15 @@ class SQLiteRepositoryImpl implements IRepository {
     }
 
     private List<Map<String, String>> innerQuery(Statement statement, String sql) throws SQLException {
-        statement.setQueryTimeout(30); // set timeout to 30 sec.
+        // set timeout to 30 sec.
+        statement.setQueryTimeout(30);
         List<Map<String, String>> rows = new ArrayList<>();
         try (ResultSet rs = (statement instanceof PreparedStatement) ?
                 ((PreparedStatement) statement).executeQuery() : statement.executeQuery(sql)) {
             ResultSetMetaData md = rs.getMetaData();
             int columns = md.getColumnCount();
             while (rs.next()) {
-                HashMap<String, String> row = new HashMap<>();
+                HashMap<String, String> row = new HashMap<>(columns);
                 for (int i = 1; i <= columns; i++) {
                     row.put(md.getColumnLabel(i), rs.getString(i));
                 }

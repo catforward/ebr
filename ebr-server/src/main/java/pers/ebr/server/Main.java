@@ -22,13 +22,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import pers.ebr.server.common.Configs;
-import pers.ebr.server.common.pool.TaskPool;
-import pers.ebr.server.executor.ExternalCommandRunner;
-import pers.ebr.server.manager.TaskInterfaceManager;
-import pers.ebr.server.executor.DAGTaskScheduler;
-import pers.ebr.server.common.repo.Repository;
-import pers.ebr.server.manager.HttpServerVerticle;
+import pers.ebr.server.common.pool.Pool;
+import pers.ebr.server.executor.ExternalCommandExecutor;
 import pers.ebr.server.manager.ServerInfoCollector;
+import pers.ebr.server.manager.TaskManager;
+import pers.ebr.server.executor.DAGScheduler;
+import pers.ebr.server.common.repo.Repository;
+import pers.ebr.server.manager.HttpServer;
 
 /**
  * The Launcher of EBR-Server
@@ -48,9 +48,11 @@ public class Main {
             initBasicComponents();
             vertx = Vertx.vertx();
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                if (vertx != null) vertx.close();
+                if (vertx != null) {
+                    vertx.close();
+                }
                 try {
-                    TaskPool.finish();
+                    Pool.finish();
                     Repository.finish();
                 } catch (Exception ex) {
                     logger.error("error occurred!", ex);
@@ -69,7 +71,7 @@ public class Main {
     private static void initBasicComponents() throws Exception {
         Configs.load();
         Repository.init(Configs.get());
-        TaskPool.init(Configs.get());
+        Pool.init(Configs.get());
     }
 
     private static void deployWorkerVerticle() {
@@ -78,21 +80,25 @@ public class Main {
                 .setInstances(1).setWorker(true);
         vertx.deployVerticle(ServerInfoCollector::new, serverInfoOpts);
 
-        DeploymentOptions mngOpts = new DeploymentOptions().setInstances(1).setWorker(true);
-        vertx.deployVerticle(TaskInterfaceManager::new, mngOpts);
+        DeploymentOptions mngOpts = new DeploymentOptions()
+                .setInstances(1).setWorker(true);
+        vertx.deployVerticle(TaskManager::new, mngOpts);
 
-        DeploymentOptions schdOpts = new DeploymentOptions().setInstances(1).setWorker(true);
-        vertx.deployVerticle(DAGTaskScheduler::new, schdOpts);
+        DeploymentOptions schdOpts = new DeploymentOptions()
+                .setInstances(1).setWorker(true);
+        vertx.deployVerticle(DAGScheduler::new, schdOpts);
 
-        DeploymentOptions execOpts = new DeploymentOptions().setInstances(1).setWorker(true);
-        vertx.deployVerticle(ExternalCommandRunner::new, execOpts);
+        DeploymentOptions execOpts = new DeploymentOptions()
+                .setConfig(Configs.get())
+                .setInstances(1).setWorker(true);
+        vertx.deployVerticle(ExternalCommandExecutor::new, execOpts);
     }
 
     private static void deployHttpVerticle() {
         DeploymentOptions httpOpts = new DeploymentOptions()
                 .setConfig(Configs.get())
                 .setInstances(1);
-        vertx.deployVerticle(HttpServerVerticle::new, httpOpts);
+        vertx.deployVerticle(HttpServer::new, httpOpts);
     }
 
 }

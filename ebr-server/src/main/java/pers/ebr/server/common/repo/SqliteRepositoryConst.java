@@ -15,21 +15,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.server.common.pool;
+package pers.ebr.server.common.repo;
 
 /**
  * <pre>
- * The TaskPool Exception Interface
+ * The Defines of DataBase
  * </pre>
  *
  * @author l.gong
  */
-public class TaskPoolException extends Exception {
-    public TaskPoolException(Throwable cause) {
-        super(cause);
-    }
-
-    public TaskPoolException(String message, Throwable cause) {
-        super(message, cause);
-    }
+interface SqliteRepositoryConst {
+    String VIEW_EXISTS = "VIEW_EXISTS";
+    String CREATE_VIEW = "CREATE_VIEW";
+    String DROP_VIEW = "DROP_VIEW";
+    String TABLE_EXISTS = "TABLE_EXISTS";
+    String DROP_TABLE = "DROP_TABLE";
+    String RENAME_TABLE = "RENAME_TABLE";
+    String GET_TABLE_NAME = "GET_TABLE_NAME";
+    String SAVE_FLOW = "SAVE_FLOW";
+    String LOAD_FLOW = "LOAD_FLOW";
+    String LOAD_ALL_FLOW = "LOAD_ALL_FLOW";
 }

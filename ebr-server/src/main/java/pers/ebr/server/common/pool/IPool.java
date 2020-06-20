@@ -17,24 +17,24 @@
  */
 package pers.ebr.server.common.pool;
 
-import pers.ebr.server.common.model.Task;
-import pers.ebr.server.common.model.TaskFlow;
+import pers.ebr.server.common.model.ITask;
+import pers.ebr.server.common.model.DagFlow;
 
 /**
  * The TaskPool Interface
  *
  * @author l.gong
  */
-public interface ITaskPool {
-    ITaskPool init();
+public interface IPool {
+    IPool init();
     void close();
 
-    TaskFlow getFlowItem(String id);
-    TaskFlow getFlowItemOf(String id);
-    void setFlowItem(TaskFlow flow);
+    DagFlow getFlowItem(String flowId);
+    DagFlow getFlowItemOf(String url);
+    void setFlowItem(DagFlow flow);
 
-    Task getTaskItem(String id);
-    void setTaskItem(Task flow);
+    ITask getTaskItem(String url);
 
-    void putTaskQueue(Task task);
+    void addTaskQueue(ITask task);
+    ITask pollTaskQueue();
 }

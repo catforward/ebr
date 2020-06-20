@@ -26,7 +26,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author l.gong
  */
 class RunnerThreadFactory implements ThreadFactory {
-    private static final AtomicInteger poolNumber = new AtomicInteger(1);
+    private static final AtomicInteger ATOMIC_INTEGER = new AtomicInteger(1);
     private final ThreadGroup group;
     private final AtomicInteger threadNumber = new AtomicInteger(1);
     private final String namePrefix;
@@ -35,7 +35,7 @@ class RunnerThreadFactory implements ThreadFactory {
         SecurityManager s = System.getSecurityManager();
         group = (s != null) ? s.getThreadGroup() :
                 Thread.currentThread().getThreadGroup();
-        namePrefix = prefix + "pool-" + poolNumber.getAndIncrement() + "-thread-";
+        namePrefix = prefix + "pool-" + ATOMIC_INTEGER.getAndIncrement() + "-thread-";
     }
 
     @Override

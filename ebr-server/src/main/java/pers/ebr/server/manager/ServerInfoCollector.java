@@ -26,7 +26,7 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 
 import static pers.ebr.server.common.Const.*;
-import static pers.ebr.server.common.Topic.REQ_INFO_GET_SERVER_INFO;
+import static pers.ebr.server.common.Topic.REQ_GET_SERVER_INFO;
 
 /**
  * The ServerInfoVerticle
@@ -43,7 +43,7 @@ public class ServerInfoCollector extends AbstractVerticle {
     public void start() throws Exception {
         super.start();
         EventBus bus = vertx.eventBus();
-        bus.consumer(REQ_INFO_GET_SERVER_INFO, this::handleGetServerInfo);
+        bus.consumer(REQ_GET_SERVER_INFO, this::handleGetServerInfo);
     }
 
     @Override

@@ -28,15 +28,15 @@ public interface Const {
 
     String ENV_EBR_ROOT = "EBR_ROOT";
 
-    /* Http请求响应参数 */
+    /** Http请求响应参数 */
     String REQUEST_PARAM_PATH = "path";
     String REQUEST_PARAM_PARAM = "param";
     String RESPONSE_ERROR = "error";
     String RESPONSE_RESULT = "result";
     String RESPONSE_INFO = "info";
 
-    /* 内部消息参数 */
-    String MSG_PARAM_TASK_ID = "task_id";
+    /** 内部消息参数 */
+    String MSG_PARAM_TASK_URL = "task_url";
     String MSG_PARAM_TASK_STATE = "task_state";
 
 }

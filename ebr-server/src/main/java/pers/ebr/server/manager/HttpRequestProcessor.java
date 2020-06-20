@@ -34,8 +34,8 @@ import static pers.ebr.server.common.Topic.*;
  *
  * @author l.gong
  */
-public class HttpProcHandler implements Handler<RoutingContext> {
-    private final static Logger logger = LoggerFactory.getLogger(HttpProcHandler.class);
+public class HttpRequestProcessor implements Handler<RoutingContext> {
+    private final static Logger logger = LoggerFactory.getLogger(HttpRequestProcessor.class);
 
     @Override
     public void handle(RoutingContext routingContext) {
@@ -43,13 +43,13 @@ public class HttpProcHandler implements Handler<RoutingContext> {
         logger.info("HTTP REQ PATH: {} BODY: {}", routingContext.normalisedPath(), reqBody);
         String address = reqBody.getString(REQUEST_PARAM_PATH, "");
         switch (address) {
-            case REQ_INFO_GET_SERVER_INFO:
-            case REQ_TASK_VALIDATE_TASK_FLOW:
-            case REQ_TASK_SAVE_TASK_FLOW:
-            case REQ_TASK_GET_ALL_TASK_FLOW:
-            case REQ_TASK_GET_TASK_FLOW_STATUS:
-            case REQ_START_TASK:
-            case REQ_SHOW_LOG: {
+            case REQ_GET_SERVER_INFO:
+            case REQ_VALIDATE_FLOW:
+            case REQ_SAVE_FLOW:
+            case REQ_GET_ALL_FLOW:
+            case REQ_GET_FLOW_STATUS:
+            case REQ_RUN_FLOW:
+            case REQ_SHOW_FLOW_LOG: {
                 handleReqRequest(address, reqBody, routingContext);
                 break;
             }

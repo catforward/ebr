@@ -19,7 +19,7 @@ package pers.ebr.server.common.repo;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pers.ebr.server.common.MiscUtils;
+import pers.ebr.server.common.Utils;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
-import static pers.ebr.server.common.repo.SQLiteRepoConst.*;
+import static pers.ebr.server.common.repo.SqliteRepositoryConst.*;
 
 /**
  * <pre>
@@ -37,22 +37,22 @@ import static pers.ebr.server.common.repo.SQLiteRepoConst.*;
  *
  * @author l.gong
  */
-class SQLiteRepositoryManager implements IRepositoryManager {
-    private final static Logger logger = LoggerFactory.getLogger(SQLiteRepositoryManager.class);
+final class SqliteRepositoryManager implements IRepositoryManager {
+    private final static Logger logger = LoggerFactory.getLogger(SqliteRepositoryManager.class);
     final static String TYPE = "sqlite";
     final static String SCHEMA = "flows.edat";
     final Properties tableVer = new Properties();
     final Properties sqlTpl = new Properties();
-    final SQLiteRepositoryImpl db;
+    final SqliteRepositoryImpl db;
 
-    SQLiteRepositoryManager() throws IOException {
+    SqliteRepositoryManager() throws IOException {
         try (
             InputStream tableVerFile = getClass().getResourceAsStream("/db_table_ver.properties");
             InputStream sqlFile = getClass().getResourceAsStream("/db_sql_tpl.properties")
         ) {
             tableVer.load(tableVerFile);
             sqlTpl.load(sqlFile);
-            db = new SQLiteRepositoryImpl(sqlTpl);
+            db = new SqliteRepositoryImpl(sqlTpl);
         }
     }
 
@@ -97,22 +97,22 @@ class SQLiteRepositoryManager implements IRepositoryManager {
     }
 
     private void execTableCreate(String tableName, String fullTableName) throws IOException, SQLException {
-        execTableCreateDDLFile(String.format("DDL_%s.sql", fullTableName));
-        execMigrationDDLFile(String.format("MIGRATE_%s.sql", tableName));
+        execTableCreateTmplFile(String.format("DDL_%s.sql", fullTableName));
+        execMigrationTmplFile(String.format("MIGRATE_%s.sql", tableName));
         execDropOldTable(tableName, fullTableName);
         execViewCreate(tableName, fullTableName);
     }
 
-    private void execTableCreateDDLFile(String fileName) throws IOException, SQLException {
+    private void execTableCreateTmplFile(String fileName) throws IOException, SQLException {
         try (InputStream is = getClass().getResourceAsStream(String.format("/sql/%s", fileName))) {
-            db.execute(MiscUtils.toString(is));
+            db.execute(Utils.toString(is));
         }
     }
 
-    private void execMigrationDDLFile(String fileName) throws SQLException {
+    private void execMigrationTmplFile(String fileName) throws SQLException {
         try (InputStream is = getClass().getResourceAsStream(String.format("/sql/%s", fileName))) {
             if (is != null) {
-                db.execute(MiscUtils.toString(is));
+                db.execute(Utils.toString(is));
             } else {
                 logger.info("skip migration of {}", fileName);
             }

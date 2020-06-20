@@ -15,10 +15,10 @@
                     <a id="serverInfoPanelBtn" href="javascript:void(0);"><i data-feather="info" class="ebr-icon-32"></i></a>
                 </li>
                 <li class="nav-item ebr-sidebar-button">
-                    <a id="taskFlowStatusInfoPanelBtn" href="javascript:void(0);"><i data-feather="layers" class="ebr-icon-32"></i></a>
+                    <a id="flowStatusInfoPanelBtn" href="javascript:void(0);"><i data-feather="layers" class="ebr-icon-32"></i></a>
                 </li>
                 <li class="nav-item ebr-sidebar-button">
-                    <a id="taskFlowDefineViewerPanelBtn" href="javascript:void(0);"><i data-feather="edit" class="ebr-icon-32"></i></a>
+                    <a id="flowDefineViewerPanelBtn" href="javascript:void(0);"><i data-feather="edit" class="ebr-icon-32"></i></a>
                 </li>
             </ul>
         </div>
@@ -48,31 +48,31 @@
                 <br/>
             </div>
         </div><!-- server info panel end -->
-        <!-- task flow status info panel start -->
-        <div id="taskFlowStatusInfoPanel" class="ebr-panel ebr-invisible">
+        <!-- flow status info panel start -->
+        <div id="flowStatusInfoPanel" class="ebr-panel ebr-invisible">
             <div class="ebr-panel-navbar border-bottom">
                 <div class="ebr-panel-navbar-items">
-                    <h4>TaskFlow Status Info</h4>
+                    <h4>Flow Status Info</h4>
                     <ul class="nav justify-content-end" style="margin-left: 5em;">
                         <li class="nav-item">
-                            <a id="getAllTaskFlowBtn" class="nav-link font-weight-bold text-success" href="javascript:void(0);">All</a>
+                            <a id="getAllFlowBtn" class="nav-link font-weight-bold text-success" href="javascript:void(0);">All</a>
                         </li>
                     </ul>
                 </div>
             </div>
             <div class="ebr-panel-flex-content ebr-panel-responsive">
                 <div class="ebr-flex-col-3 border-right">
-                    <ul id="taskFlowList" class="list-group list-group-flush"></ul>
+                    <ul id="flowList" class="list-group list-group-flush"></ul>
                 </div>
                 <div id="taskStatusCardContent" class="ebr-flex-col-7">
                 </div>   
             </div>
-        </div><!-- task flow status info panel end -->
-        <!-- task flow define viewer panel start -->
-        <div id="taskFlowDefineViewerPanel" class="ebr-panel ebr-invisible">
+        </div><!-- flow status info panel end -->
+        <!-- flow define viewer panel start -->
+        <div id="flowDefineViewerPanel" class="ebr-panel ebr-invisible">
             <div class="ebr-panel-navbar border-bottom">
                 <div class="ebr-panel-navbar-items">
-                    <h4>TaskFlow Define Viewer Editor</h4>
+                    <h4>Flow Define Viewer Editor</h4>
                     <ul class="nav justify-content-end" style="margin-left: 5em;">
                         <li class="nav-item">
                             <a id="fileSelectBtn" class="nav-link font-weight-bold text-success" href="javascript:void(0);">
@@ -105,7 +105,7 @@
                 <div id="taskCardContent" class="ebr-flex-col-6">
                 </div>
             </div>
-        </div><!-- task flow define viewer panel end -->
+        </div><!-- flow define viewer panel end -->
     </div>
     <div id="templatePanel" class="ebr-invisible">
         <div id="taskInfoCard" class="card">
@@ -132,7 +132,7 @@
                         </li>
                         <li>
                             <a class="ebr-card-flex-bar-btn-link" href="javascript:void(0);" title="start"
-                                onclick="ebr.view.RunTask(this);">
+                                onclick="ebr.view.RunFlow(this);">
                                 <i data-feather="play" class="ebr-icon-24"></i>
                             </a>
                         </li>
