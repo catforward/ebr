@@ -35,26 +35,32 @@ public interface ITask {
     String TASK_CMD_LINE = "cmd";
     String TASK_DEPENDS_LIST = "depends";
 
-    String id();
-    String cmdLine();
-    String desc();
-    String groupId();
-    Set<String> deps();
-    List<ITask> subs();
+    String getId();
+    String getCmdLine();
+    String getDesc();
+    String getGroupId();
+    List<String> getDependIdList();
 
-    String url();
-    TaskState status();
-    TaskType type();
+    void setId(String id);
+    void setCmdLine(String cmd);
+    void setDesc(String desc);
+    void setGroupId(String id);
+    void addDependId(String id);
 
-    void id(String newId);
-    void cmdLine(String cmd);
-    void desc(String value);
-    void groupId(String id);
-    void deps(String id);
-    void subs(ITask other);
+    String getUrl();
+    TaskState getStatus();
+    TaskType getType();
+    ITask getGroup();
+    Set<ITask> getDependTaskSet();
+    List<ITask> getSubTaskList();
+    String getInstanceId();
 
-    void url(String newUrl);
-    void status(TaskState newStatus);
-    void type(TaskType newType);
+    void setUrl(String url);
+    void setStatus(TaskState status);
+    void setType(TaskType type);
+    void setGroup(ITask other);
+    void addDependTask(ITask other);
+    void addSubTask(ITask other);
+    void setInstanceId(String newId);
 
 }

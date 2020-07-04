@@ -20,7 +20,7 @@
     <verticle.main>pers.ebr.server.MainLauncher</verticle.main>
     <vertx.version>3.9.0</vertx.version>
     <log4j2.version>2.13.3</log4j2.version>
-    <sqlite-jdbc.version>3.31.1</sqlite-jdbc.version>
+    <sqlite-jdbc.version>3.32.3</sqlite-jdbc.version>
   </properties>
 
   <dependencies>

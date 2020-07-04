@@ -1,7 +1,7 @@
 {
-  "manager.repo" : "sqlite",
-  "executor.pool" : "memory",
-  "executor.num.min" : 4,
-  "executor.num.max" : 12,
+  "manager.repo.type" : "sqlite",
+  "executor.pool.type" : "memory",
+  "executor.min" : 4,
+  "executor.max" : 12,
   "http.port" : 8114
 }

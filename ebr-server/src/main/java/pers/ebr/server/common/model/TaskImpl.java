@@ -43,143 +43,170 @@ public class TaskImpl implements ITask {
     private String groupId;
     private String cmdLine;
     private String taskDesc;
-    private final Set<String> depSet;
-    private final List<ITask> subList;
-    /** runtime attributes */
-    private String taskUrl;
-    private volatile TaskState taskState;
-    private TaskType taskType;
+    private final List<String> depIdList = new ArrayList<>();
 
-    TaskImpl(String newId) {
-        depSet = new HashSet<>();
-        subList = new ArrayList<>();
-        id(newId);
-        groupId("");
-        cmdLine("");
-        desc("");
-        url("");
-        status(INACTIVE);
-        type(UNIT);
+    /** runtime attributes */
+    private String taskUrl = "";
+    private String instanceId = "";
+    private volatile TaskState taskState = INACTIVE;
+    private TaskType taskType = UNIT;
+    private ITask groupTask = null;
+    private final Set<ITask> depTaskSet = new HashSet<>();
+    private final List<ITask> subTaskList = new ArrayList<>();
+
+    TaskImpl(String id) {
+        setId(id);
+        setGroupId("");
+        setCmdLine("");
+        setDesc("");
     }
 
     @Override
     public String toString() {
-        return this.id();
+        return this.getId();
     }
 
     @Override
-    public String id() {
-        return this.taskId;
+    public String getId() {
+        return taskId;
     }
 
     @Override
-    public String cmdLine() {
-        return this.cmdLine;
+    public String getCmdLine() {
+        return cmdLine;
     }
 
     @Override
-    public String url() {
-        return this.taskUrl;
+    public String getDesc() {
+        return taskDesc;
     }
 
     @Override
-    public String desc() {
-        return this.taskDesc;
+    public String getGroupId() {
+        return groupId;
     }
 
     @Override
-    public String groupId() {
-        return this.groupId;
+    public List<String> getDependIdList() {
+        return depIdList;
     }
 
     @Override
-    public Set<String> deps() {
-        return this.depSet;
+    public String getUrl() {
+        return taskUrl;
     }
 
     @Override
-    public List<ITask> subs() {
-        return this.subList;
+    public TaskState getStatus() {
+        return taskState;
     }
 
     @Override
-    public TaskState status() {
-        return this.taskState;
-    }
-
-    @Override
-    public TaskType type() {
+    public TaskType getType() {
         return taskType;
     }
 
     @Override
-    public void url(String newUrl) {
-        this.taskUrl = newUrl;
+    public ITask getGroup() {
+        return groupTask;
     }
 
     @Override
-    public void id(String newId) {
-        this.taskId = newId;
+    public Set<ITask> getDependTaskSet() {
+        return depTaskSet;
     }
 
     @Override
-    public void cmdLine(String cmd) {
-        this.cmdLine = cmd;
+    public List<ITask> getSubTaskList() {
+        return subTaskList;
     }
 
     @Override
-    public void desc(String value) {
-        this.taskDesc = value;
+    public String getInstanceId() {
+        return instanceId;
     }
 
     @Override
-    public void groupId(String id) {
-        this.groupId = id;
+    public void setId(String id) {
+        taskId = id;
     }
 
     @Override
-    public void deps(String id) {
-        this.depSet.add(id);
+    public void setCmdLine(String cmd) {
+        cmdLine = cmd;
     }
 
     @Override
-    public void subs(ITask other) {
-        subList.add(other);
+    public void setDesc(String desc) {
+        taskDesc = desc;
     }
 
     @Override
-    public void status(TaskState netState) {
-        if (taskState == null) {
-            taskState = netState;
-            return;
-        }
-        logger.info("state changed->task:[{}] state:[{} -> {}]", taskId, taskState, netState);
+    public void setGroupId(String id) {
+        groupId = id;
+    }
+
+    @Override
+    public void addDependId(String id) {
+        depIdList.add(id);
+    }
+
+    @Override
+    public void setUrl(String url) {
+        taskUrl = url;
+    }
+
+    @Override
+    public void setStatus(TaskState status) {
+        logger.info("state changed->task:[{}::{}] state:[{} -> {}]",
+                instanceId, taskId, taskState, status);
         switch (taskState) {
             case INACTIVE: {
-                if (ACTIVE == netState) {
-                    taskState = netState;
+                if (ACTIVE == status) {
+                    taskState = status;
                 }
                 break;
             }
             case ACTIVE: {
-                if (COMPLETE == netState || FAILED == netState) {
-                    taskState = netState;
+                if (COMPLETE == status || FAILED == status) {
+                    taskState = status;
                 }
                 break;
             }
             case COMPLETE:
             case FAILED:
             default: {
-                throw new RuntimeException(String.format("invalidate state task:[%s] state:[%s]->[%s]", taskId, taskState, netState));
+                throw new RuntimeException(String.format("invalidate state task:[%s::%s] state:[%s]->[%s]",
+                        instanceId, taskId, taskState, status));
             }
         }
     }
 
     @Override
-    public void type(TaskType newType) {
-        if (this.taskType != newType) {
-            this.taskType = newType;
+    public void setType(TaskType type) {
+        if (taskType != type) {
+            taskType = type;
         }
+    }
+
+    @Override
+    public void setGroup(ITask other) {
+        groupTask = other;
+    }
+
+    @Override
+    public void addDependTask(ITask other) {
+        depTaskSet.add(other);
+    }
+
+    @Override
+    public void addSubTask(ITask other) {
+        subTaskList.add(other);
+    }
+
+    @Override
+    public void setInstanceId(String newId) {
+        instanceId = newId;
     }
 
 }

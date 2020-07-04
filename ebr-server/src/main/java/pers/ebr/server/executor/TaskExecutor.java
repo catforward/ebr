@@ -33,10 +33,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.concurrent.*;
 import java.util.function.Supplier;
 
-import static pers.ebr.server.common.Configs.KEY_EXECUTOR_NUM_MAX;
-import static pers.ebr.server.common.Configs.KEY_EXECUTOR_NUM_MIN;
-import static pers.ebr.server.common.Const.MSG_PARAM_TASK_STATE;
-import static pers.ebr.server.common.Const.MSG_PARAM_TASK_URL;
+import static pers.ebr.server.common.Configs.KEY_EXECUTOR_MAX;
+import static pers.ebr.server.common.Configs.KEY_EXECUTOR_MIN;
+import static pers.ebr.server.common.Const.*;
 import static pers.ebr.server.common.Topic.MSG_TASK_STATE_CHANGED;
 import static pers.ebr.server.common.model.TaskState.*;
 
@@ -45,8 +44,8 @@ import static pers.ebr.server.common.model.TaskState.*;
  *
  * @author l.gong
  */
-public class ExternalCommandExecutor extends AbstractVerticle {
-    private final static Logger logger = LoggerFactory.getLogger(ExternalCommandExecutor.class);
+public class TaskExecutor extends AbstractVerticle {
+    private final static Logger logger = LoggerFactory.getLogger(TaskExecutor.class);
     /** 执行队列 */
     private ExecutorService executorPool;
     long timerId;
@@ -55,8 +54,8 @@ public class ExternalCommandExecutor extends AbstractVerticle {
     public void start() throws Exception {
         super.start();
         JsonObject config = config();
-        Integer minNum = config.getInteger(KEY_EXECUTOR_NUM_MIN);
-        Integer maxNum = config.getInteger(KEY_EXECUTOR_NUM_MAX);
+        Integer minNum = config.getInteger(KEY_EXECUTOR_MIN);
+        Integer maxNum = config.getInteger(KEY_EXECUTOR_MAX);
         executorPool = new ThreadPoolExecutor(minNum, maxNum, 0L, TimeUnit.MILLISECONDS,
                 new LinkedBlockingQueue<>(), new RunnerThreadFactory("ebr-runner-"));
 
@@ -74,7 +73,7 @@ public class ExternalCommandExecutor extends AbstractVerticle {
         //logger.debug("Timer 1 fired: {}", id);
         IPool pool = Pool.get();
         ITask task = null;
-        while ((task = pool.pollTaskQueue()) != null) {
+        while ((task = pool.pollRunnableTaskQueue()) != null) {
             launchExecutableTask(task);
         }
     }
@@ -92,25 +91,26 @@ public class ExternalCommandExecutor extends AbstractVerticle {
     }
 
     private void launchExecutableTask(ITask task) {
-        logger.info("Perform Task[id:{} command:{}]", task.id(), task.cmdLine());
+        logger.info("Perform Task[instanceId:{} id:{} command:{}]", task.getInstanceId(), task.getId(), task.getCmdLine());
         JsonObject beginNoticeParam = new JsonObject();
-        beginNoticeParam.put(MSG_PARAM_TASK_URL, task.url());
+        beginNoticeParam.put(MSG_PARAM_TASK_INSTANCE_ID, task.getInstanceId());
+        beginNoticeParam.put(MSG_PARAM_TASK_URL, task.getUrl());
         beginNoticeParam.put(MSG_PARAM_TASK_STATE, ACTIVE);
         vertx.eventBus().publish(MSG_TASK_STATE_CHANGED, beginNoticeParam);
 
         CompletableFuture<TaskState> future = deployTaskAsync(() -> {
             try {
-                Process process = Runtime.getRuntime().exec(task.cmdLine());
+                Process process = Runtime.getRuntime().exec(task.getCmdLine());
                 process.getOutputStream().close();
                 try (BufferedReader br = new BufferedReader(
-                        new InputStreamReader(process.getInputStream(), StandardCharsets.US_ASCII))) {
+                        new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {
                     String line;
                     while ((line = br.readLine()) != null) {
                         logger.debug(line);
                     }
                 }
                 int exitCode = process.waitFor();
-                logger.debug("Task[id = {} exitCode = {}]", task.id(), exitCode);
+                logger.debug("Task[id = {} exitCode = {}]", task.getId(), exitCode);
                 return (exitCode == 0) ? COMPLETE : FAILED;
             } catch (IOException | InterruptedException e) {
                 logger.error(e.getLocalizedMessage(), e);
@@ -122,8 +122,9 @@ public class ExternalCommandExecutor extends AbstractVerticle {
 
         future.whenComplete((retValue, exception) -> {
             JsonObject endNoticeParam = new JsonObject();
-            endNoticeParam.put(MSG_PARAM_TASK_URL, task.url());
-            endNoticeParam.put(MSG_PARAM_TASK_STATE, task.status());
+            endNoticeParam.put(MSG_PARAM_TASK_INSTANCE_ID, task.getInstanceId());
+            endNoticeParam.put(MSG_PARAM_TASK_URL, task.getUrl());
+            endNoticeParam.put(MSG_PARAM_TASK_STATE, retValue);
             vertx.eventBus().publish(MSG_TASK_STATE_CHANGED, endNoticeParam);
         });
     }

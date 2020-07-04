@@ -39,76 +39,76 @@ public final class ItemBuilder {
 
     public ItemBuilder() {}
 
-    public DagFlow buildDagTaskFlow(JsonObject define) {
-        // 创建一个空的flow结构
-        DagFlow flow = createDagTaskFlowStruct(define);
-        // 更新Flow信息
-        updateTaskFlowInfo(flow);
-        // 更新DAG信息
-        updateTaskGraphInfo(flow);
-
-        return flow;
+    public DAGFlow buildDagTaskFlow(JsonObject define) {
+        DAGFlow flow = createDAGFlow(define);
+        updateFlowInfo(flow);
+        updateDAGInfo(flow);
+        return flow.build();
     }
 
-    private DagFlow createDagTaskFlowStruct(JsonObject define) {
-        DagFlow flow = new DagFlow();
-        for (String id : define.getMap().keySet()) {
-            JsonObject taskBody = define.getJsonObject(id);
-            TaskImpl task = new TaskImpl(id);
+    private DAGFlow createDAGFlow(JsonObject define) {
+        DAGFlow flow = new DAGFlow();
+        for (String taskId : define.getMap().keySet()) {
+            JsonObject taskBody = define.getJsonObject(taskId);
+            TaskImpl task = new TaskImpl(taskId);
             // 如果没有设定group，默认行为group=id
-            task.groupId(taskBody.getString(TASK_GROUP, id));
-            task.desc(taskBody.getString(TASK_DESC));
-            task.cmdLine(taskBody.getString(TASK_CMD_LINE));
+            task.setGroupId(taskBody.getString(TASK_GROUP, taskId));
+            task.setDesc(taskBody.getString(TASK_DESC));
+            task.setCmdLine(taskBody.getString(TASK_CMD_LINE));
             JsonArray dependsArray = taskBody.getJsonArray(TASK_DEPENDS_LIST, new JsonArray());
-            dependsArray.stream().forEach(dependTaskId -> task.deps(dependTaskId.toString()));
+            dependsArray.stream().forEach(dependTaskId -> task.addDependId(dependTaskId.toString()));
             flow.addTask(task);
         }
         return flow;
     }
 
-    private void updateTaskFlowInfo(DagFlow flow) {
-        flow.taskIdStream().forEach(id -> {
-            TaskImpl item = Optional.ofNullable(flow.getTask(id)).orElseThrow();
+    private void updateFlowInfo(DAGFlow flow) {
+        flow.getTaskIdStream().forEach(id -> {
+            TaskImpl task = Optional.ofNullable(flow.getTaskById(id)).orElseThrow();
             // 更新Flow信息
             // 判断是否是flow元素
-            if (isRootTask(item)) {
-                if (Optional.ofNullable(flow.flowId()).isPresent()) {
-                    logger.error("only one flow can be define in a signal file. id:{}", item.id());
-                    throw new RuntimeException(String.format("only one flow can be define in a signal file. id:[%s]", item.id()));
+            if (isRootTask(task)) {
+                if (Optional.ofNullable(flow.getRootTask()).isPresent()) {
+                    logger.error("only one flow can be define in a signal file. id:{}", task.getId());
+                    throw new RuntimeException(String.format("only one flow can be define in a signal file. id:[%s]", task.getId()));
                 }
-                flow.flowId(item.id());
-                flow.addTaskGraph(item.id(), makeEmptyGraph());
-            }
-
-            TaskImpl groupItem = Optional.ofNullable(flow.getTask(item.groupId())).orElseThrow();
-            if (GROUP != groupItem.type()) {
-                groupItem.type(GROUP);
-            }
-            if (!groupItem.id().equals(item.id())) {
-                groupItem.subs(item);
+                task.setGroup(task);
+                task.setUrl(String.format("/%s", task.getId()));
+                flow.setRootTask(task);
+                flow.addTaskGraph(task.getId(), makeEmptyGraph());
+            } else {
+                TaskImpl groupTask = Optional.ofNullable(flow.getTaskById(task.getGroupId())).orElseThrow();
+                if (GROUP != groupTask.getType()) {
+                    groupTask.setType(GROUP);
+                }
+                groupTask.addSubTask(task);
+                task.getDependIdList().forEach(depId -> {
+                    TaskImpl depTask = Optional.ofNullable(flow.getTaskById(depId)).orElseThrow();
+                    task.addDependTask(depTask);
+                });
+                task.setGroup(groupTask);
+                task.setUrl(String.format("%s/%s", groupTask.getUrl(), task.getId()));
             }
         });
     }
 
-    private void updateTaskGraphInfo(DagFlow flow) {
-        flow.taskIdStream().forEach(id -> {
-            TaskImpl item = Optional.ofNullable(flow.getTask(id)).orElseThrow();
-            if (isRootTask(item)) {
+    private void updateDAGInfo(DAGFlow flow) {
+        flow.getTaskIdStream().forEach(id -> {
+            TaskImpl task = Optional.ofNullable(flow.getTaskById(id)).orElseThrow();
+            if (isRootTask(task)) {
                 // do nothing
                 return;
             }
-            TaskImpl groupItem = Optional.ofNullable(flow.getTask(item.groupId())).orElseThrow();
-            item.url(String.format("%s/%s", groupItem.url(), item.id()));
 
-            DirectedGraph<ITask> groupGraph = Optional.ofNullable(flow.getMutableTaskGraph(item.groupId())).orElseGet(() -> {
-                flow.addTaskGraph(item.groupId(), makeEmptyGraph());
-                return Optional.ofNullable(flow.getMutableTaskGraph(item.groupId())).orElseThrow();
+            DirectedGraph<ITask> groupGraph = Optional.ofNullable(flow.getMutableTaskGraph(task.getGroupId())).orElseGet(() -> {
+                flow.addTaskGraph(task.getGroupId(), makeEmptyGraph());
+                return Optional.ofNullable(flow.getMutableTaskGraph(task.getGroupId())).orElseThrow();
             });
-            groupGraph.addVertex(item);
+            groupGraph.addVertex(task);
 
-            item.deps().forEach(depTaskId -> {
-                TaskImpl predecessor = Optional.ofNullable(flow.getTask(depTaskId)).orElseThrow();
-                groupGraph.putEdge(predecessor, item);
+            task.getDependIdList().forEach(depTaskId -> {
+                TaskImpl predecessor = Optional.ofNullable(flow.getTaskById(depTaskId)).orElseThrow();
+                groupGraph.putEdge(predecessor, task);
             });
         });
     }
@@ -118,6 +118,6 @@ public final class ItemBuilder {
     }
 
     private boolean isRootTask(TaskImpl item) {
-        return item.id() == null || item.id().strip().isEmpty() || item.id().equalsIgnoreCase(item.groupId());
+        return item.getId() == null || item.getId().strip().isEmpty() || item.getId().equalsIgnoreCase(item.getGroupId());
     }
 }

@@ -20,7 +20,7 @@ package pers.ebr.server.common.pool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pers.ebr.server.common.model.ITask;
-import pers.ebr.server.common.model.DagFlow;
+import pers.ebr.server.common.model.DAGFlow;
 
 import java.util.Map;
 import java.util.Queue;
@@ -36,14 +36,13 @@ import static pers.ebr.server.common.Utils.checkNotNull;
  */
 public final class InMemoryPoolImpl implements IPool {
     private final static Logger logger = LoggerFactory.getLogger(InMemoryPoolImpl.class);
-
     final static String TYPE = "memory";
     /**
      * active task flow pool
-     * key : url ex。uuid::flowId
-     * value : instance of task flow
+     * key : flow's instanceId
+     * value : flow instance
      */
-    private final Map<String, DagFlow> flowPool = new ConcurrentHashMap<>();
+    private final Map<String, DAGFlow> allFlows = new ConcurrentHashMap<>();
     private final Queue<ITask> taskQueue = new ConcurrentLinkedQueue<>();
 
 
@@ -57,48 +56,50 @@ public final class InMemoryPoolImpl implements IPool {
 
     @Override
     public void close() {
-        flowPool.clear();
+        allFlows.clear();
         taskQueue.clear();
     }
 
     @Override
-    public DagFlow getFlowItem(String url) {
+    public DAGFlow getFlowByUrl(String url) {
         checkNotNull(url);
-        return flowPool.get(url);
+        for (var entry : allFlows.entrySet()) {
+            DAGFlow flow = entry.getValue();
+            if (flow.getRootTask().getUrl().equals(url)) {
+                return flow;
+            }
+        }
+        return null;
     }
 
     @Override
-    public DagFlow getFlowItemOf(String url) {
-        checkNotNull(url);
-        String[] urlArr = url.split("/");
-        String flowUrl = urlArr.length > 0 ? urlArr[0] : "";
-        return flowPool.get(flowUrl);
+    public DAGFlow getFlowByInstanceId(String instanceId) {
+        checkNotNull(instanceId);
+        return allFlows.get(instanceId);
     }
 
     @Override
-    public void setFlowItem(DagFlow flow) {
+    public void setFlow(DAGFlow flow) {
         checkNotNull(flow);
-        flowPool.put(flow.url(), flow);
+        allFlows.put(flow.getInstanceId(), flow);
     }
 
     @Override
-    public ITask getTaskItem(String url) {
-        checkNotNull(url);
-        String[] urlArr = url.split("/");
-        String flowUrl = urlArr.length > 0 ? urlArr[0] : "";
-        DagFlow flow = flowPool.get(flowUrl);
-        String taskId = urlArr.length > 1 ? urlArr[urlArr.length - 1] : flow.flowId();
-        return flow.getTask(taskId);
+    public DAGFlow removeFlowByInstanceId(String instanceId) {
+        checkNotNull(instanceId);
+        DAGFlow flow = allFlows.get(instanceId);
+        allFlows.remove(instanceId);
+        return flow;
     }
 
     @Override
-    public void addTaskQueue(ITask task) {
+    public void addRunnableTaskQueue(ITask task) {
         checkNotNull(task);
         taskQueue.add(task);
     }
 
     @Override
-    public ITask pollTaskQueue() {
+    public ITask pollRunnableTaskQueue() {
         // 从队列的头部取出并删除该条数据
         return taskQueue.poll();
     }

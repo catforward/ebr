@@ -41,9 +41,11 @@ public interface Topic {
     /** 获取指定ID的task的日志信息 */
     String REQ_SHOW_FLOW_LOG = "req.flow.ShowLog";
 
-    /** 消息：通知运行指定ID的task */
+    /** 消息：通知运行Flow */
     String MSG_RUN_FLOW = "msg.schd.RunFlow";
     /** 消息：通知指定ID的task的新状态 */
     String MSG_TASK_STATE_CHANGED = "msg.schd.TaskStateChanged";
+    /** 消息：通知Flow结束 */
+    String MSG_FLOW_FINISHED = "msg.schd.FlowFinished";
     
 }

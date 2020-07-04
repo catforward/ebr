@@ -197,7 +197,7 @@ ebr.view = {
             let flowId = jsonResultData[item];
             let liHtml = $("<li class=\"list-group-item list-group-item-action\" " +
                             "onclick=\"ebr.view.FlowIdSelect('" + flowId + "')\">" + flowId + "</li>");
-            liHtml.appendTo(taskFlowList);
+            liHtml.appendTo(flowList);
         }
     },
     FlowIdSelect : function(flowId) {

@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import pers.ebr.server.common.Configs;
 import pers.ebr.server.common.pool.Pool;
-import pers.ebr.server.executor.ExternalCommandExecutor;
+import pers.ebr.server.executor.TaskExecutor;
 import pers.ebr.server.manager.ServerInfoCollector;
 import pers.ebr.server.manager.TaskManager;
 import pers.ebr.server.executor.DAGScheduler;
@@ -91,7 +91,7 @@ public class Main {
         DeploymentOptions execOpts = new DeploymentOptions()
                 .setConfig(Configs.get())
                 .setInstances(1).setWorker(true);
-        vertx.deployVerticle(ExternalCommandExecutor::new, execOpts);
+        vertx.deployVerticle(TaskExecutor::new, execOpts);
     }
 
     private static void deployHttpVerticle() {

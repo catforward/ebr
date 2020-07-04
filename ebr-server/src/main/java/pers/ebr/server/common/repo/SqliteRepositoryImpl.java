@@ -68,10 +68,12 @@ final class SqliteRepositoryImpl implements IRepository {
     }
 
     @Override
-    public void setFlowItem(String key, String value) throws RepositoryException {
+    public void setFlowDef(String flowId, String flowDetail) throws RepositoryException {
         String saveSql = sqlTpl.getProperty(SAVE_FLOW);
-        try {
-            execute(String.format(saveSql, key, value));
+        try (PreparedStatement statement = connection.prepareStatement(saveSql);) {
+            statement.setString(1, flowId);
+            statement.setString(2, flowDetail);
+            statement.executeUpdate();
             commit();
         } catch (SQLException ex) {
             rollback();
@@ -81,14 +83,14 @@ final class SqliteRepositoryImpl implements IRepository {
     }
 
     @Override
-    public String getFlowItem(String flowId) throws RepositoryException {
+    public String getFlowDef(String flowId) throws RepositoryException {
         String loadSql = sqlTpl.getProperty(LOAD_FLOW);
         try {
-            List<Map<String, String>> result = query(String.format(loadSql, flowId));
+            List<Map<String, String>> result = query(loadSql, flowId);
             if (result.isEmpty()) {
                 return "";
             }
-            return result.get(0).getOrDefault("DETAIL", "");
+            return result.get(0).getOrDefault("flow_detail", "");
         } catch (SQLException ex) {
             logger.error("database error occurred...", ex);
             throw new RepositoryException(ex);
@@ -96,13 +98,13 @@ final class SqliteRepositoryImpl implements IRepository {
     }
 
     @Override
-    public List<String> loadAllFlowId() throws RepositoryException {
+    public List<String> getAllFlowId() throws RepositoryException {
         List<String> flows = new ArrayList<>();
         String loadAllSql = sqlTpl.getProperty(LOAD_ALL_FLOW);
         try {
             List<Map<String, String>> result = query(loadAllSql);
             for (var row : result) {
-                flows.add(row.getOrDefault("NAME", ""));
+                flows.add(row.getOrDefault("flow_id", ""));
             }
         } catch (SQLException ex) {
             logger.error("database error occurred...", ex);
@@ -146,7 +148,7 @@ final class SqliteRepositoryImpl implements IRepository {
     public List<Map<String, String>> query(String tplSql, String... params) throws SQLException {
         try (PreparedStatement statement = connection.prepareStatement(tplSql)) {
             for (int i = 0; i < params.length; i++) {
-                statement.setString(i, params[i]);
+                statement.setString(i + 1, params[i]);
             }
             return innerQuery(statement, tplSql);
         }
@@ -180,7 +182,7 @@ final class SqliteRepositoryImpl implements IRepository {
     boolean isTableExist(String tableName) throws SQLException {
         String existSql = sqlTpl.getProperty(TABLE_EXISTS);
         var result = query(String.format(existSql, tableName));
-        if (result == null || result.isEmpty()) {
+        if (result.isEmpty()) {
             return false;
         }
         int cnt = Integer.parseInt(result.get(0).get("cnt"));
@@ -190,7 +192,7 @@ final class SqliteRepositoryImpl implements IRepository {
     boolean isViewExist(String viewName) throws SQLException {
         String existSql = sqlTpl.getProperty(VIEW_EXISTS);
         var result = query(String.format(existSql, viewName));
-        if (result == null || result.isEmpty()) {
+        if (result.isEmpty()) {
             return false;
         }
         int cnt = Integer.parseInt(result.get(0).get("cnt"));

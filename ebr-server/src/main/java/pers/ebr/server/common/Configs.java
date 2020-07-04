@@ -28,7 +28,6 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 /**
@@ -47,10 +46,10 @@ public final class Configs {
 
     public final static String KEY_NODE_ID = "node.id";
     public final static String KEY_NODE_TYPE = "node.type";
-    public final static String KEY_MANAGER_REPO = "manager.repo";
-    public final static String KEY_EXECUTOR_POOL = "executor.pool";
-    public final static String KEY_EXECUTOR_NUM_MIN = "executor.num.min";
-    public final static String KEY_EXECUTOR_NUM_MAX = "executor.num.max";
+    public final static String KEY_MANAGER_REPO_TYPE = "manager.repo.type";
+    public final static String KEY_EXECUTOR_POOL_TYPE = "executor.pool.type";
+    public final static String KEY_EXECUTOR_MIN = "executor.min";
+    public final static String KEY_EXECUTOR_MAX = "executor.max";
     public final static String KEY_HTTP_PORT = "http.port";
 
     private final JsonObject config = new JsonObject();
@@ -96,11 +95,11 @@ public final class Configs {
         config.put(KEY_NODE_ID, extObj.getString(KEY_NODE_ID, innerObj.getString(KEY_NODE_ID)).strip());
         config.put(KEY_NODE_TYPE, extObj.getString(KEY_NODE_TYPE, innerObj.getString(KEY_NODE_TYPE)).strip());
         // base info
-        config.put(KEY_MANAGER_REPO, extObj.getString(KEY_MANAGER_REPO, innerObj.getString(KEY_MANAGER_REPO)).strip());
-        config.put(KEY_EXECUTOR_NUM_MIN, extObj.getInteger(KEY_EXECUTOR_NUM_MIN, innerObj.getInteger(KEY_EXECUTOR_NUM_MIN)));
-        config.put(KEY_EXECUTOR_NUM_MAX, extObj.getInteger(KEY_EXECUTOR_NUM_MAX, innerObj.getInteger(KEY_EXECUTOR_NUM_MAX)));
+        config.put(KEY_MANAGER_REPO_TYPE, extObj.getString(KEY_MANAGER_REPO_TYPE, innerObj.getString(KEY_MANAGER_REPO_TYPE)).strip());
+        config.put(KEY_EXECUTOR_MIN, extObj.getInteger(KEY_EXECUTOR_MIN, innerObj.getInteger(KEY_EXECUTOR_MIN)));
+        config.put(KEY_EXECUTOR_MAX, extObj.getInteger(KEY_EXECUTOR_MAX, innerObj.getInteger(KEY_EXECUTOR_MAX)));
         // pool info
-        config.put(KEY_EXECUTOR_POOL, extObj.getString(KEY_EXECUTOR_POOL, innerObj.getString(KEY_EXECUTOR_POOL)).strip());
+        config.put(KEY_EXECUTOR_POOL_TYPE, extObj.getString(KEY_EXECUTOR_POOL_TYPE, innerObj.getString(KEY_EXECUTOR_POOL_TYPE)).strip());
         // http info
         config.put(KEY_HTTP_PORT, extObj.getInteger(KEY_HTTP_PORT, innerObj.getInteger(KEY_HTTP_PORT)));
     }
@@ -116,22 +115,22 @@ public final class Configs {
             throw new InvalidPropertiesFormatException(String.format("property [%s] cannot be empty...", KEY_NODE_TYPE));
         }
         // base info
-        value = config.getString(KEY_MANAGER_REPO, "").strip();
+        value = config.getString(KEY_MANAGER_REPO_TYPE, "").strip();
         if (value.isEmpty()) {
-            throw new InvalidPropertiesFormatException(String.format("property [%s] cannot be empty...", KEY_MANAGER_REPO));
+            throw new InvalidPropertiesFormatException(String.format("property [%s] cannot be empty...", KEY_MANAGER_REPO_TYPE));
         }
-        Integer intValue = config.getInteger(KEY_EXECUTOR_NUM_MIN, 0);
+        Integer intValue = config.getInteger(KEY_EXECUTOR_MIN, 0);
         if (intValue.compareTo(0) <= 0) {
-            throw new InvalidPropertiesFormatException(String.format("property [%s] cannot be empty...", KEY_EXECUTOR_NUM_MIN));
+            throw new InvalidPropertiesFormatException(String.format("property [%s] cannot be empty...", KEY_EXECUTOR_MIN));
         }
-        intValue = config.getInteger(KEY_EXECUTOR_NUM_MAX, 0);
+        intValue = config.getInteger(KEY_EXECUTOR_MAX, 0);
         if (intValue.compareTo(0) <= 0) {
-            throw new InvalidPropertiesFormatException(String.format("property [%s] cannot be empty...", KEY_EXECUTOR_NUM_MAX));
+            throw new InvalidPropertiesFormatException(String.format("property [%s] cannot be empty...", KEY_EXECUTOR_MAX));
         }
         // pool
-        value = config.getString(KEY_EXECUTOR_POOL, "").strip();
+        value = config.getString(KEY_EXECUTOR_POOL_TYPE, "").strip();
         if (value.isEmpty()) {
-            throw new InvalidPropertiesFormatException(String.format("property [%s] cannot be empty...", KEY_EXECUTOR_POOL));
+            throw new InvalidPropertiesFormatException(String.format("property [%s] cannot be empty...", KEY_EXECUTOR_POOL_TYPE));
         }
         // http info
         int port = config.getInteger(KEY_HTTP_PORT, 0);

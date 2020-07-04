@@ -29,9 +29,9 @@ import java.util.List;
 public interface IRepository {
     void connect() throws RepositoryException;
     void release() throws RepositoryException;
-    void setFlowItem(String key, String value) throws RepositoryException;
-    String getFlowItem(String flowId) throws RepositoryException;
-    List<String> loadAllFlowId() throws RepositoryException;
+    void setFlowDef(String flowId, String flowDetail) throws RepositoryException;
+    String getFlowDef(String flowId) throws RepositoryException;
+    List<String> getAllFlowId() throws RepositoryException;
     void commit() throws RepositoryException;
     void rollback() throws RepositoryException;
 }

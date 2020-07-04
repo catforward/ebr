@@ -67,7 +67,7 @@ public final class Repository {
     }
 
     IRepositoryManager build(JsonObject config) throws IOException {
-        String type = config.getString(Configs.KEY_MANAGER_REPO, SqliteRepositoryManager.TYPE);
+        String type = config.getString(Configs.KEY_MANAGER_REPO_TYPE, SqliteRepositoryManager.TYPE);
         switch (type) {
             case SqliteRepositoryManager.TYPE : {
                 return new SqliteRepositoryManager();

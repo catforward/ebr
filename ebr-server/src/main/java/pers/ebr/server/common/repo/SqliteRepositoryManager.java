@@ -40,7 +40,7 @@ import static pers.ebr.server.common.repo.SqliteRepositoryConst.*;
 final class SqliteRepositoryManager implements IRepositoryManager {
     private final static Logger logger = LoggerFactory.getLogger(SqliteRepositoryManager.class);
     final static String TYPE = "sqlite";
-    final static String SCHEMA = "flows.edat";
+    final static String SCHEMA = "flows.db";
     final Properties tableVer = new Properties();
     final Properties sqlTpl = new Properties();
     final SqliteRepositoryImpl db;

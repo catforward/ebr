@@ -18,7 +18,7 @@
 package pers.ebr.server.common.pool;
 
 import pers.ebr.server.common.model.ITask;
-import pers.ebr.server.common.model.DagFlow;
+import pers.ebr.server.common.model.DAGFlow;
 
 /**
  * The TaskPool Interface
@@ -29,12 +29,11 @@ public interface IPool {
     IPool init();
     void close();
 
-    DagFlow getFlowItem(String flowId);
-    DagFlow getFlowItemOf(String url);
-    void setFlowItem(DagFlow flow);
+    DAGFlow getFlowByUrl(String url);
+    DAGFlow getFlowByInstanceId(String instanceId);
+    void setFlow(DAGFlow flow);
+    DAGFlow removeFlowByInstanceId(String instanceId);
 
-    ITask getTaskItem(String url);
-
-    void addTaskQueue(ITask task);
-    ITask pollTaskQueue();
+    void addRunnableTaskQueue(ITask task);
+    ITask pollRunnableTaskQueue();
 }

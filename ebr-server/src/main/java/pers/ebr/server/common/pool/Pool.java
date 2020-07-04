@@ -60,7 +60,7 @@ public final class Pool {
     }
 
     IPool build(JsonObject config) {
-        String type = config.getString(Configs.KEY_EXECUTOR_POOL, InMemoryPoolImpl.TYPE);
+        String type = config.getString(Configs.KEY_EXECUTOR_POOL_TYPE, InMemoryPoolImpl.TYPE);
         switch (type) {
             case InMemoryPoolImpl.TYPE : {
                 return new InMemoryPoolImpl();
