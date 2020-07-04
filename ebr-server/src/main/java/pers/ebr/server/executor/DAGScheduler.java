@@ -78,9 +78,7 @@ public class DAGScheduler extends AbstractVerticle {
         }
         flow.setInstanceId(UUID.randomUUID().toString());
         pool.setFlow(flow);
-
-        //updateTaskState(flow.getInstanceId(), flow.getRootTask(), ACTIVE);
-        collectExecutableTasks(flow, flow.getRootTask(), flow.getRootTask());
+        pool.addRunnableTaskQueue(flow.getRootTask());
     }
 
     private void handleTaskStateChanged(Message<JsonObject> msg) {
@@ -141,29 +139,22 @@ public class DAGScheduler extends AbstractVerticle {
             return;
         }
 
-        if (GROUP == task.getType() && INACTIVE == task.getStatus()) {
-            for (ITask sub : task.getSubTaskList()) {
-                if (GROUP == sub.getType()) {
-                    collectExecutableTasks(flow, sub.getGroup(), sub);
-                } else {
-                    long unfinishedDependTaskCnt = sub.getDependTaskSet().stream()
-                            .filter(t -> COMPLETE != t.getStatus()).count();
-                    if (unfinishedDependTaskCnt == 0 && INACTIVE == sub.getStatus()) {
-                        Pool.get().addRunnableTaskQueue(sub);
-                    }
+        if (GROUP == task.getType() && ACTIVE == task.getStatus()) {
+            task.getSubTaskList().forEach(sub -> {
+                long unfinishedDependTaskCnt = sub.getDependTaskSet().stream()
+                        .filter(t -> COMPLETE != t.getStatus()).count();
+                if (unfinishedDependTaskCnt == 0 && INACTIVE == sub.getStatus()) {
+                    Pool.get().addRunnableTaskQueue(sub);
                 }
-            }
-        } else if (UNIT == task.getType() && COMPLETE == task.getStatus()) {
-            for (ITask postTask : flow.getSuccessors(group, task)) {
-                if (GROUP == postTask.getType()) {
-                    collectExecutableTasks(flow, postTask.getGroup(), postTask);
-                } else {
-                    if (flow.getPredecessors(group, postTask).stream()
-                            .anyMatch(t -> INACTIVE == t.getStatus())) {
-                        Pool.get().addRunnableTaskQueue(postTask);
-                    }
+            });
+        } else if (COMPLETE == task.getStatus()) {
+            flow.getSuccessors(group, task).forEach(successor -> {
+                long unfinishedDependTaskCnt = successor.getDependTaskSet().stream()
+                        .filter(t -> COMPLETE != t.getStatus()).count();
+                if (unfinishedDependTaskCnt == 0 && INACTIVE == successor.getStatus()) {
+                    Pool.get().addRunnableTaskQueue(successor);
                 }
-            }
+            });
         }
     }
 

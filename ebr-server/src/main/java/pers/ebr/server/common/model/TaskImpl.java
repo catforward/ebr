@@ -209,4 +209,11 @@ public class TaskImpl implements ITask {
         instanceId = newId;
     }
 
+    @Override
+    public void release() {
+        depTaskSet.clear();
+        subTaskList.clear();
+        groupTask = null;
+    }
+
 }

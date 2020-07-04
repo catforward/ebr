@@ -59,15 +59,15 @@ public final class DAGFlow {
     }
 
     DAGFlow build() {
-        idTaskMap.forEach((id, task) -> {
-            urlTaskMap.put(task.getUrl(), task);
-        });
-        // TODO
+        idTaskMap.forEach((id, task) -> urlTaskMap.put(task.getUrl(), task));
         return this;
     }
 
     public void release() {
-        // TODO
+        allGraphs.clear();
+        urlTaskMap.clear();
+        idTaskMap.forEach((id, task) -> task.release());
+        idTaskMap.clear();
     }
 
 
@@ -144,9 +144,7 @@ public final class DAGFlow {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        allGraphs.forEach((id, graph) -> {
-            sb.append(String.format("\n%s : (\n%s\n)", id, graph.toString()));
-        });
+        allGraphs.forEach((id, graph) -> sb.append(String.format("\n%s : (\n%s\n)", id, graph.toString())));
         return sb.toString();
     }
 }

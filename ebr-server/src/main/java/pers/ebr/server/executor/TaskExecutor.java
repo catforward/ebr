@@ -38,6 +38,7 @@ import static pers.ebr.server.common.Configs.KEY_EXECUTOR_MIN;
 import static pers.ebr.server.common.Const.*;
 import static pers.ebr.server.common.Topic.MSG_TASK_STATE_CHANGED;
 import static pers.ebr.server.common.model.TaskState.*;
+import static pers.ebr.server.common.model.TaskType.GROUP;
 
 /**
  * The Runner Verticle
@@ -70,11 +71,18 @@ public class TaskExecutor extends AbstractVerticle {
     }
 
     private void handlePeriodic(Long id) {
-        //logger.debug("Timer 1 fired: {}", id);
         IPool pool = Pool.get();
-        ITask task = null;
+        ITask task;
         while ((task = pool.pollRunnableTaskQueue()) != null) {
-            launchExecutableTask(task);
+            if (GROUP == task.getType()) {
+                JsonObject noticeParam = new JsonObject();
+                noticeParam.put(MSG_PARAM_TASK_INSTANCE_ID, task.getInstanceId());
+                noticeParam.put(MSG_PARAM_TASK_URL, task.getUrl());
+                noticeParam.put(MSG_PARAM_TASK_STATE, ACTIVE);
+                vertx.eventBus().publish(MSG_TASK_STATE_CHANGED, noticeParam);
+            } else{
+                launchExecutableTask(task);
+            }
         }
     }
 

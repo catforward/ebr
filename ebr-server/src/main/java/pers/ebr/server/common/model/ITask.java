@@ -63,4 +63,6 @@ public interface ITask {
     void addSubTask(ITask other);
     void setInstanceId(String newId);
 
+    void release();
+
 }
