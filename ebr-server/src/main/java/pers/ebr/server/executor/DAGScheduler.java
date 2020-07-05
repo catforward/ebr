@@ -37,7 +37,6 @@ import static pers.ebr.server.common.Const.*;
 import static pers.ebr.server.common.Topic.*;
 import static pers.ebr.server.common.model.TaskState.*;
 import static pers.ebr.server.common.model.TaskType.GROUP;
-import static pers.ebr.server.common.model.TaskType.UNIT;
 
 /**
  * The SchedulerVerticle
@@ -82,9 +81,9 @@ public class DAGScheduler extends AbstractVerticle {
     }
 
     private void handleTaskStateChanged(Message<JsonObject> msg) {
-        String taskUrl = msg.body().getString(MSG_PARAM_TASK_URL, "UNKNOWN");
-        String taskInstanceId = msg.body().getString(MSG_PARAM_TASK_INSTANCE_ID, "UNKNOWN");
-        TaskState newState = TaskState.valueOf(msg.body().getString(MSG_PARAM_TASK_STATE, "UNKNOWN"));
+        String taskUrl = msg.body().getString(MSG_PARAM_TASK_URL, "");
+        String taskInstanceId = msg.body().getString(MSG_PARAM_TASK_INSTANCE_ID, "");
+        TaskState newState = TaskState.valueOf(msg.body().getString(MSG_PARAM_TASK_STATE, "-1"));
 
         DAGFlow flow = Optional.ofNullable(Pool.get().getFlowByInstanceId(taskInstanceId)).orElseThrow();
         ITask target = Optional.ofNullable(flow.getTaskByUrl(taskUrl)).orElseThrow();
@@ -107,7 +106,7 @@ public class DAGScheduler extends AbstractVerticle {
             return;
         }
 
-        if (isRootTask(target)) {
+        if (target.isRootTask()) {
             if (COMPLETE == newState || FAILED == newState) {
                 JsonObject param = new JsonObject();
                 param.put(MSG_PARAM_TASK_INSTANCE_ID, instanceId);
@@ -156,10 +155,6 @@ public class DAGScheduler extends AbstractVerticle {
                 }
             });
         }
-    }
-
-    private boolean isRootTask(ITask task) {
-        return task.equals(task.getGroup());
     }
 
 }

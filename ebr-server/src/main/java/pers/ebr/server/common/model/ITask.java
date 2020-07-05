@@ -62,6 +62,7 @@ public interface ITask {
     void addDependTask(ITask other);
     void addSubTask(ITask other);
     void setInstanceId(String newId);
+    boolean isRootTask();
 
     void release();
 

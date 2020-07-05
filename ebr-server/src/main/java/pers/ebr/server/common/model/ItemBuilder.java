@@ -43,6 +43,7 @@ public final class ItemBuilder {
         DAGFlow flow = createDAGFlow(define);
         updateFlowInfo(flow);
         updateDAGInfo(flow);
+        updateTaskUrl(flow.getRootTask());
         return flow.build();
     }
 
@@ -63,17 +64,15 @@ public final class ItemBuilder {
     }
 
     private void updateFlowInfo(DAGFlow flow) {
-        flow.getTaskIdStream().forEach(id -> {
+        flow.getTaskIdSet().stream().forEach(id -> {
             TaskImpl task = Optional.ofNullable(flow.getTaskById(id)).orElseThrow();
             // 更新Flow信息
             // 判断是否是flow元素
-            if (isRootTask(task)) {
+            if (task.isRootTask()) {
                 if (Optional.ofNullable(flow.getRootTask()).isPresent()) {
-                    logger.error("only one flow can be define in a signal file. id:{}", task.getId());
-                    throw new RuntimeException(String.format("only one flow can be define in a signal file. id:[%s]", task.getId()));
+                    throw new RuntimeException(String.format("only one root task can be define in a signal file. id:[%s]", task.getId()));
                 }
                 task.setGroup(task);
-                task.setUrl(String.format("/%s", task.getId()));
                 flow.setRootTask(task);
                 flow.addTaskGraph(task.getId(), makeEmptyGraph());
             } else {
@@ -87,15 +86,14 @@ public final class ItemBuilder {
                     task.addDependTask(depTask);
                 });
                 task.setGroup(groupTask);
-                task.setUrl(String.format("%s/%s", groupTask.getUrl(), task.getId()));
             }
         });
     }
 
     private void updateDAGInfo(DAGFlow flow) {
-        flow.getTaskIdStream().forEach(id -> {
+        flow.getTaskIdSet().forEach(id -> {
             TaskImpl task = Optional.ofNullable(flow.getTaskById(id)).orElseThrow();
-            if (isRootTask(task)) {
+            if (task.isRootTask()) {
                 // do nothing
                 return;
             }
@@ -113,11 +111,25 @@ public final class ItemBuilder {
         });
     }
 
+    private void updateTaskUrl(ITask task) {
+        if (task.isRootTask()) {
+            task.setUrl(String.format("/%s", task.getId()));
+        } else {
+            task.setUrl(String.format("%s/%s", task.getGroup().getUrl(), task.getId()));
+        }
+        if (GROUP == task.getType()) {
+            for (ITask sub : task.getSubTaskList()) {
+                if (GROUP == sub.getType()) {
+                    updateTaskUrl(sub);
+                } else {
+                    sub.setUrl(String.format("%s/%s", sub.getGroup().getUrl(), sub.getId()));
+                }
+            }
+        }
+    }
+
     private DirectedGraph<ITask> makeEmptyGraph() {
         return GraphBuilder.directed().setAllowsSelfLoops(false).build();
     }
 
-    private boolean isRootTask(TaskImpl item) {
-        return item.getId() == null || item.getId().strip().isEmpty() || item.getId().equalsIgnoreCase(item.getGroupId());
-    }
 }

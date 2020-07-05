@@ -29,6 +29,7 @@ import pers.ebr.server.manager.TaskManager;
 import pers.ebr.server.executor.DAGScheduler;
 import pers.ebr.server.common.repo.Repository;
 import pers.ebr.server.manager.HttpServer;
+import pers.ebr.server.manager.TaskStateSaver;
 
 /**
  * The Launcher of EBR-Server
@@ -92,6 +93,11 @@ public class Main {
                 .setConfig(Configs.get())
                 .setInstances(1).setWorker(true);
         vertx.deployVerticle(TaskExecutor::new, execOpts);
+
+        DeploymentOptions saverOpts = new DeploymentOptions()
+                .setConfig(Configs.get())
+                .setInstances(1).setWorker(true);
+        vertx.deployVerticle(TaskStateSaver::new, saverOpts);
     }
 
     private static void deployHttpVerticle() {

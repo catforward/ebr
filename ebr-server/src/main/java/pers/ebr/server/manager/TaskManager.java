@@ -83,8 +83,9 @@ public class TaskManager extends AbstractVerticle {
         try {
             Optional<JsonObject> flowBody = Optional.ofNullable(msg.body().getJsonObject(REQUEST_PARAM_PARAM));
             DAGFlow flow = new ItemBuilder().buildDagTaskFlow(flowBody.orElseThrow());
-            Repository.get().setFlowDef(Optional.ofNullable(flow.getRootTask()).orElseThrow().getId(),
+            Repository.get().setFlow(Optional.ofNullable(flow.getRootTask()).orElseThrow().getId(),
                                         flowBody.orElseThrow().encode());
+            Repository.get().setTaskDetail(flow);
         } catch (Exception ex) {
             logger.error("procedure [saveTaskFlow] error:", ex);
             ret = false;
@@ -122,7 +123,7 @@ public class TaskManager extends AbstractVerticle {
             JsonObject reqBody = Optional.ofNullable(msg.body().getJsonObject(REQUEST_PARAM_PARAM)).orElse(new JsonObject());
             String flowId = reqBody.getString(TASK_ID, "");
             if (!flowId.isBlank()) {
-                String flowDefine = Repository.get().getFlowDef(flowId);
+                String flowDefine = Repository.get().getFlow(flowId);
                 JsonObject retInfo = new JsonObject();
                 retInfo.put(flowId, new JsonObject(flowDefine));
                 result.put(RESPONSE_RESULT, retInfo);
@@ -155,7 +156,7 @@ public class TaskManager extends AbstractVerticle {
                 return;
             }
             // 暂时只有启动flow的http请求
-            String flowDefine = Repository.get().getFlowDef(flowId);
+            String flowDefine = Repository.get().getFlow(flowId);
             if (flowDefine == null || flowDefine.isBlank()) {
                 JsonObject errInfo = new JsonObject();
                 errInfo.put(RESPONSE_INFO, String.format("define is not exists (id: [%s])", flowId));

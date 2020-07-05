@@ -25,6 +25,8 @@ package pers.ebr.server.common.repo;
  * @author l.gong
  */
 interface SqliteRepositoryConst {
+    String NULL_OBJ = "none";
+
     String VIEW_EXISTS = "VIEW_EXISTS";
     String CREATE_VIEW = "CREATE_VIEW";
     String DROP_VIEW = "DROP_VIEW";
@@ -35,4 +37,10 @@ interface SqliteRepositoryConst {
     String SAVE_FLOW = "SAVE_FLOW";
     String LOAD_FLOW = "LOAD_FLOW";
     String LOAD_ALL_FLOW = "LOAD_ALL_FLOW";
+    String SAVE_TASK = "SAVE_TASK";
+
+    String FLOW_HIST_EXISTS = "FLOW_HIST_EXISTS";
+    String SAVE_FLOW_HIST = "SAVE_FLOW_HIST";
+    String UPDATE_FLOW_HIST_STATE = "UPDATE_FLOW_HIST_STATE";
+    String UPDATE_FLOW_HIST_RESULT = "UPDATE_FLOW_HIST_RESULT";
 }

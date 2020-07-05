@@ -87,6 +87,7 @@ final class SqliteRepositoryManager implements IRepositoryManager {
                         execTableCreate(key.toString(), fullTableName);
                     }
                 } catch (SQLException | IOException ex) {
+                    logger.error("create table error [{}]", fullTableName);
                     throw new RuntimeException(ex);
                 }
             });

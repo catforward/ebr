@@ -22,9 +22,9 @@ import org.slf4j.LoggerFactory;
 import pers.ebr.server.common.graph.DirectedGraph;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import static pers.ebr.server.common.model.TaskType.GROUP;
 
@@ -98,6 +98,12 @@ public final class DAGFlow {
         return idTaskMap.get(taskId);
     }
 
+    public Set<ITask> getAllTask() {
+        Set<ITask> tasks = new HashSet<>(idTaskMap.size());
+        idTaskMap.forEach((id, task) -> tasks.add(task));
+        return tasks;
+    }
+
     public DirectedGraph<ITask> getMutableTaskGraph(String taskId) {
         return allGraphs.get(taskId);
     }
@@ -126,8 +132,8 @@ public final class DAGFlow {
         return instanceId;
     }
 
-    public Stream<String> getTaskIdStream() {
-        return idTaskMap.keySet().stream();
+    public Set<String> getTaskIdSet() {
+        return idTaskMap.keySet();
     }
 
     public boolean isEmpty() {

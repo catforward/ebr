@@ -20,11 +20,16 @@ package pers.ebr.server.common.repo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pers.ebr.server.common.Paths;
+import pers.ebr.server.common.model.DAGFlow;
+import pers.ebr.server.common.model.ITask;
+import pers.ebr.server.common.model.TaskState;
 
 import java.io.File;
 import java.sql.*;
 import java.util.*;
 
+import static pers.ebr.server.common.model.TaskState.COMPLETE;
+import static pers.ebr.server.common.model.TaskState.FAILED;
 import static pers.ebr.server.common.repo.SqliteRepositoryConst.*;
 
 /**
@@ -44,31 +49,7 @@ final class SqliteRepositoryImpl implements IRepository {
     }
 
     @Override
-    public void connect() throws RepositoryException {
-        String connStr = String.format("jdbc:sqlite:%s%s%s",
-                Paths.getDataPath(), File.separator, SqliteRepositoryManager.SCHEMA);
-        try {
-            connection = DriverManager.getConnection(connStr);
-            connection.setAutoCommit(false);
-        } catch (SQLException ex) {
-            throw new RepositoryException(ex);
-        }
-    }
-
-    @Override
-    public void release() throws RepositoryException {
-        try {
-            if (connection != null) {
-                connection.close();
-            }
-        } catch (SQLException ex) {
-             logger.error("database error occurred...", ex);
-             throw new RepositoryException(ex);
-        }
-    }
-
-    @Override
-    public void setFlowDef(String flowId, String flowDetail) throws RepositoryException {
+    public void setFlow(String flowId, String flowDetail) throws RepositoryException {
         String saveSql = sqlTpl.getProperty(SAVE_FLOW);
         try (PreparedStatement statement = connection.prepareStatement(saveSql);) {
             statement.setString(1, flowId);
@@ -83,7 +64,102 @@ final class SqliteRepositoryImpl implements IRepository {
     }
 
     @Override
-    public String getFlowDef(String flowId) throws RepositoryException {
+    public void setTaskDetail(DAGFlow flow) throws RepositoryException {
+        Set<ITask> tasks = flow.getAllTask();
+        if (tasks.isEmpty()) {
+            return;
+        }
+        String saveSql = sqlTpl.getProperty(SAVE_TASK);
+        try (PreparedStatement statement = connection.prepareStatement(saveSql);){
+            for (ITask task : tasks) {
+                statement.setString(1, task.getUrl());
+                statement.setString(2, task.getGroupId());
+                statement.setString(3, task.getId());
+                String objStr = Optional.ofNullable(task.getDesc()).orElse(NULL_OBJ);
+                if (objStr.isEmpty()) {
+                    statement.setString(4, NULL_OBJ);
+                } else {
+                    statement.setString(4, objStr);
+                }
+                objStr = Optional.ofNullable(task.getCmdLine()).orElse(NULL_OBJ);
+                if (objStr.isEmpty()) {
+                    statement.setString(5, NULL_OBJ);
+                } else {
+                    statement.setString(5, objStr);
+                }
+                if (task.getDependIdList().isEmpty()) {
+                    statement.setString(6, NULL_OBJ);
+                } else {
+                    statement.setString(6, task.getDependIdList().toString());
+                }
+                statement.addBatch();
+            }
+            statement.executeBatch();
+            commit();
+        } catch (SQLException ex) {
+            rollback();
+            logger.error("database error occurred...", ex);
+            throw new RepositoryException(ex);
+        }
+    }
+
+    @Override
+    public void setTaskState(String instanceId, String taskUrl, TaskState newState) throws RepositoryException {
+        // TODO
+        String sql = sqlTpl.getProperty(FLOW_HIST_EXISTS);
+        boolean histRecExist = false;
+        try {
+            var result = query(sql, instanceId, taskUrl);
+            if (!result.isEmpty()) {
+                histRecExist = Integer.parseInt(result.get(0).get("cnt")) >= 1;
+            }
+        } catch (SQLException ex) {
+            logger.error("database error occurred...", ex);
+            throw new RepositoryException(ex);
+        }
+
+        try {
+            if (histRecExist) {
+                if (COMPLETE == newState || FAILED == newState) {
+                    sql = sqlTpl.getProperty(UPDATE_FLOW_HIST_RESULT);
+                    try (PreparedStatement statement = connection.prepareStatement(sql);) {
+                        statement.setLong(1, System.currentTimeMillis());
+                        statement.setInt(2, newState.ordinal());
+                        statement.setString(3, instanceId);
+                        statement.setString(4, taskUrl);
+                        statement.executeUpdate();
+                        commit();
+                    }
+                } else {
+                    sql = sqlTpl.getProperty(UPDATE_FLOW_HIST_STATE);
+                    try (PreparedStatement statement = connection.prepareStatement(sql);) {
+                        statement.setInt(1, newState.ordinal());
+                        statement.setString(2, instanceId);
+                        statement.setString(3, taskUrl);
+                        statement.executeUpdate();
+                        commit();
+                    }
+                }
+            } else {
+                sql = sqlTpl.getProperty(SAVE_FLOW_HIST);
+                try (PreparedStatement statement = connection.prepareStatement(sql);) {
+                    statement.setString(1, instanceId);
+                    statement.setString(2, taskUrl);
+                    statement.setLong(3, System.currentTimeMillis());
+                    statement.setInt(4, newState.ordinal());
+                    statement.executeUpdate();
+                    commit();
+                }
+            }
+        } catch (SQLException ex) {
+            rollback();
+            logger.error("database error occurred...", ex);
+            throw new RepositoryException(ex);
+        }
+    }
+
+    @Override
+    public String getFlow(String flowId) throws RepositoryException {
         String loadSql = sqlTpl.getProperty(LOAD_FLOW);
         try {
             List<Map<String, String>> result = query(loadSql, flowId);
@@ -113,7 +189,28 @@ final class SqliteRepositoryImpl implements IRepository {
         return flows;
     }
 
-    @Override
+    public void connect() throws RepositoryException {
+        String connStr = String.format("jdbc:sqlite:%s%s%s",
+                Paths.getDataPath(), File.separator, SqliteRepositoryManager.SCHEMA);
+        try {
+            connection = DriverManager.getConnection(connStr);
+            connection.setAutoCommit(false);
+        } catch (SQLException ex) {
+            throw new RepositoryException(ex);
+        }
+    }
+
+    public void release() throws RepositoryException {
+        try {
+            if (connection != null) {
+                connection.close();
+            }
+        } catch (SQLException ex) {
+            logger.error("database error occurred...", ex);
+            throw new RepositoryException(ex);
+        }
+    }
+
     public void commit() {
         try {
             if (connection != null) {
@@ -124,7 +221,6 @@ final class SqliteRepositoryImpl implements IRepository {
         }
     }
 
-    @Override
     public void rollback() {
         try {
             if (connection != null) {

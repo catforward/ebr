@@ -210,10 +210,16 @@ public class TaskImpl implements ITask {
     }
 
     @Override
+    public boolean isRootTask() {
+        return taskId == null || taskId.strip().isEmpty() || taskId.equalsIgnoreCase(groupId);
+    }
+
+    @Override
     public void release() {
         depTaskSet.clear();
         subTaskList.clear();
         groupTask = null;
+        instanceId = "";
     }
 
 }
