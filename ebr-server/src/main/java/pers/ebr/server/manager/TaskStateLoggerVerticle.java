@@ -24,7 +24,7 @@ import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pers.ebr.server.common.model.TaskState;
-import pers.ebr.server.common.repo.Repository;
+import pers.ebr.server.repository.Repository;
 
 import static pers.ebr.server.common.Const.*;
 import static pers.ebr.server.common.Topic.MSG_TASK_STATE_CHANGED;
@@ -35,8 +35,8 @@ import static pers.ebr.server.common.model.TaskState.UNKNOWN;
  *
  * @author l.gong
  */
-public class TaskStateSaver extends AbstractVerticle {
-    private final static Logger logger = LoggerFactory.getLogger(TaskStateSaver.class);
+public class TaskStateLoggerVerticle extends AbstractVerticle {
+    private final static Logger logger = LoggerFactory.getLogger(TaskStateLoggerVerticle.class);
 
     @Override
     public void start() throws Exception {

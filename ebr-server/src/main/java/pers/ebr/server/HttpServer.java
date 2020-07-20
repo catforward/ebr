@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.server.manager;
+package pers.ebr.server;
 
 import io.vertx.ext.web.handler.FaviconHandler;
 import org.slf4j.Logger;
@@ -38,7 +38,7 @@ import static pers.ebr.server.common.Configs.KEY_HTTP_PORT;
 public class HttpServer extends AbstractVerticle {
 
     final static String WEB_ROOT = "static";
-    final static String INDEX_HTML = "e-panel.html";
+    final static String INDEX_HTML = "ebr.html";
     final static String PROC_URL = "/proc";
     final static String FAVICON = "/favicon.ico";
     final static String GET_REQ_ALL = "/*";
@@ -59,7 +59,7 @@ public class HttpServer extends AbstractVerticle {
         router.route().handler(BodyHandler.create());
         router.route().failureHandler(ErrorHandler.create());
         router.get(GET_REQ_ALL).handler(staticHandler);
-        router.post(PROC_URL).handler(new HttpRequestProcessor());
+        router.post(PROC_URL).handler(new HttpReqDispatcher());
 
         server.requestHandler(router::handle).listen(config.getInteger(KEY_HTTP_PORT), res -> {
             if (res.succeeded()) {

@@ -15,21 +15,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.server.common.repo;
+package pers.ebr.server.pool;
 
 /**
  * <pre>
- * The Repository Exception Interface
+ * The TaskPool Exception Interface
  * </pre>
  *
  * @author l.gong
  */
-public final class RepositoryException extends Exception {
-    public RepositoryException(Throwable cause) {
+public final class PoolException extends Exception {
+    public PoolException(Throwable cause) {
         super(cause);
     }
 
-    public RepositoryException(String message, Throwable cause) {
+    public PoolException(String message, Throwable cause) {
         super(message, cause);
     }
 }

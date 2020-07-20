@@ -29,7 +29,7 @@ public interface Const {
     String ENV_EBR_ROOT = "EBR_ROOT";
 
     /** Http请求响应参数 */
-    String REQUEST_PARAM_PATH = "path";
+    String REQUEST_PARAM_REQ = "req";
     String REQUEST_PARAM_PARAM = "param";
     String RESPONSE_ERROR = "error";
     String RESPONSE_RESULT = "result";

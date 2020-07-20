@@ -23,8 +23,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pers.ebr.server.common.model.ITask;
 import pers.ebr.server.common.model.TaskState;
-import pers.ebr.server.common.pool.IPool;
-import pers.ebr.server.common.pool.Pool;
+import pers.ebr.server.pool.IPool;
+import pers.ebr.server.pool.Pool;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -45,8 +45,8 @@ import static pers.ebr.server.common.model.TaskType.GROUP;
  *
  * @author l.gong
  */
-public class TaskExecutor extends AbstractVerticle {
-    private final static Logger logger = LoggerFactory.getLogger(TaskExecutor.class);
+public class ExternalCommandExecutorVerticle extends AbstractVerticle {
+    private final static Logger logger = LoggerFactory.getLogger(ExternalCommandExecutorVerticle.class);
     /** 执行队列 */
     private ExecutorService executorPool;
     long timerId;

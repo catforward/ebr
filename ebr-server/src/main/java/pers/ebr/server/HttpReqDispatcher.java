@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.server.manager;
+package pers.ebr.server;
 
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Handler;
@@ -26,7 +26,7 @@ import io.vertx.ext.web.RoutingContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static pers.ebr.server.common.Const.REQUEST_PARAM_PATH;
+import static pers.ebr.server.common.Const.REQUEST_PARAM_REQ;
 import static pers.ebr.server.common.Topic.*;
 
 /**
@@ -34,18 +34,18 @@ import static pers.ebr.server.common.Topic.*;
  *
  * @author l.gong
  */
-public class HttpRequestProcessor implements Handler<RoutingContext> {
-    private final static Logger logger = LoggerFactory.getLogger(HttpRequestProcessor.class);
+public class HttpReqDispatcher implements Handler<RoutingContext> {
+    private final static Logger logger = LoggerFactory.getLogger(HttpReqDispatcher.class);
 
     @Override
     public void handle(RoutingContext routingContext) {
         JsonObject reqBody = routingContext.getBodyAsJson();
         logger.info("HTTP REQ PATH: {} BODY: {}", routingContext.normalisedPath(), reqBody);
-        String address = reqBody.getString(REQUEST_PARAM_PATH, "");
+        String address = reqBody.getString(REQUEST_PARAM_REQ, "");
         switch (address) {
             case REQ_GET_SERVER_INFO:
-            case REQ_VALIDATE_FLOW:
-            case REQ_SAVE_FLOW:
+            case REQ_VALIDATE_WORKFLOW:
+            case REQ_SAVE_WORKFLOW:
             case REQ_GET_ALL_FLOW:
             case REQ_GET_FLOW_STATUS:
             case REQ_RUN_FLOW:

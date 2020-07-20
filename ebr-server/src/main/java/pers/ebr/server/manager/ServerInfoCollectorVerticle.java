@@ -33,8 +33,8 @@ import static pers.ebr.server.common.Topic.REQ_GET_SERVER_INFO;
  *
  * @author l.gong
  */
-public class ServerInfoCollector extends AbstractVerticle {
-    private final static Logger logger = LoggerFactory.getLogger(ServerInfoCollector.class);
+public class ServerInfoCollectorVerticle extends AbstractVerticle {
+    private final static Logger logger = LoggerFactory.getLogger(ServerInfoCollectorVerticle.class);
 
     private final static String RESPONSE_RESULT_INFO_ENV = "env";
     private final static String RESPONSE_RESULT_INFO_CONFIG = "config";
@@ -55,7 +55,7 @@ public class ServerInfoCollector extends AbstractVerticle {
         logger.info("recv data->{}", msg.body().toString());
         JsonObject result = new JsonObject();
         JsonObject resultBody = new JsonObject();
-        result.put(REQUEST_PARAM_PATH, msg.body().getString(REQUEST_PARAM_PATH));
+        result.put(REQUEST_PARAM_REQ, msg.body().getString(REQUEST_PARAM_REQ));
         result.put(RESPONSE_RESULT, resultBody);
 
         // get all environment variables

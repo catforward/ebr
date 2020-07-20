@@ -27,8 +27,8 @@ import pers.ebr.server.common.model.ITask;
 import pers.ebr.server.common.model.DAGFlow;
 import pers.ebr.server.common.model.ItemBuilder;
 import pers.ebr.server.common.model.TaskState;
-import pers.ebr.server.common.pool.IPool;
-import pers.ebr.server.common.pool.Pool;
+import pers.ebr.server.pool.IPool;
+import pers.ebr.server.pool.Pool;
 
 import java.util.Optional;
 import java.util.UUID;
@@ -43,8 +43,8 @@ import static pers.ebr.server.common.model.TaskType.GROUP;
  *
  * @author l.gong
  */
-public class DAGScheduler extends AbstractVerticle {
-    private final static Logger logger = LoggerFactory.getLogger(DAGScheduler.class);
+public class DAGSchedulerVerticle extends AbstractVerticle {
+    private final static Logger logger = LoggerFactory.getLogger(DAGSchedulerVerticle.class);
 
     @Override
     public void start() throws Exception {

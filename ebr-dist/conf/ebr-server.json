@@ -1,5 +1,3 @@
 {
-  "node.id" :"node-1",
-  "node.type" : "server",
   "http.port" : 8080
 }

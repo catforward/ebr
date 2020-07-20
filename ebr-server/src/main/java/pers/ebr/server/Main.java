@@ -22,14 +22,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import pers.ebr.server.common.Configs;
-import pers.ebr.server.common.pool.Pool;
-import pers.ebr.server.executor.TaskExecutor;
-import pers.ebr.server.manager.ServerInfoCollector;
-import pers.ebr.server.manager.TaskManager;
-import pers.ebr.server.executor.DAGScheduler;
-import pers.ebr.server.common.repo.Repository;
-import pers.ebr.server.manager.HttpServer;
-import pers.ebr.server.manager.TaskStateSaver;
+import pers.ebr.server.manager.WorkflowEditorVerticle;
+import pers.ebr.server.manager.WorkflowManagerVerticle;
+import pers.ebr.server.pool.Pool;
+import pers.ebr.server.executor.ExternalCommandExecutorVerticle;
+import pers.ebr.server.manager.ServerInfoCollectorVerticle;
+import pers.ebr.server.executor.DAGSchedulerVerticle;
+import pers.ebr.server.repository.Repository;
+import pers.ebr.server.manager.TaskStateLoggerVerticle;
 
 /**
  * The Launcher of EBR-Server
@@ -79,25 +79,29 @@ public class Main {
         DeploymentOptions serverInfoOpts = new DeploymentOptions()
                 .setConfig(Configs.get())
                 .setInstances(1).setWorker(true);
-        vertx.deployVerticle(ServerInfoCollector::new, serverInfoOpts);
+        vertx.deployVerticle(ServerInfoCollectorVerticle::new, serverInfoOpts);
+
+        DeploymentOptions editOpts = new DeploymentOptions()
+                .setInstances(1).setWorker(true);
+        vertx.deployVerticle(WorkflowEditorVerticle::new, editOpts);
 
         DeploymentOptions mngOpts = new DeploymentOptions()
                 .setInstances(1).setWorker(true);
-        vertx.deployVerticle(TaskManager::new, mngOpts);
+        vertx.deployVerticle(WorkflowManagerVerticle::new, mngOpts);
 
         DeploymentOptions schdOpts = new DeploymentOptions()
                 .setInstances(1).setWorker(true);
-        vertx.deployVerticle(DAGScheduler::new, schdOpts);
+        vertx.deployVerticle(DAGSchedulerVerticle::new, schdOpts);
 
         DeploymentOptions execOpts = new DeploymentOptions()
                 .setConfig(Configs.get())
                 .setInstances(1).setWorker(true);
-        vertx.deployVerticle(TaskExecutor::new, execOpts);
+        vertx.deployVerticle(ExternalCommandExecutorVerticle::new, execOpts);
 
         DeploymentOptions saverOpts = new DeploymentOptions()
                 .setConfig(Configs.get())
                 .setInstances(1).setWorker(true);
-        vertx.deployVerticle(TaskStateSaver::new, saverOpts);
+        vertx.deployVerticle(TaskStateLoggerVerticle::new, saverOpts);
     }
 
     private static void deployHttpVerticle() {

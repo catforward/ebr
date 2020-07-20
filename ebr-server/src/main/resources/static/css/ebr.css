@@ -75,9 +75,15 @@ html, body {
     margin-top: 70px;
 }
 
+.ebr-flex-col-1 {
+    padding: 5px 10px 5px 10px;
+    width: 15%;
+    overflow-y: auto;
+}
+
 .ebr-flex-col-2 {
     padding: 5px 10px 5px 10px;
-    width: 25%;
+    width: 20%;
     overflow-y: auto;
 }
 
@@ -113,6 +119,12 @@ html, body {
 
 .ebr-flex-col-8 {
     padding: 5px 10px 5px 10px;
+    width: 80%;
+    overflow-y: auto;
+}
+
+.ebr-flex-col-9 {
+    padding: 5px 10px 5px 10px;
     width: 85%;
     overflow-y: auto;
 }
@@ -138,6 +150,22 @@ html, body {
 .ebr-card-flex-bar-btn-ul li a {
     display: inline-block;
     padding-top: 0.5em;
+}
+
+.ebr-pr30 {
+    padding-right: 30px!important;
+}
+
+.ebr-ml20 {
+    margin-left: 20px!important;
+}
+
+.ebr-mt20 {
+    margin-top: 20px!important;
+}
+
+.ebr-mb30 {
+    margin-bottom: 30px!important;
 }
 
 /* =========== component ========== */

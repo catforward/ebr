@@ -15,17 +15,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.server.common.repo;
+package pers.ebr.server.pool;
+
+import pers.ebr.server.common.model.ITask;
+import pers.ebr.server.common.model.DAGFlow;
 
 /**
- * <pre>
- * The Repository Manager Interface
- * </pre>
+ * The TaskPool Interface
  *
  * @author l.gong
  */
-interface IRepositoryManager {
-    void init() throws RepositoryException;
-    void finish() throws RepositoryException;
-    IRepository getRepository();
+public interface IPool {
+    IPool init();
+    void close();
+
+    DAGFlow getFlowByUrl(String url);
+    DAGFlow getFlowByInstanceId(String instanceId);
+    void setFlow(DAGFlow flow);
+    DAGFlow removeFlowByInstanceId(String instanceId);
+
+    void addRunnableTaskQueue(ITask task);
+    ITask pollRunnableTaskQueue();
 }

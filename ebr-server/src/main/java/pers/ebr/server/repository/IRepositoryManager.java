@@ -15,24 +15,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.server.common.repo;
-
-import pers.ebr.server.common.model.DAGFlow;
-import pers.ebr.server.common.model.TaskState;
-
-import java.util.List;
+package pers.ebr.server.repository;
 
 /**
  * <pre>
- * The Repository Interface
+ * The Repository Manager Interface
  * </pre>
  *
  * @author l.gong
  */
-public interface IRepository {
-    void setFlow(String flowId, String flowDetail) throws RepositoryException;
-    void setTaskDetail(DAGFlow flow) throws RepositoryException;
-    void setTaskState(String instanceId, String taskUrl, TaskState newState) throws RepositoryException;
-    String getFlow(String flowId) throws RepositoryException;
-    List<String> getAllFlowId() throws RepositoryException;
+interface IRepositoryManager {
+    void init() throws RepositoryException;
+    void finish() throws RepositoryException;
+    IRepository getRepository();
 }

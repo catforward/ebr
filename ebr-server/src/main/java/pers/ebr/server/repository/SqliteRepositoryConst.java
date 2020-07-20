@@ -15,25 +15,32 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.server.common.pool;
-
-import pers.ebr.server.common.model.ITask;
-import pers.ebr.server.common.model.DAGFlow;
+package pers.ebr.server.repository;
 
 /**
- * The TaskPool Interface
+ * <pre>
+ * The Defines of DataBase
+ * </pre>
  *
  * @author l.gong
  */
-public interface IPool {
-    IPool init();
-    void close();
+interface SqliteRepositoryConst {
+    String NULL_OBJ = "none";
 
-    DAGFlow getFlowByUrl(String url);
-    DAGFlow getFlowByInstanceId(String instanceId);
-    void setFlow(DAGFlow flow);
-    DAGFlow removeFlowByInstanceId(String instanceId);
+    String VIEW_EXISTS = "VIEW_EXISTS";
+    String CREATE_VIEW = "CREATE_VIEW";
+    String DROP_VIEW = "DROP_VIEW";
+    String TABLE_EXISTS = "TABLE_EXISTS";
+    String DROP_TABLE = "DROP_TABLE";
+    String RENAME_TABLE = "RENAME_TABLE";
+    String GET_TABLE_NAME = "GET_TABLE_NAME";
+    String SAVE_FLOW = "SAVE_FLOW";
+    String LOAD_FLOW = "LOAD_FLOW";
+    String LOAD_ALL_FLOW = "LOAD_ALL_FLOW";
+    String SAVE_TASK = "SAVE_TASK";
 
-    void addRunnableTaskQueue(ITask task);
-    ITask pollRunnableTaskQueue();
+    String FLOW_HIST_EXISTS = "FLOW_HIST_EXISTS";
+    String SAVE_FLOW_HIST = "SAVE_FLOW_HIST";
+    String UPDATE_FLOW_HIST_STATE = "UPDATE_FLOW_HIST_STATE";
+    String UPDATE_FLOW_HIST_RESULT = "UPDATE_FLOW_HIST_RESULT";
 }

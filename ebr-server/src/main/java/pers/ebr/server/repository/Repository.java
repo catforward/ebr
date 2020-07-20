@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.server.common.repo;
+package pers.ebr.server.repository;
 
 import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;

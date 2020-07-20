@@ -26,12 +26,29 @@ package pers.ebr.server.common;
  */
 public interface Topic {
 
-    /** 获取服务器信息 */
-    String REQ_GET_SERVER_INFO = "req.info.GetServerInfo";
-    /** 服务器端验证task flow的定义合法性 */
-    String REQ_VALIDATE_FLOW = "req.flow.ValidateFlow";
-    /** 保存task flow定义 */
-    String REQ_SAVE_FLOW = "req.flow.SaveFlow";
+    /**
+     * 获取服务器信息
+     * 请求：{req: "req.GetServerInfo", param: {空参数}}
+     * 正常响应：{req: "req.GetServerInfo", result: {config:{key-value数据}, env:{key-value数据}}}
+     */
+    String REQ_GET_SERVER_INFO = "req.GetServerInfo";
+
+    /**
+     * 服务器端验证workflow的定义合法性
+     * 请求：{req: "req.ValidateWorkflow", param: {workflow的json定义体}}
+     * 正常响应：{req: "req.ValidateWorkflow", result: {空数据 }}
+     * 异常响应：{req: "req.ValidateWorkflow", error: {空数据 }}
+     */
+    String REQ_VALIDATE_WORKFLOW = "req.ValidateWorkflow";
+
+    /**
+     * 保存workflow定义
+     * 请求：{req: "req.SaveWorkFlow", param: {workflow的json定义体}}
+     * 正常响应：{req: "req.SaveWorkFlow", result: {空数据 }}
+     * 异常响应：{req: "req.SaveWorkFlow", error: {空数据 }}
+     */
+    String REQ_SAVE_WORKFLOW = "req.SaveWorkflow";
+
     /** 获取所有task flow的定义 */
     String REQ_GET_ALL_FLOW = "req.flow.GetAllFlow";
     /** 获取指定id的task flow定义及运行状态 */

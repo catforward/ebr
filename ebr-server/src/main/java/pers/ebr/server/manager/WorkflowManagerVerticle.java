@@ -20,36 +20,30 @@ package pers.ebr.server.manager;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pers.ebr.server.common.model.ItemBuilder;
-import pers.ebr.server.common.model.DAGFlow;
-import pers.ebr.server.common.repo.Repository;
+import pers.ebr.server.repository.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
-import static pers.ebr.server.common.model.ITask.TASK_ID;
 import static pers.ebr.server.common.Const.*;
 import static pers.ebr.server.common.Topic.*;
+import static pers.ebr.server.common.Topic.REQ_SHOW_FLOW_LOG;
+import static pers.ebr.server.common.model.ITask.TASK_ID;
 
 /**
  * The ManageVerticle
  *
  * @author l.gong
  */
-public class TaskManager extends AbstractVerticle {
-    private final static Logger logger = LoggerFactory.getLogger(TaskManager.class);
+public class WorkflowManagerVerticle extends AbstractVerticle {
+    private final static Logger logger = LoggerFactory.getLogger(WorkflowManagerVerticle.class);
 
     @Override
     public void start() throws Exception {
         super.start();
         EventBus bus = vertx.eventBus();
-        bus.consumer(REQ_VALIDATE_FLOW, this::handleValidateFlow);
-        bus.consumer(REQ_SAVE_FLOW, this::handleSaveFlow);
-        bus.consumer(REQ_GET_ALL_FLOW, this::handleGetAllFlow);
         bus.consumer(REQ_GET_FLOW_STATUS,  this::handleGetFlowStatus);
         bus.consumer(REQ_RUN_FLOW, this::handleRunFlow);
         bus.consumer(REQ_SHOW_FLOW_LOG, this::handleShowFlowLog);
@@ -60,65 +54,9 @@ public class TaskManager extends AbstractVerticle {
         super.stop();
     }
 
-    private void handleValidateFlow(Message<JsonObject> msg) {
-        JsonObject result = new JsonObject();
-        result.put(REQUEST_PARAM_PATH, msg.body().getString(REQUEST_PARAM_PATH));
-        boolean ret = false;
-        try {
-            Optional<JsonObject> flowBody = Optional.ofNullable(msg.body().getJsonObject(REQUEST_PARAM_PARAM));
-           DAGFlow flow = new ItemBuilder().buildDagTaskFlow(flowBody.orElseThrow());
-            logger.info("create a task flow -> {}", flow.toString());
-            ret = true;
-        } finally {
-            result.put(ret ? RESPONSE_RESULT : RESPONSE_ERROR, new JsonObject());
-            msg.reply(result);
-        }
-
-    }
-
-    private void handleSaveFlow(Message<JsonObject> msg) {
-        JsonObject result = new JsonObject();
-        result.put(REQUEST_PARAM_PATH, msg.body().getString(REQUEST_PARAM_PATH));
-        boolean ret = true;
-        try {
-            Optional<JsonObject> flowBody = Optional.ofNullable(msg.body().getJsonObject(REQUEST_PARAM_PARAM));
-            DAGFlow flow = new ItemBuilder().buildDagTaskFlow(flowBody.orElseThrow());
-            Repository.get().setFlow(Optional.ofNullable(flow.getRootTask()).orElseThrow().getId(),
-                                        flowBody.orElseThrow().encode());
-            Repository.get().setTaskDetail(flow);
-        } catch (Exception ex) {
-            logger.error("procedure [saveTaskFlow] error:", ex);
-            ret = false;
-        } finally {
-            result.put(ret ? RESPONSE_RESULT : RESPONSE_ERROR, new JsonObject());
-            msg.reply(result);
-        }
-
-    }
-
-    private void handleGetAllFlow(Message<JsonObject> msg) {
-        JsonObject result = new JsonObject();
-        result.put(REQUEST_PARAM_PATH, msg.body().getString(REQUEST_PARAM_PATH));
-        try {
-            List<String> flows = Repository.get().getAllFlowId();
-            if (!flows.isEmpty()) {
-                JsonArray array = new JsonArray();
-                flows.forEach(array::add);
-                result.put(RESPONSE_RESULT, array);
-            } else {
-                result.put(RESPONSE_RESULT, new JsonObject());
-            }
-        } catch (Exception ex) {
-            logger.error("procedure [handleGetAllTaskFlow] error:", ex);
-            result.put(RESPONSE_ERROR, new JsonObject());
-        } finally {
-            msg.reply(result);
-        }
-    }
-
     private void handleGetFlowStatus(Message<JsonObject> msg) {
         JsonObject result = new JsonObject();
-        result.put(REQUEST_PARAM_PATH, msg.body().getString(REQUEST_PARAM_PATH));
+        result.put(REQUEST_PARAM_REQ, msg.body().getString(REQUEST_PARAM_REQ));
         try {
             JsonObject reqBody = Optional.ofNullable(msg.body().getJsonObject(REQUEST_PARAM_PARAM)).orElse(new JsonObject());
             String flowId = reqBody.getString(TASK_ID, "");
@@ -144,7 +82,7 @@ public class TaskManager extends AbstractVerticle {
 
     private void handleRunFlow(Message<JsonObject> msg) {
         JsonObject result = new JsonObject();
-        result.put(REQUEST_PARAM_PATH, msg.body().getString(REQUEST_PARAM_PATH));
+        result.put(REQUEST_PARAM_REQ, msg.body().getString(REQUEST_PARAM_REQ));
         try {
             JsonObject reqBody = Optional.ofNullable(msg.body().getJsonObject(REQUEST_PARAM_PARAM)).orElse(new JsonObject());
             String flowId = reqBody.getString(TASK_ID, "");

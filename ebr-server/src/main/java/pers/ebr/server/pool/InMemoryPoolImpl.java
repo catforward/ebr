@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.server.common.pool;
+package pers.ebr.server.pool;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

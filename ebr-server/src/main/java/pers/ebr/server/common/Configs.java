@@ -44,8 +44,6 @@ public final class Configs {
     private final static String CONFIG_EXT = "extConfig";
     private final static String CONFIG_INNER = "innerConfig";
 
-    public final static String KEY_NODE_ID = "node.id";
-    public final static String KEY_NODE_TYPE = "node.type";
     public final static String KEY_MANAGER_REPO_TYPE = "manager.repo.type";
     public final static String KEY_EXECUTOR_POOL_TYPE = "executor.pool.type";
     public final static String KEY_EXECUTOR_MIN = "executor.min";
@@ -91,9 +89,6 @@ public final class Configs {
             config.mergeIn(holder.get(CONFIG_INNER).copy());
             return;
         }
-        // basic info
-        config.put(KEY_NODE_ID, extObj.getString(KEY_NODE_ID, innerObj.getString(KEY_NODE_ID)).strip());
-        config.put(KEY_NODE_TYPE, extObj.getString(KEY_NODE_TYPE, innerObj.getString(KEY_NODE_TYPE)).strip());
         // base info
         config.put(KEY_MANAGER_REPO_TYPE, extObj.getString(KEY_MANAGER_REPO_TYPE, innerObj.getString(KEY_MANAGER_REPO_TYPE)).strip());
         config.put(KEY_EXECUTOR_MIN, extObj.getInteger(KEY_EXECUTOR_MIN, innerObj.getInteger(KEY_EXECUTOR_MIN)));
@@ -105,17 +100,8 @@ public final class Configs {
     }
 
     private void validateConfig() throws InvalidPropertiesFormatException {
-        // basic info
-        String value = config.getString(KEY_NODE_ID, "").strip();
-        if (value.isEmpty()) {
-            throw new InvalidPropertiesFormatException(String.format("property [%s] cannot be empty...", KEY_NODE_ID));
-        }
-        value = config.getString(KEY_NODE_TYPE, "").strip();
-        if (value.isEmpty()) {
-            throw new InvalidPropertiesFormatException(String.format("property [%s] cannot be empty...", KEY_NODE_TYPE));
-        }
         // base info
-        value = config.getString(KEY_MANAGER_REPO_TYPE, "").strip();
+        String value = config.getString(KEY_MANAGER_REPO_TYPE, "").strip();
         if (value.isEmpty()) {
             throw new InvalidPropertiesFormatException(String.format("property [%s] cannot be empty...", KEY_MANAGER_REPO_TYPE));
         }
