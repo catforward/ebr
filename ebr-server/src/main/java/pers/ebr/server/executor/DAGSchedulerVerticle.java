@@ -24,8 +24,8 @@ import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pers.ebr.server.common.model.ITask;
-import pers.ebr.server.common.model.DAGFlow;
-import pers.ebr.server.common.model.ItemBuilder;
+import pers.ebr.server.common.model.DAGWorkflow;
+import pers.ebr.server.common.model.ModelItemBuilder;
 import pers.ebr.server.common.model.TaskState;
 import pers.ebr.server.pool.IPool;
 import pers.ebr.server.pool.Pool;
@@ -61,16 +61,16 @@ public class DAGSchedulerVerticle extends AbstractVerticle {
     }
 
     private void handleRunFlow(Message<JsonObject> msg) {
-        String flowId = msg.body().getString(MSG_PARAM_FLOW_ID, "");
-        String flowDefine= msg.body().getString(MSG_PARAM_FLOW_DEF, "");
-        DAGFlow flow = new ItemBuilder().buildDagTaskFlow(new JsonObject(flowDefine));
+        String flowId = msg.body().getString(MSG_PARAM_WORKFLOW_ID, "");
+        String flowDefine= msg.body().getString(MSG_PARAM_WORKFLOW_DEF, "");
+        DAGWorkflow flow = new ModelItemBuilder().buildDagTaskFlow(new JsonObject(flowDefine));
         if (flow.isEmpty()) {
             logger.error(String.format("incorrect define of [%s])", flowId));
             return;
         }
 
         IPool pool = Pool.get();
-        Optional<DAGFlow> oldOne = Optional.ofNullable(pool.getFlowByUrl(flow.getRootTask().getUrl()));
+        Optional<DAGWorkflow> oldOne = Optional.ofNullable(pool.getFlowByUrl(flow.getRootTask().getUrl()));
         if (oldOne.isPresent() && TaskState.ACTIVE == oldOne.get().getStatus()) {
             logger.error(String.format("task flow is already running. (id: [%s])", flowId));
             return;
@@ -82,10 +82,10 @@ public class DAGSchedulerVerticle extends AbstractVerticle {
 
     private void handleTaskStateChanged(Message<JsonObject> msg) {
         String taskUrl = msg.body().getString(MSG_PARAM_TASK_URL, "");
-        String taskInstanceId = msg.body().getString(MSG_PARAM_TASK_INSTANCE_ID, "");
+        String taskInstanceId = msg.body().getString(MSG_PARAM_INSTANCE_ID, "");
         TaskState newState = TaskState.valueOf(msg.body().getString(MSG_PARAM_TASK_STATE, "-1"));
 
-        DAGFlow flow = Optional.ofNullable(Pool.get().getFlowByInstanceId(taskInstanceId)).orElseThrow();
+        DAGWorkflow flow = Optional.ofNullable(Pool.get().getFlowByInstanceId(taskInstanceId)).orElseThrow();
         ITask target = Optional.ofNullable(flow.getTaskByUrl(taskUrl)).orElseThrow();
 
         updateTaskState(taskInstanceId, target, newState);
@@ -93,8 +93,8 @@ public class DAGSchedulerVerticle extends AbstractVerticle {
     }
 
     private void handleFlowFinished(Message<JsonObject> msg) {
-        String taskInstanceId = msg.body().getString(MSG_PARAM_TASK_INSTANCE_ID, "");
-        DAGFlow flow = Optional.ofNullable(Pool.get().removeFlowByInstanceId(taskInstanceId)).orElseThrow();
+        String taskInstanceId = msg.body().getString(MSG_PARAM_INSTANCE_ID, "");
+        DAGWorkflow flow = Optional.ofNullable(Pool.get().removeFlowByInstanceId(taskInstanceId)).orElseThrow();
         flow.release();
     }
 
@@ -109,14 +109,14 @@ public class DAGSchedulerVerticle extends AbstractVerticle {
         if (target.isRootTask()) {
             if (COMPLETE == newState || FAILED == newState) {
                 JsonObject param = new JsonObject();
-                param.put(MSG_PARAM_TASK_INSTANCE_ID, instanceId);
+                param.put(MSG_PARAM_INSTANCE_ID, instanceId);
                 param.put(MSG_PARAM_TASK_URL, target.getUrl());
                 vertx.eventBus().publish(MSG_FLOW_FINISHED, param);
             }
             return;
         } else if (FAILED == newState) {
             JsonObject param = new JsonObject();
-            param.put(MSG_PARAM_TASK_INSTANCE_ID, instanceId);
+            param.put(MSG_PARAM_INSTANCE_ID, instanceId);
             param.put(MSG_PARAM_TASK_URL, target.getGroup().getUrl());
             param.put(MSG_PARAM_TASK_STATE, FAILED);
             vertx.eventBus().publish(MSG_TASK_STATE_CHANGED, param);
@@ -126,14 +126,14 @@ public class DAGSchedulerVerticle extends AbstractVerticle {
         long cnt = target.getGroup().getSubTaskList().stream().filter(t -> COMPLETE != t.getStatus()).count();
         if (cnt == 0) {
             JsonObject param = new JsonObject();
-            param.put(MSG_PARAM_TASK_INSTANCE_ID, instanceId);
+            param.put(MSG_PARAM_INSTANCE_ID, instanceId);
             param.put(MSG_PARAM_TASK_URL, target.getGroup().getUrl());
             param.put(MSG_PARAM_TASK_STATE, COMPLETE);
             vertx.eventBus().publish(MSG_TASK_STATE_CHANGED, param);
         }
     }
 
-    private void collectExecutableTasks(DAGFlow flow, ITask group, ITask task) {
+    private void collectExecutableTasks(DAGWorkflow flow, ITask group, ITask task) {
         if (FAILED == task.getStatus()) {
             return;
         }

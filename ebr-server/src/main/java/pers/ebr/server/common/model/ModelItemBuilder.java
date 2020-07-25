@@ -34,21 +34,29 @@ import static pers.ebr.server.common.model.TaskType.GROUP;
  *
  * @author l.gong
  */
-public final class ItemBuilder {
-    private final static Logger logger = LoggerFactory.getLogger(ItemBuilder.class);
+public final class ModelItemBuilder {
+    private final static Logger logger = LoggerFactory.getLogger(ModelItemBuilder.class);
 
-    public ItemBuilder() {}
+    public ModelItemBuilder() {}
 
-    public DAGFlow buildDagTaskFlow(JsonObject define) {
-        DAGFlow flow = createDAGFlow(define);
+    public static TaskDetail buildTaskDetail() {
+        return new TaskDetail();
+    }
+
+    public static WorkflowDetail buildWorkflowDetail(TaskDetail root) {
+        return new WorkflowDetail(root);
+    }
+
+    public static DAGWorkflow buildDagTaskFlow(JsonObject define) {
+        DAGWorkflow flow = createDAGFlow(define);
         updateFlowInfo(flow);
         updateDAGInfo(flow);
         updateTaskUrl(flow.getRootTask());
         return flow.build();
     }
 
-    private DAGFlow createDAGFlow(JsonObject define) {
-        DAGFlow flow = new DAGFlow();
+    private static DAGWorkflow createDAGFlow(JsonObject define) {
+        DAGWorkflow flow = new DAGWorkflow();
         for (String taskId : define.getMap().keySet()) {
             JsonObject taskBody = define.getJsonObject(taskId);
             TaskImpl task = new TaskImpl(taskId);
@@ -63,7 +71,7 @@ public final class ItemBuilder {
         return flow;
     }
 
-    private void updateFlowInfo(DAGFlow flow) {
+    private static void updateFlowInfo(DAGWorkflow flow) {
         flow.getTaskIdSet().stream().forEach(id -> {
             TaskImpl task = Optional.ofNullable(flow.getTaskById(id)).orElseThrow();
             // 更新Flow信息
@@ -90,7 +98,7 @@ public final class ItemBuilder {
         });
     }
 
-    private void updateDAGInfo(DAGFlow flow) {
+    private static void updateDAGInfo(DAGWorkflow flow) {
         flow.getTaskIdSet().forEach(id -> {
             TaskImpl task = Optional.ofNullable(flow.getTaskById(id)).orElseThrow();
             if (task.isRootTask()) {
@@ -111,7 +119,7 @@ public final class ItemBuilder {
         });
     }
 
-    private void updateTaskUrl(ITask task) {
+    private static void updateTaskUrl(ITask task) {
         if (task.isRootTask()) {
             task.setUrl(String.format("/%s", task.getId()));
         } else {
@@ -128,7 +136,7 @@ public final class ItemBuilder {
         }
     }
 
-    private DirectedGraph<ITask> makeEmptyGraph() {
+    private static DirectedGraph<ITask> makeEmptyGraph() {
         return GraphBuilder.directed().setAllowsSelfLoops(false).build();
     }
 

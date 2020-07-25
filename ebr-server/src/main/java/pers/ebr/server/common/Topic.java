@@ -49,8 +49,14 @@ public interface Topic {
      */
     String REQ_SAVE_WORKFLOW = "req.SaveWorkflow";
 
-    /** 获取所有task flow的定义 */
-    String REQ_GET_ALL_FLOW = "req.flow.GetAllFlow";
+    /**
+     * 获取所有workflow的定义以及状态
+     * 请求：{req: "req.AllWorkflow", param: {空参数}}
+     * 正常响应：{req: "req.AllWorkflow", result: {["workflow_id": value, "instance_id": value, "tasks": [task detail array]]}}
+     * 异常响应：{req: "req.AllWorkflow", error: {空数据 }}
+     */
+    String REQ_ALL_WORKFLOW = "req.AllWorkflow";
+
     /** 获取指定id的task flow定义及运行状态 */
     String REQ_GET_FLOW_STATUS = "req.flow.GetFlowStatus";
     /** 启动指定ID的task */

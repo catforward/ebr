@@ -36,10 +36,11 @@ public interface Const {
     String RESPONSE_INFO = "info";
 
     /** 内部消息参数 */
-    String MSG_PARAM_FLOW_ID = "flow_id";
-    String MSG_PARAM_FLOW_DEF = "flow_def";
-    String MSG_PARAM_TASK_INSTANCE_ID = "task_instance_id";
+    String MSG_PARAM_WORKFLOW_ID = "workflow_id";
+    String MSG_PARAM_WORKFLOW_DEF = "workflow_def";
+    String MSG_PARAM_INSTANCE_ID = "instance_id";
     String MSG_PARAM_TASK_URL = "task_url";
     String MSG_PARAM_TASK_STATE = "task_state";
+    String MSG_PARAM_TASKS = "tasks";
 
 }

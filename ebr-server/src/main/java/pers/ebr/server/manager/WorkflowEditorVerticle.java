@@ -20,15 +20,13 @@ package pers.ebr.server.manager;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pers.ebr.server.common.model.ItemBuilder;
-import pers.ebr.server.common.model.DAGFlow;
+import pers.ebr.server.common.model.ModelItemBuilder;
+import pers.ebr.server.common.model.DAGWorkflow;
 import pers.ebr.server.repository.Repository;
 
-import java.util.List;
 import java.util.Optional;
 
 import static pers.ebr.server.common.Const.*;
@@ -46,9 +44,8 @@ public class WorkflowEditorVerticle extends AbstractVerticle {
     public void start() throws Exception {
         super.start();
         EventBus bus = vertx.eventBus();
-        bus.consumer(REQ_VALIDATE_WORKFLOW, this::handleValidateFlow);
-        bus.consumer(REQ_SAVE_WORKFLOW, this::handleSaveFlow);
-        bus.consumer(REQ_GET_ALL_FLOW, this::handleGetAllFlow);
+        bus.consumer(REQ_VALIDATE_WORKFLOW, this::handleValidateWorkflow);
+        bus.consumer(REQ_SAVE_WORKFLOW, this::handleSaveWorkflow);
     }
 
     @Override
@@ -56,13 +53,13 @@ public class WorkflowEditorVerticle extends AbstractVerticle {
         super.stop();
     }
 
-    private void handleValidateFlow(Message<JsonObject> msg) {
+    private void handleValidateWorkflow(Message<JsonObject> msg) {
         JsonObject result = new JsonObject();
         result.put(REQUEST_PARAM_REQ, msg.body().getString(REQUEST_PARAM_REQ));
         boolean ret = false;
         try {
             Optional<JsonObject> flowBody = Optional.ofNullable(msg.body().getJsonObject(REQUEST_PARAM_PARAM));
-            DAGFlow flow = new ItemBuilder().buildDagTaskFlow(flowBody.orElseThrow());
+            DAGWorkflow flow = ModelItemBuilder.buildDagTaskFlow(flowBody.orElseThrow());
             logger.info("create a task flow -> {}", flow.toString());
             ret = true;
         } finally {
@@ -72,14 +69,14 @@ public class WorkflowEditorVerticle extends AbstractVerticle {
 
     }
 
-    private void handleSaveFlow(Message<JsonObject> msg) {
+    private void handleSaveWorkflow(Message<JsonObject> msg) {
         JsonObject result = new JsonObject();
         result.put(REQUEST_PARAM_REQ, msg.body().getString(REQUEST_PARAM_REQ));
         boolean ret = true;
         try {
             Optional<JsonObject> flowBody = Optional.ofNullable(msg.body().getJsonObject(REQUEST_PARAM_PARAM));
-            DAGFlow flow = new ItemBuilder().buildDagTaskFlow(flowBody.orElseThrow());
-            Repository.get().setFlow(Optional.ofNullable(flow.getRootTask()).orElseThrow().getId(),
+            DAGWorkflow flow = ModelItemBuilder.buildDagTaskFlow(flowBody.orElseThrow());
+            Repository.get().setWorkflow(Optional.ofNullable(flow.getRootTask()).orElseThrow().getId(),
                                         flowBody.orElseThrow().encode());
             Repository.get().setTaskDetail(flow);
         } catch (Exception ex) {
@@ -90,26 +87,6 @@ public class WorkflowEditorVerticle extends AbstractVerticle {
             msg.reply(result);
         }
 
-    }
-
-    private void handleGetAllFlow(Message<JsonObject> msg) {
-        JsonObject result = new JsonObject();
-        result.put(REQUEST_PARAM_REQ, msg.body().getString(REQUEST_PARAM_REQ));
-        try {
-            List<String> flows = Repository.get().getAllFlowId();
-            if (!flows.isEmpty()) {
-                JsonArray array = new JsonArray();
-                flows.forEach(array::add);
-                result.put(RESPONSE_RESULT, array);
-            } else {
-                result.put(RESPONSE_RESULT, new JsonObject());
-            }
-        } catch (Exception ex) {
-            logger.error("procedure [handleGetAllTaskFlow] error:", ex);
-            result.put(RESPONSE_ERROR, new JsonObject());
-        } finally {
-            msg.reply(result);
-        }
     }
 
 }

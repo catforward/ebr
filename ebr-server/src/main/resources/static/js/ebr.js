@@ -22,21 +22,24 @@ const REQ_VALIDATE_WORKFLOW = "req.ValidateWorkflow";
  * 异常响应：{req: "req.SaveWorkFlow", error: {空数据 }}
  */
 const REQ_SAVE_WORKFLOW = "req.SaveWorkflow";
-/** 获取所有task flow的定义 */
-const REQ_GET_ALL_FLOW = "req.flow.GetAllFlow";
-/** 获取指定id的task flow定义及运行状态 */
-const REQ_GET_FLOW_STATUS = "req.flow.GetFlowStatus";
-/** 启动指定ID的task */
-const REQ_RUN_FLOW = "req.flow.RunFlow";
-/** 获取指定ID的task的日志信息 */
-const REQ_SHOW_FLOW_LOG = "req.flow.ShowLog";
+
+/**
+ * 获取所有workflow的定义以及状态
+ * 请求：{req: "req.AllWorkflow", param: {空参数}}
+ * 正常响应：{req: "req.AllWorkflow", result: {["workflow_id": value, "instance_id": value, "tasks": [task detail array]]}}
+ * 异常响应：{req: "req.AllWorkflow", error: {空数据 }}
+ */
+
+const REQ_ALL_WORKFLOW = "req.AllWorkflow";
+
 
 var ebr = {};
-
 ebr.reqHandlerMap = new Map();
 ebr.resHandlerMap = new Map();
 
-/** 公共函数 */
+/*******************************************************************************************************
+ *  公共函数
+ * *****************************************************************************************************/
 ebr.com = {
     BindQuery : function(topic, reqFunc, resFunc) {
         if (typeof topic !== "string" || topic.trim() === ""
@@ -84,7 +87,9 @@ ebr.com = {
 
 };
 
-/** 侧边栏 */
+/*******************************************************************************************************
+ *  侧边栏
+ *******************************************************************************************************/
 ebr.sidebar = {};
 ebr.sidebar.view = {
     Init : () => {
@@ -93,7 +98,7 @@ ebr.sidebar.view = {
         });
         $("#flowStatusInfoPanelBtn").click(() => {
             ebr.sidebar.view.ShiftPanel("flowStatusInfoPanel");
-            ebr.com.EmitQuery(REQ_GET_ALL_FLOW);
+            ebr.com.EmitQuery(REQ_ALL_WORKFLOW);
         });
         $("#flowDefineViewerPanelBtn").click(() => {
             ebr.sidebar.view.ShiftPanel("flowDefineViewerPanel");
@@ -121,12 +126,81 @@ ebr.sidebar.ctl = {
     }
 };
 
-/** 状态浏览页面 */
+/********************************************************************************************************
+ * 状态浏览页面
+ ********************************************************************************************************/
 ebr.state_viewer = {};
-ebr.state_viewer.view = {};
-ebr.state_viewer.ctl = {};
+ebr.state_viewer.view = {
+    Init : () => {
+        document.querySelector("#getAllFlowBtn").addEventListener("click", () => {
+            ebr.com.EmitQuery(REQ_ALL_WORKFLOW);
+        }, false);
+    },
 
-/** workflow定义浏览页面 */
+    AddWorkflowDetailView : (jsonResultData) => {
+        console.log(jsonResultData);
+        $("#accordionFlowList").empty();
+        for (let i = 0; i < jsonResultData.length; i++) {
+            ebr.state_viewer.view.updateWorkflowStateList(jsonResultData[i]);
+        }
+    },
+
+    updateWorkflowStateList : (detailData) => {
+        if (!detailData.workflow_id) return;
+
+        let tmpCard = $("#taskStatusCard").clone();
+        tmpCard.attr("id", "taskStatusCard-" + detailData.workflow_id);
+
+        let tmpCardHeader = $("#headingOne");
+        tmpCardHeader.attr("id", "headingOne" + detailData.workflow_id);
+
+        let tmpCardTitle = tmpCard.find("#taskStatusCardTitle");
+        tmpCardTitle.html(detailData.workflow_id);
+        tmpCardTitle.attr("data-target", "#collapseOne-" + detailData.workflow_id);
+        tmpCardTitle.attr("aria-controls", "collapseOne-" + detailData.workflow_id);
+
+        let tmpCardBody = tmpCard.find("#collapseOne");
+        tmpCardBody.attr("id", "collapseOne-" + detailData.workflow_id);
+        tmpCardBody.attr("data-parent", "#" + tmpCard.attr("id"));
+        tmpCardBody.attr("aria-labelledby", tmpCardHeader.attr("id"));
+
+        for (let i = 0; i < detailData.tasks.length; i++) {
+            let taskDetail = detailData.tasks[i];
+            let trHtml = $("<tr></tr>");
+            trHtml.append("<td>" + taskDetail.group + "</td>");
+            trHtml.append("<td>" + taskDetail.id + "</td>");
+            trHtml.append("<td>" + taskDetail.desc + "</td>");
+            trHtml.append("<td>" + taskDetail.cmd + "</td>");
+            trHtml.append("<td>" + "TODO" + "</td>");
+            trHtml.append("<td class='ebr-invisible'>" + taskDetail.url + "</td>");
+            trHtml.append("<td class='ebr-invisible'>" + taskDetail.depends + "</td>");
+            trHtml.appendTo(tmpCardBody.find("#taskDetailRow"));
+        }
+
+        tmpCard.appendTo($("#accordionFlowList"));
+    },
+
+};
+ebr.state_viewer.ctl = {
+    Init : () => {
+        ebr.com.BindQuery(REQ_ALL_WORKFLOW, ebr.state_viewer.ctl.GetAllWorkflowRequest, ebr.state_viewer.ctl.GetAllWorkflowResponse);
+        ebr.state_viewer.view.Init();
+    },
+
+    GetAllWorkflowRequest : function() {
+        return {};
+    },
+
+    GetAllWorkflowResponse : function(jsonData) {
+        if (typeof jsonData.result === "object" && jsonData.result !== null) {
+            ebr.state_viewer.view.AddWorkflowDetailView(jsonData.result);
+        }
+    },
+};
+
+/********************************************************************************************************
+ * 定义浏览页面
+ ********************************************************************************************************/
 ebr.define_viewer = {};
 ebr.define_viewer.view = {
     Init: () => {
@@ -328,7 +402,9 @@ ebr.define_viewer.ctl = {
     },
 };
 
-/** 服务器信息浏览页面 */
+/********************************************************************************************************
+ * 服务器信息浏览页面
+ ********************************************************************************************************/
 ebr.server_info = {};
 ebr.server_info.view = {
     Init : () => {},
@@ -383,9 +459,12 @@ ebr.server_info.ctl = {
     },
 };
 
-// run js source was loaded
+/********************************************************************************************************
+ * 脚本被装载时执行
+ ********************************************************************************************************/
 (function() {
     ebr.sidebar.ctl.Init();
+    ebr.state_viewer.ctl.Init();
     ebr.define_viewer.ctl.Init();
     ebr.server_info.ctl.Init();
 })();

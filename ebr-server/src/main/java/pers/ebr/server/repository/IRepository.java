@@ -17,10 +17,12 @@
  */
 package pers.ebr.server.repository;
 
-import pers.ebr.server.common.model.DAGFlow;
+import pers.ebr.server.common.model.DAGWorkflow;
+import pers.ebr.server.common.model.IDetail;
 import pers.ebr.server.common.model.TaskState;
+import pers.ebr.server.common.model.WorkflowDetail;
 
-import java.util.List;
+import java.util.Collection;
 
 /**
  * <pre>
@@ -30,9 +32,9 @@ import java.util.List;
  * @author l.gong
  */
 public interface IRepository {
-    void setFlow(String flowId, String flowDetail) throws RepositoryException;
-    void setTaskDetail(DAGFlow flow) throws RepositoryException;
+    void setWorkflow(String flowId, String flowDetail) throws RepositoryException;
+    void setTaskDetail(DAGWorkflow flow) throws RepositoryException;
     void setTaskState(String instanceId, String taskUrl, TaskState newState) throws RepositoryException;
-    String getFlow(String flowId) throws RepositoryException;
-    List<String> getAllFlowId() throws RepositoryException;
+    String getWorkflow(String flowId) throws RepositoryException;
+    Collection<IDetail> getAllWorkflowDetail() throws RepositoryException;
 }

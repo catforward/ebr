@@ -76,7 +76,7 @@ public class ExternalCommandExecutorVerticle extends AbstractVerticle {
         while ((task = pool.pollRunnableTaskQueue()) != null) {
             if (GROUP == task.getType()) {
                 JsonObject noticeParam = new JsonObject();
-                noticeParam.put(MSG_PARAM_TASK_INSTANCE_ID, task.getInstanceId());
+                noticeParam.put(MSG_PARAM_INSTANCE_ID, task.getInstanceId());
                 noticeParam.put(MSG_PARAM_TASK_URL, task.getUrl());
                 noticeParam.put(MSG_PARAM_TASK_STATE, ACTIVE);
                 vertx.eventBus().publish(MSG_TASK_STATE_CHANGED, noticeParam);
@@ -101,7 +101,7 @@ public class ExternalCommandExecutorVerticle extends AbstractVerticle {
     private void launchExecutableTask(ITask task) {
         logger.info("Perform Task[instanceId:{} id:{} command:{}]", task.getInstanceId(), task.getId(), task.getCmdLine());
         JsonObject beginNoticeParam = new JsonObject();
-        beginNoticeParam.put(MSG_PARAM_TASK_INSTANCE_ID, task.getInstanceId());
+        beginNoticeParam.put(MSG_PARAM_INSTANCE_ID, task.getInstanceId());
         beginNoticeParam.put(MSG_PARAM_TASK_URL, task.getUrl());
         beginNoticeParam.put(MSG_PARAM_TASK_STATE, ACTIVE);
         vertx.eventBus().publish(MSG_TASK_STATE_CHANGED, beginNoticeParam);
@@ -130,7 +130,7 @@ public class ExternalCommandExecutorVerticle extends AbstractVerticle {
 
         future.whenComplete((retValue, exception) -> {
             JsonObject endNoticeParam = new JsonObject();
-            endNoticeParam.put(MSG_PARAM_TASK_INSTANCE_ID, task.getInstanceId());
+            endNoticeParam.put(MSG_PARAM_INSTANCE_ID, task.getInstanceId());
             endNoticeParam.put(MSG_PARAM_TASK_URL, task.getUrl());
             endNoticeParam.put(MSG_PARAM_TASK_STATE, retValue);
             vertx.eventBus().publish(MSG_TASK_STATE_CHANGED, endNoticeParam);

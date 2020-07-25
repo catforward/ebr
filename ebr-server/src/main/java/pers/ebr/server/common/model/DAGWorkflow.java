@@ -35,8 +35,8 @@ import static pers.ebr.server.common.model.TaskType.GROUP;
  *
  * @author l.gong
  */
-public final class DAGFlow {
-    private final static Logger logger = LoggerFactory.getLogger(DAGFlow.class);
+public final class DAGWorkflow {
+    private final static Logger logger = LoggerFactory.getLogger(DAGWorkflow.class);
     private ITask rootTask = null;
     private String instanceId = null;
     /**
@@ -55,10 +55,10 @@ public final class DAGFlow {
      */
     private final HashMap<String, DirectedGraph<ITask>> allGraphs = new HashMap<>();
 
-    public DAGFlow() {
+    public DAGWorkflow() {
     }
 
-    DAGFlow build() {
+    DAGWorkflow build() {
         idTaskMap.forEach((id, task) -> urlTaskMap.put(task.getUrl(), task));
         return this;
     }

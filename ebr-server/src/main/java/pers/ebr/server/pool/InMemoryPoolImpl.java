@@ -20,7 +20,7 @@ package pers.ebr.server.pool;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pers.ebr.server.common.model.ITask;
-import pers.ebr.server.common.model.DAGFlow;
+import pers.ebr.server.common.model.DAGWorkflow;
 
 import java.util.Map;
 import java.util.Queue;
@@ -42,7 +42,7 @@ public final class InMemoryPoolImpl implements IPool {
      * key : flow's instanceId
      * value : flow instance
      */
-    private final Map<String, DAGFlow> allFlows = new ConcurrentHashMap<>();
+    private final Map<String, DAGWorkflow> allFlows = new ConcurrentHashMap<>();
     private final Queue<ITask> taskQueue = new ConcurrentLinkedQueue<>();
 
 
@@ -61,10 +61,10 @@ public final class InMemoryPoolImpl implements IPool {
     }
 
     @Override
-    public DAGFlow getFlowByUrl(String url) {
+    public DAGWorkflow getFlowByUrl(String url) {
         checkNotNull(url);
         for (var entry : allFlows.entrySet()) {
-            DAGFlow flow = entry.getValue();
+            DAGWorkflow flow = entry.getValue();
             if (flow.getRootTask().getUrl().equals(url)) {
                 return flow;
             }
@@ -73,21 +73,21 @@ public final class InMemoryPoolImpl implements IPool {
     }
 
     @Override
-    public DAGFlow getFlowByInstanceId(String instanceId) {
+    public DAGWorkflow getFlowByInstanceId(String instanceId) {
         checkNotNull(instanceId);
         return allFlows.get(instanceId);
     }
 
     @Override
-    public void setFlow(DAGFlow flow) {
+    public void setFlow(DAGWorkflow flow) {
         checkNotNull(flow);
         allFlows.put(flow.getInstanceId(), flow);
     }
 
     @Override
-    public DAGFlow removeFlowByInstanceId(String instanceId) {
+    public DAGWorkflow removeFlowByInstanceId(String instanceId) {
         checkNotNull(instanceId);
-        DAGFlow flow = allFlows.get(instanceId);
+        DAGWorkflow flow = allFlows.get(instanceId);
         allFlows.remove(instanceId);
         return flow;
     }

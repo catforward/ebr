@@ -124,8 +124,8 @@ final class SqliteRepositoryManager implements IRepositoryManager {
     }
 
     private void execDropOldTable(String tableName, String fullTableName) throws SQLException {
-        String getTableNameSql = sqlTpl.getProperty(GET_TABLE_NAME);
-        String dropTableSql = sqlTpl.getProperty(DROP_TABLE);
+        String getTableNameSql = sqlTpl.getProperty(SQL_GET_TABLE_NAME);
+        String dropTableSql = sqlTpl.getProperty(SQL_DROP_TABLE);
         List<Map<String, String>> ret = db.query(String.format(getTableNameSql, String.format("%s_ver", tableName) + "%"));
         for (var row : ret) {
             String tbl = row.get("name");
@@ -137,10 +137,10 @@ final class SqliteRepositoryManager implements IRepositoryManager {
 
     private void execViewCreate(String viewName, String fullTableName) throws SQLException {
         if (db.isViewExist(viewName)) {
-            String dropViewSql = sqlTpl.getProperty(DROP_VIEW);
+            String dropViewSql = sqlTpl.getProperty(SQL_DROP_VIEW);
             db.execute(String.format(dropViewSql, viewName));
         }
-        String createViewSql = sqlTpl.getProperty(CREATE_VIEW);
+        String createViewSql = sqlTpl.getProperty(SQL_CREATE_VIEW);
         db.execute(String.format(createViewSql, viewName, fullTableName));
     }
 

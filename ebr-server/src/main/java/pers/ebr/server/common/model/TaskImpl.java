@@ -35,7 +35,7 @@ import static pers.ebr.server.common.model.TaskType.UNIT;
  *
  * @author l.gong
  */
-public class TaskImpl implements ITask {
+public final class TaskImpl implements ITask {
 
     private final static Logger logger = LoggerFactory.getLogger(TaskImpl.class);
     /** defined attributes */

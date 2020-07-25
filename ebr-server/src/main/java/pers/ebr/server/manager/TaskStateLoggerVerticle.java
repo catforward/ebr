@@ -52,7 +52,7 @@ public class TaskStateLoggerVerticle extends AbstractVerticle {
 
     private void handleTaskStateChanged(Message<JsonObject> msg) {
         String taskUrl = msg.body().getString(MSG_PARAM_TASK_URL, "");
-        String taskInstanceId = msg.body().getString(MSG_PARAM_TASK_INSTANCE_ID, "");
+        String taskInstanceId = msg.body().getString(MSG_PARAM_INSTANCE_ID, "");
         TaskState newState = TaskState.valueOf(msg.body().getString(MSG_PARAM_TASK_STATE, "-1"));
         if (taskUrl.isBlank() || taskInstanceId.isBlank() || UNKNOWN == newState) {
             return;

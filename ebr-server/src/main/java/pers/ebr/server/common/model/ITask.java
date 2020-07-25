@@ -29,6 +29,7 @@ import java.util.Set;
  */
 public interface ITask {
 
+    String TASK_URL = "url";
     String TASK_ID = "id";
     String TASK_GROUP = "group";
     String TASK_DESC = "desc";

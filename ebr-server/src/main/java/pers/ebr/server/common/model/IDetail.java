@@ -15,25 +15,38 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.server.pool;
+package pers.ebr.server.common.model;
 
-import pers.ebr.server.common.model.ITask;
-import pers.ebr.server.common.model.DAGWorkflow;
+import io.vertx.core.json.JsonObject;
 
 /**
- * The TaskPool Interface
+ * <pre>
+ * DTO数据，发送至客户端
+ * </pre>
  *
  * @author l.gong
  */
-public interface IPool {
-    IPool init();
-    void close();
+public interface IDetail {
 
-    DAGWorkflow getFlowByUrl(String url);
-    DAGWorkflow getFlowByInstanceId(String instanceId);
-    void setFlow(DAGWorkflow flow);
-    DAGWorkflow removeFlowByInstanceId(String instanceId);
+    /**
+     * WORKFLOW型的详细数据
+     */
 
-    void addRunnableTaskQueue(ITask task);
-    ITask pollRunnableTaskQueue();
+    int WORKFLOW = 1;
+    /**
+     * TASK型的详细数据
+     */
+    int TASK = 2;
+
+    /**
+     * 详细数据的类型
+     * @return int
+     */
+    int type();
+
+    /**
+     * 返回此数据的JSON对象
+     * @return String
+     */
+    JsonObject toJsonObject();
 }

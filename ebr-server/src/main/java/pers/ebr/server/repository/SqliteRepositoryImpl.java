@@ -20,9 +20,7 @@ package pers.ebr.server.repository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pers.ebr.server.common.Paths;
-import pers.ebr.server.common.model.DAGFlow;
-import pers.ebr.server.common.model.ITask;
-import pers.ebr.server.common.model.TaskState;
+import pers.ebr.server.common.model.*;
 
 import java.io.File;
 import java.sql.*;
@@ -49,8 +47,8 @@ final class SqliteRepositoryImpl implements IRepository {
     }
 
     @Override
-    public void setFlow(String flowId, String flowDetail) throws RepositoryException {
-        String saveSql = sqlTpl.getProperty(SAVE_FLOW);
+    public void setWorkflow(String flowId, String flowDetail) throws RepositoryException {
+        String saveSql = sqlTpl.getProperty(SQL_SAVE_WORKFLOW);
         try (PreparedStatement statement = connection.prepareStatement(saveSql);) {
             statement.setString(1, flowId);
             statement.setString(2, flowDetail);
@@ -64,31 +62,31 @@ final class SqliteRepositoryImpl implements IRepository {
     }
 
     @Override
-    public void setTaskDetail(DAGFlow flow) throws RepositoryException {
+    public void setTaskDetail(DAGWorkflow flow) throws RepositoryException {
         Set<ITask> tasks = flow.getAllTask();
         if (tasks.isEmpty()) {
             return;
         }
-        String saveSql = sqlTpl.getProperty(SAVE_TASK);
+        String saveSql = sqlTpl.getProperty(SQL_SAVE_TASK_DETAIL);
         try (PreparedStatement statement = connection.prepareStatement(saveSql);){
             for (ITask task : tasks) {
                 statement.setString(1, task.getUrl());
                 statement.setString(2, task.getGroupId());
                 statement.setString(3, task.getId());
-                String objStr = Optional.ofNullable(task.getDesc()).orElse(NULL_OBJ);
+                String objStr = Optional.ofNullable(task.getDesc()).orElse(VAL_NONE);
                 if (objStr.isEmpty()) {
-                    statement.setString(4, NULL_OBJ);
+                    statement.setString(4, VAL_NONE);
                 } else {
                     statement.setString(4, objStr);
                 }
-                objStr = Optional.ofNullable(task.getCmdLine()).orElse(NULL_OBJ);
+                objStr = Optional.ofNullable(task.getCmdLine()).orElse(VAL_NONE);
                 if (objStr.isEmpty()) {
-                    statement.setString(5, NULL_OBJ);
+                    statement.setString(5, VAL_NONE);
                 } else {
                     statement.setString(5, objStr);
                 }
                 if (task.getDependIdList().isEmpty()) {
-                    statement.setString(6, NULL_OBJ);
+                    statement.setString(6, VAL_NONE);
                 } else {
                     statement.setString(6, task.getDependIdList().toString());
                 }
@@ -106,12 +104,12 @@ final class SqliteRepositoryImpl implements IRepository {
     @Override
     public void setTaskState(String instanceId, String taskUrl, TaskState newState) throws RepositoryException {
         // TODO
-        String sql = sqlTpl.getProperty(FLOW_HIST_EXISTS);
+        String sql = sqlTpl.getProperty(SQL_WORKFLOW_HIST_EXISTS);
         boolean histRecExist = false;
         try {
             var result = query(sql, instanceId, taskUrl);
             if (!result.isEmpty()) {
-                histRecExist = Integer.parseInt(result.get(0).get("cnt")) >= 1;
+                histRecExist = Integer.parseInt(result.get(0).get(COL_COUNT)) >= 1;
             }
         } catch (SQLException ex) {
             logger.error("database error occurred...", ex);
@@ -121,7 +119,7 @@ final class SqliteRepositoryImpl implements IRepository {
         try {
             if (histRecExist) {
                 if (COMPLETE == newState || FAILED == newState) {
-                    sql = sqlTpl.getProperty(UPDATE_FLOW_HIST_RESULT);
+                    sql = sqlTpl.getProperty(SQL_UPDATE_WORKFLOW_HIST_RESULT);
                     try (PreparedStatement statement = connection.prepareStatement(sql);) {
                         statement.setLong(1, System.currentTimeMillis());
                         statement.setInt(2, newState.ordinal());
@@ -131,7 +129,7 @@ final class SqliteRepositoryImpl implements IRepository {
                         commit();
                     }
                 } else {
-                    sql = sqlTpl.getProperty(UPDATE_FLOW_HIST_STATE);
+                    sql = sqlTpl.getProperty(SQL_UPDATE_WORKFLOW_HIST_STATE);
                     try (PreparedStatement statement = connection.prepareStatement(sql);) {
                         statement.setInt(1, newState.ordinal());
                         statement.setString(2, instanceId);
@@ -141,7 +139,7 @@ final class SqliteRepositoryImpl implements IRepository {
                     }
                 }
             } else {
-                sql = sqlTpl.getProperty(SAVE_FLOW_HIST);
+                sql = sqlTpl.getProperty(SQL_SAVE_WORKFLOW_HIST);
                 try (PreparedStatement statement = connection.prepareStatement(sql);) {
                     statement.setString(1, instanceId);
                     statement.setString(2, taskUrl);
@@ -159,14 +157,14 @@ final class SqliteRepositoryImpl implements IRepository {
     }
 
     @Override
-    public String getFlow(String flowId) throws RepositoryException {
-        String loadSql = sqlTpl.getProperty(LOAD_FLOW);
+    public String getWorkflow(String flowId) throws RepositoryException {
+        String loadSql = sqlTpl.getProperty(SQL_LOAD_WORKFLOW);
         try {
             List<Map<String, String>> result = query(loadSql, flowId);
             if (result.isEmpty()) {
                 return "";
             }
-            return result.get(0).getOrDefault("flow_detail", "");
+            return result.get(0).getOrDefault(COL_WORKFLOW_DEFINE, "");
         } catch (SQLException ex) {
             logger.error("database error occurred...", ex);
             throw new RepositoryException(ex);
@@ -174,19 +172,45 @@ final class SqliteRepositoryImpl implements IRepository {
     }
 
     @Override
-    public List<String> getAllFlowId() throws RepositoryException {
-        List<String> flows = new ArrayList<>();
-        String loadAllSql = sqlTpl.getProperty(LOAD_ALL_FLOW);
-        try {
-            List<Map<String, String>> result = query(loadAllSql);
-            for (var row : result) {
-                flows.add(row.getOrDefault("flow_id", ""));
+    public Collection<IDetail> getAllWorkflowDetail() throws RepositoryException {
+        HashMap<String, IDetail> flows = new HashMap<>(16);
+        String sql = sqlTpl.getProperty(SQL_LOAD_ALL_TASK_DETAIL);
+        try (Statement statement = connection.createStatement();
+             ResultSet rs = statement.executeQuery(sql);
+        ) {
+            String currentUrl = VAL_NONE;
+            WorkflowDetail workflow = null;
+            while (rs.next()) {
+                TaskDetail task = ModelItemBuilder.buildTaskDetail();
+                task.setUrl(rs.getString(1));
+                task.setGroup(rs.getString(2));
+                task.setId(rs.getString(3));
+                task.setDesc(rs.getString(4));
+                task.setCmd(rs.getString(5));
+                task.setDeps(rs.getString(6));
+
+                if (!task.getUrl().startsWith(currentUrl)) {
+                    if (workflow != null && !flows.containsKey(workflow.getRootDetail().getId())) {
+                        flows.put(workflow.getRootDetail().getId(), workflow);
+                    }
+                    currentUrl = task.getUrl();
+                    workflow = ModelItemBuilder.buildWorkflowDetail(task);
+                }
+
+                if (workflow != null) {
+                    workflow.addTaskDetail(task);
+                }
             }
+
+            if (workflow != null && !flows.containsKey(workflow.getRootDetail().getId())) {
+                flows.put(workflow.getRootDetail().getId(), workflow);
+            }
+
         } catch (SQLException ex) {
             logger.error("database error occurred...", ex);
             throw new RepositoryException(ex);
         }
-        return flows;
+        return flows.values();
     }
 
     public void connect() throws RepositoryException {
@@ -276,22 +300,22 @@ final class SqliteRepositoryImpl implements IRepository {
     }
 
     boolean isTableExist(String tableName) throws SQLException {
-        String existSql = sqlTpl.getProperty(TABLE_EXISTS);
+        String existSql = sqlTpl.getProperty(SQL_TABLE_EXISTS);
         var result = query(String.format(existSql, tableName));
         if (result.isEmpty()) {
             return false;
         }
-        int cnt = Integer.parseInt(result.get(0).get("cnt"));
+        int cnt = Integer.parseInt(result.get(0).get(COL_COUNT));
         return cnt >= 1;
     }
 
     boolean isViewExist(String viewName) throws SQLException {
-        String existSql = sqlTpl.getProperty(VIEW_EXISTS);
+        String existSql = sqlTpl.getProperty(SQL_VIEW_EXISTS);
         var result = query(String.format(existSql, viewName));
         if (result.isEmpty()) {
             return false;
         }
-        int cnt = Integer.parseInt(result.get(0).get("cnt"));
+        int cnt = Integer.parseInt(result.get(0).get(COL_COUNT));
         return cnt >= 1;
     }
 

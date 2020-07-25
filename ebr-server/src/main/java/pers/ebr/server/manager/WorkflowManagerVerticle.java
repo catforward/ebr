@@ -20,11 +20,15 @@ package pers.ebr.server.manager;
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
+import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pers.ebr.server.common.model.IDetail;
+import pers.ebr.server.common.model.WorkflowDetail;
 import pers.ebr.server.repository.Repository;
 
+import java.util.Collection;
 import java.util.Optional;
 
 import static pers.ebr.server.common.Const.*;
@@ -44,6 +48,7 @@ public class WorkflowManagerVerticle extends AbstractVerticle {
     public void start() throws Exception {
         super.start();
         EventBus bus = vertx.eventBus();
+        bus.consumer(REQ_ALL_WORKFLOW, this::handleGetAllWorkflow);
         bus.consumer(REQ_GET_FLOW_STATUS,  this::handleGetFlowStatus);
         bus.consumer(REQ_RUN_FLOW, this::handleRunFlow);
         bus.consumer(REQ_SHOW_FLOW_LOG, this::handleShowFlowLog);
@@ -54,6 +59,27 @@ public class WorkflowManagerVerticle extends AbstractVerticle {
         super.stop();
     }
 
+    private void handleGetAllWorkflow(Message<JsonObject> msg) {
+        JsonObject result = new JsonObject();
+        result.put(REQUEST_PARAM_REQ, msg.body().getString(REQUEST_PARAM_REQ));
+        try {
+            Collection<IDetail> flows = Repository.get().getAllWorkflowDetail();
+            if (!flows.isEmpty()) {
+                // TODO
+                JsonArray array = new JsonArray();
+                flows.forEach(workflowDetail -> {array.add(workflowDetail.toJsonObject());});
+                result.put(RESPONSE_RESULT, array);
+            } else {
+                result.put(RESPONSE_RESULT, new JsonObject());
+            }
+        } catch (Exception ex) {
+            logger.error("procedure [handleGetAllTaskFlow] error:", ex);
+            result.put(RESPONSE_ERROR, new JsonObject());
+        } finally {
+            msg.reply(result);
+        }
+    }
+
     private void handleGetFlowStatus(Message<JsonObject> msg) {
         JsonObject result = new JsonObject();
         result.put(REQUEST_PARAM_REQ, msg.body().getString(REQUEST_PARAM_REQ));
@@ -61,7 +87,7 @@ public class WorkflowManagerVerticle extends AbstractVerticle {
             JsonObject reqBody = Optional.ofNullable(msg.body().getJsonObject(REQUEST_PARAM_PARAM)).orElse(new JsonObject());
             String flowId = reqBody.getString(TASK_ID, "");
             if (!flowId.isBlank()) {
-                String flowDefine = Repository.get().getFlow(flowId);
+                String flowDefine = Repository.get().getWorkflow(flowId);
                 JsonObject retInfo = new JsonObject();
                 retInfo.put(flowId, new JsonObject(flowDefine));
                 result.put(RESPONSE_RESULT, retInfo);
@@ -94,7 +120,7 @@ public class WorkflowManagerVerticle extends AbstractVerticle {
                 return;
             }
             // 暂时只有启动flow的http请求
-            String flowDefine = Repository.get().getFlow(flowId);
+            String flowDefine = Repository.get().getWorkflow(flowId);
             if (flowDefine == null || flowDefine.isBlank()) {
                 JsonObject errInfo = new JsonObject();
                 errInfo.put(RESPONSE_INFO, String.format("define is not exists (id: [%s])", flowId));
@@ -104,8 +130,8 @@ public class WorkflowManagerVerticle extends AbstractVerticle {
 
             EventBus bus = vertx.eventBus();
             JsonObject noticeParam = new JsonObject();
-            noticeParam.put(MSG_PARAM_FLOW_ID, flowId);
-            noticeParam.put(MSG_PARAM_FLOW_DEF, flowDefine);
+            noticeParam.put(MSG_PARAM_WORKFLOW_ID, flowId);
+            noticeParam.put(MSG_PARAM_WORKFLOW_DEF, flowDefine);
             bus.publish(MSG_RUN_FLOW, noticeParam);
 
             // response
