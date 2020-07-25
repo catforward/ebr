@@ -18,7 +18,6 @@
 package pers.ebr.server.repository;
 
 import pers.ebr.server.common.model.DAGWorkflow;
-import pers.ebr.server.common.model.IDetail;
 import pers.ebr.server.common.model.TaskState;
 import pers.ebr.server.common.model.WorkflowDetail;
 
@@ -36,5 +35,5 @@ public interface IRepository {
     void setTaskDetail(DAGWorkflow flow) throws RepositoryException;
     void setTaskState(String instanceId, String taskUrl, TaskState newState) throws RepositoryException;
     String getWorkflow(String flowId) throws RepositoryException;
-    Collection<IDetail> getAllWorkflowDetail() throws RepositoryException;
+    Collection<WorkflowDetail> getAllWorkflowDetail() throws RepositoryException;
 }

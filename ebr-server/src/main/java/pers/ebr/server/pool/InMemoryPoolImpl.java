@@ -61,7 +61,12 @@ public final class InMemoryPoolImpl implements IPool {
     }
 
     @Override
-    public DAGWorkflow getFlowByUrl(String url) {
+    public int getActiveTaskCount() {
+        return taskQueue.size();
+    }
+
+    @Override
+    public DAGWorkflow getWorkflowByUrl(String url) {
         checkNotNull(url);
         for (var entry : allFlows.entrySet()) {
             DAGWorkflow flow = entry.getValue();
@@ -73,7 +78,7 @@ public final class InMemoryPoolImpl implements IPool {
     }
 
     @Override
-    public DAGWorkflow getFlowByInstanceId(String instanceId) {
+    public DAGWorkflow getWorkflowByInstanceId(String instanceId) {
         checkNotNull(instanceId);
         return allFlows.get(instanceId);
     }
@@ -85,7 +90,7 @@ public final class InMemoryPoolImpl implements IPool {
     }
 
     @Override
-    public DAGWorkflow removeFlowByInstanceId(String instanceId) {
+    public DAGWorkflow removeWorkflowByInstanceId(String instanceId) {
         checkNotNull(instanceId);
         DAGWorkflow flow = allFlows.get(instanceId);
         allFlows.remove(instanceId);

@@ -21,6 +21,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import static pers.ebr.server.common.Const.*;
 import static pers.ebr.server.common.model.ITask.*;
@@ -32,7 +33,7 @@ import static pers.ebr.server.common.model.ITask.*;
  *
  * @author l.gong
  */
-public final class WorkflowDetail implements IDetail {
+public final class WorkflowDetail implements IJsonObjectConverter {
     private String instanceId;
     private final TaskDetail rootDetail;
     private final ArrayList<TaskDetail> tasks = new ArrayList<>();
@@ -41,17 +42,16 @@ public final class WorkflowDetail implements IDetail {
         rootDetail = root;
     }
 
-    @Override
-    public int type() {
-        return IDetail.WORKFLOW;
-    }
-
     public TaskDetail getRootDetail() {
         return rootDetail;
     }
 
     public String getInstanceId() {
         return instanceId;
+    }
+
+    public List<TaskDetail> getTasks() {
+        return tasks;
     }
 
     public void setInstanceId(String instanceId) {

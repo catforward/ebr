@@ -20,6 +20,7 @@ package pers.ebr.server.common.model;
 import io.vertx.core.json.JsonObject;
 
 import static pers.ebr.server.common.model.ITask.*;
+import static pers.ebr.server.common.model.TaskState.INACTIVE;
 
 /**
  * <pre>
@@ -29,20 +30,16 @@ import static pers.ebr.server.common.model.ITask.*;
  *
  * @author l.gong
  */
-public final class TaskDetail implements IDetail {
+public final class TaskDetail implements IJsonObjectConverter {
     String url;
     String id;
     String group;
     String cmd;
     String desc;
     String deps;
+    TaskState state = INACTIVE;
 
     TaskDetail() {}
-
-    @Override
-    public int type() {
-        return IDetail.TASK;
-    }
 
     public String getUrl() {
         return url;
@@ -66,6 +63,10 @@ public final class TaskDetail implements IDetail {
 
     public String getDeps() {
         return deps;
+    }
+
+    public TaskState getState() {
+        return state;
     }
 
     public void setUrl(String url) {
@@ -92,6 +93,10 @@ public final class TaskDetail implements IDetail {
         this.deps = deps;
     }
 
+    public void setState(TaskState newState) {
+        this.state = newState;
+    }
+
     /**
      * 返回此数据的JSON对象
      * @return String
@@ -105,6 +110,7 @@ public final class TaskDetail implements IDetail {
         jsonObject.put(TASK_DESC, desc);
         jsonObject.put(TASK_CMD_LINE, cmd);
         jsonObject.put(TASK_DEPENDS_LIST, deps);
+        jsonObject.put(TASK_STATE, state.ordinal());
         return jsonObject;
     }
 }

@@ -47,6 +47,10 @@ public final class ModelItemBuilder {
         return new WorkflowDetail(root);
     }
 
+    public static SchdSummary buildSchdSummary(String schdType) {
+        return new SchdSummary(schdType);
+    }
+
     public static DAGWorkflow buildDagTaskFlow(JsonObject define) {
         DAGWorkflow flow = createDAGFlow(define);
         updateFlowInfo(flow);

@@ -35,6 +35,7 @@ public interface ITask {
     String TASK_DESC = "desc";
     String TASK_CMD_LINE = "cmd";
     String TASK_DEPENDS_LIST = "depends";
+    String TASK_STATE = "state";
 
     String getId();
     String getCmdLine();

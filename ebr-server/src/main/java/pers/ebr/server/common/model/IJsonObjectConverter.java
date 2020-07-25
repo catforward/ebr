@@ -26,23 +26,7 @@ import io.vertx.core.json.JsonObject;
  *
  * @author l.gong
  */
-public interface IDetail {
-
-    /**
-     * WORKFLOW型的详细数据
-     */
-
-    int WORKFLOW = 1;
-    /**
-     * TASK型的详细数据
-     */
-    int TASK = 2;
-
-    /**
-     * 详细数据的类型
-     * @return int
-     */
-    int type();
+public interface IJsonObjectConverter {
 
     /**
      * 返回此数据的JSON对象

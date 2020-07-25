@@ -1,6 +1,10 @@
 "use strict";
 
-/**
+/*******************************************************************************************************
+ *  TOPIC
+ * *****************************************************************************************************/
+
+ /**
  * 获取服务器信息
  * 请求：{req: "req.GetServerInfo", param: {空参数}}
  * 正常响应：{req: "req.GetServerInfo", result: {config:{key-value数据}, env:{key-value数据}}}
@@ -32,7 +36,29 @@ const REQ_SAVE_WORKFLOW = "req.SaveWorkflow";
 
 const REQ_ALL_WORKFLOW = "req.AllWorkflow";
 
+/**
+ * 获取workflow运行状态概要
+ * 请求：{req: "req.SchdSummary", param: {空参数}}
+ * 正常响应：{req: "req.SchdSummary", result: {"complete":int,"failed":int,"unknown":int}}
+ * 异常响应：{req: "req.SchdSummary", error: {空数据 }}
+ */
+const REQ_SCHD_SUMMARY = "req.SchdSummary";
 
+
+/*******************************************************************************************************
+ *  TASK STATE
+ * *****************************************************************************************************/
+
+const TASK_STATE_UNKNOWN = -1;
+const TASK_STATE_INACTIVE = 1;
+const TASK_STATE_ACTIVE = 2;
+const TASK_STATE_COMPLETE = 3;
+const TASK_STATE_FAILED = 4;
+
+
+/*******************************************************************************************************
+ *  根对象
+ * *****************************************************************************************************/
 var ebr = {};
 ebr.reqHandlerMap = new Map();
 ebr.resHandlerMap = new Map();
@@ -98,6 +124,7 @@ ebr.sidebar.view = {
         });
         $("#flowStatusInfoPanelBtn").click(() => {
             ebr.sidebar.view.ShiftPanel("flowStatusInfoPanel");
+            ebr.com.EmitQuery(REQ_SCHD_SUMMARY);
             ebr.com.EmitQuery(REQ_ALL_WORKFLOW);
         });
         $("#flowDefineViewerPanelBtn").click(() => {
@@ -133,6 +160,7 @@ ebr.state_viewer = {};
 ebr.state_viewer.view = {
     Init : () => {
         document.querySelector("#getAllFlowBtn").addEventListener("click", () => {
+            ebr.com.EmitQuery(REQ_SCHD_SUMMARY);
             ebr.com.EmitQuery(REQ_ALL_WORKFLOW);
         }, false);
     },
@@ -171,7 +199,23 @@ ebr.state_viewer.view = {
             trHtml.append("<td>" + taskDetail.id + "</td>");
             trHtml.append("<td>" + taskDetail.desc + "</td>");
             trHtml.append("<td>" + taskDetail.cmd + "</td>");
-            trHtml.append("<td>" + "TODO" + "</td>");
+            switch(taskDetail.state) {
+                case TASK_STATE_INACTIVE: {
+                    trHtml.append("<td><span class='badge badge-light'>Inactive</span></td>"); break;
+                }
+                case TASK_STATE_ACTIVE: {
+                    trHtml.append("<td><span class='badge badge-success'>Active</span></td>"); break;
+                }
+                case TASK_STATE_COMPLETE: {
+                    trHtml.append("<td><span class='badge badge-info'>Complete</span></td>"); break;
+                }
+                case TASK_STATE_FAILED: {
+                    trHtml.append("<td><span class='badge badge-danger'>Failed</span></td>"); break;
+                }
+                default : {
+                    trHtml.append("<td><span class='badge badge-secondary'>Unknown</span></td>"); break;
+                }
+            } 
             trHtml.append("<td class='ebr-invisible'>" + taskDetail.url + "</td>");
             trHtml.append("<td class='ebr-invisible'>" + taskDetail.depends + "</td>");
             trHtml.appendTo(tmpCardBody.find("#taskDetailRow"));
@@ -183,8 +227,9 @@ ebr.state_viewer.view = {
 };
 ebr.state_viewer.ctl = {
     Init : () => {
-        ebr.com.BindQuery(REQ_ALL_WORKFLOW, ebr.state_viewer.ctl.GetAllWorkflowRequest, ebr.state_viewer.ctl.GetAllWorkflowResponse);
         ebr.state_viewer.view.Init();
+        ebr.com.BindQuery(REQ_ALL_WORKFLOW, ebr.state_viewer.ctl.GetAllWorkflowRequest, ebr.state_viewer.ctl.GetAllWorkflowResponse);
+        ebr.com.BindQuery(REQ_SCHD_SUMMARY, ebr.state_viewer.ctl.GetSchdSummaryRequest, ebr.state_viewer.ctl.GetSchdSummaryResponse);
     },
 
     GetAllWorkflowRequest : function() {
@@ -194,6 +239,16 @@ ebr.state_viewer.ctl = {
     GetAllWorkflowResponse : function(jsonData) {
         if (typeof jsonData.result === "object" && jsonData.result !== null) {
             ebr.state_viewer.view.AddWorkflowDetailView(jsonData.result);
+        }
+    },
+
+    GetSchdSummaryRequest : function() {
+        return {};
+    },
+
+    GetSchdSummaryResponse : function(jsonData) {
+        if (typeof jsonData.result === "object" && jsonData.result !== null) {
+            console.log(jsonData.result)
         }
     },
 };

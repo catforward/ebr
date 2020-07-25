@@ -172,8 +172,8 @@ final class SqliteRepositoryImpl implements IRepository {
     }
 
     @Override
-    public Collection<IDetail> getAllWorkflowDetail() throws RepositoryException {
-        HashMap<String, IDetail> flows = new HashMap<>(16);
+    public Collection<WorkflowDetail> getAllWorkflowDetail() throws RepositoryException {
+        HashMap<String, WorkflowDetail> flows = new HashMap<>(16);
         String sql = sqlTpl.getProperty(SQL_LOAD_ALL_TASK_DETAIL);
         try (Statement statement = connection.createStatement();
              ResultSet rs = statement.executeQuery(sql);

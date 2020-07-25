@@ -57,18 +57,44 @@ public interface Topic {
      */
     String REQ_ALL_WORKFLOW = "req.AllWorkflow";
 
-    /** 获取指定id的task flow定义及运行状态 */
-    String REQ_GET_FLOW_STATUS = "req.flow.GetFlowStatus";
+    /**
+     * 获取workflow运行状态概要
+     * 请求：{req: "req.StatusSummary", param: {空参数}}
+     * 正常响应：{req: "req.StatusSummary", result: {"complete":int,"failed":int,"unknown":int}}
+     * 异常响应：{req: "req.StatusSummary", error: {空数据 }}
+     */
+    String REQ_SCHD_SUMMARY = "req.SchdSummary";
+
     /** 启动指定ID的task */
     String REQ_RUN_FLOW = "req.flow.RunFlow";
-    /** 获取指定ID的task的日志信息 */
-    String REQ_SHOW_FLOW_LOG = "req.flow.ShowLog";
 
-    /** 消息：通知运行Flow */
+    /**
+     * 消息：通知运行Flow
+     * 请求：{req: "msg.schd.RunFlow", param: {"workflow_id":string,"workflow_def":string}}
+     * 无响应
+     */
     String MSG_RUN_FLOW = "msg.schd.RunFlow";
-    /** 消息：通知指定ID的task的新状态 */
+
+    /**
+     * 消息：通知指定ID的task的新状态
+     * 请求：{req: "msg.schd.TaskStateChanged", param: {"task_url":string,"instance_id":string,"task_state":string}}
+     * 无响应
+     */
     String MSG_TASK_STATE_CHANGED = "msg.schd.TaskStateChanged";
-    /** 消息：通知Flow结束 */
-    String MSG_FLOW_FINISHED = "msg.schd.FlowFinished";
+
+    /**
+     * 消息：通知Flow结束
+     * 请求：{req: "msg.schd.FlowFinished", param: {"instance_id":string}}
+     * 无响应
+     */
+    String MSG_WORKFLOW_FINISHED = "msg.schd.WorkflowFinished";
+
+    /**
+     * 消息：获取调度器的执行统计
+     * 请求：{req: "msg.schd.GetSchdSummary", param: {空参数}}
+     * 正常响应：{req: "req.GetSchdSummary", result: {schd_name:{key:value}}}
+     * 异常响应：{req: "req.GetSchdSummary", error: {空数据 }}
+     */
+    String MSG_SCHD_SUMMARY = "msg.schd.GetSchdSummary";
     
 }

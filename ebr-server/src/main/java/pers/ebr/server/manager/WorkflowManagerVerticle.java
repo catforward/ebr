@@ -18,14 +18,17 @@
 package pers.ebr.server.manager;
 
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.AsyncResult;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pers.ebr.server.common.model.IDetail;
+import pers.ebr.server.common.model.DAGWorkflow;
+import pers.ebr.server.common.model.ITask;
 import pers.ebr.server.common.model.WorkflowDetail;
+import pers.ebr.server.pool.Pool;
 import pers.ebr.server.repository.Repository;
 
 import java.util.Collection;
@@ -33,7 +36,6 @@ import java.util.Optional;
 
 import static pers.ebr.server.common.Const.*;
 import static pers.ebr.server.common.Topic.*;
-import static pers.ebr.server.common.Topic.REQ_SHOW_FLOW_LOG;
 import static pers.ebr.server.common.model.ITask.TASK_ID;
 
 /**
@@ -49,9 +51,8 @@ public class WorkflowManagerVerticle extends AbstractVerticle {
         super.start();
         EventBus bus = vertx.eventBus();
         bus.consumer(REQ_ALL_WORKFLOW, this::handleGetAllWorkflow);
-        bus.consumer(REQ_GET_FLOW_STATUS,  this::handleGetFlowStatus);
+        bus.consumer(REQ_SCHD_SUMMARY,  this::handleGetStatusSummary);
         bus.consumer(REQ_RUN_FLOW, this::handleRunFlow);
-        bus.consumer(REQ_SHOW_FLOW_LOG, this::handleShowFlowLog);
     }
 
     @Override
@@ -63,9 +64,9 @@ public class WorkflowManagerVerticle extends AbstractVerticle {
         JsonObject result = new JsonObject();
         result.put(REQUEST_PARAM_REQ, msg.body().getString(REQUEST_PARAM_REQ));
         try {
-            Collection<IDetail> flows = Repository.get().getAllWorkflowDetail();
+            Collection<WorkflowDetail> flows = Repository.get().getAllWorkflowDetail();
             if (!flows.isEmpty()) {
-                // TODO
+                updateWorkflowStatus(flows);
                 JsonArray array = new JsonArray();
                 flows.forEach(workflowDetail -> {array.add(workflowDetail.toJsonObject());});
                 result.put(RESPONSE_RESULT, array);
@@ -80,30 +81,19 @@ public class WorkflowManagerVerticle extends AbstractVerticle {
         }
     }
 
-    private void handleGetFlowStatus(Message<JsonObject> msg) {
-        JsonObject result = new JsonObject();
-        result.put(REQUEST_PARAM_REQ, msg.body().getString(REQUEST_PARAM_REQ));
-        try {
-            JsonObject reqBody = Optional.ofNullable(msg.body().getJsonObject(REQUEST_PARAM_PARAM)).orElse(new JsonObject());
-            String flowId = reqBody.getString(TASK_ID, "");
-            if (!flowId.isBlank()) {
-                String flowDefine = Repository.get().getWorkflow(flowId);
-                JsonObject retInfo = new JsonObject();
-                retInfo.put(flowId, new JsonObject(flowDefine));
-                result.put(RESPONSE_RESULT, retInfo);
-            } else {
+    private void handleGetStatusSummary(Message<JsonObject> msg) {
+        vertx.eventBus().request(MSG_SCHD_SUMMARY, new JsonObject(), (AsyncResult<Message<JsonObject>> res) -> {
+            JsonObject result = new JsonObject();
+            result.put(REQUEST_PARAM_REQ, msg.body().getString(REQUEST_PARAM_REQ));
+            if (res.failed()) {
                 JsonObject errInfo = new JsonObject();
-                errInfo.put(RESPONSE_INFO, String.format("invalid task flow id: [%s]", flowId));
+                errInfo.put(RESPONSE_INFO, res.cause());
                 result.put(RESPONSE_ERROR, errInfo);
+            } else {
+                result.put(RESPONSE_RESULT, res.result().body().encode());
             }
-        } catch (Exception ex) {
-            logger.error("procedure [handleGetTaskFlowStatus] error:", ex);
-            JsonObject errInfo = new JsonObject();
-            errInfo.put(RESPONSE_INFO, ex.getMessage());
-            result.put(RESPONSE_ERROR, errInfo);
-        } finally {
             msg.reply(result);
-        }
+        });
     }
 
     private void handleRunFlow(Message<JsonObject> msg) {
@@ -119,7 +109,7 @@ public class WorkflowManagerVerticle extends AbstractVerticle {
                 result.put(RESPONSE_ERROR, errInfo);
                 return;
             }
-            // 暂时只有启动flow的http请求
+            // 暂时只有启动workflow的http请求
             String flowDefine = Repository.get().getWorkflow(flowId);
             if (flowDefine == null || flowDefine.isBlank()) {
                 JsonObject errInfo = new JsonObject();
@@ -148,8 +138,19 @@ public class WorkflowManagerVerticle extends AbstractVerticle {
         }
     }
 
-    private void handleShowFlowLog(Message<JsonObject> msg) {
-        // TODO
+    private void updateWorkflowStatus(Collection<WorkflowDetail> flows) {
+        for (var detail : flows) {
+            DAGWorkflow runningFlow = Pool.get().getWorkflowByUrl(detail.getRootDetail().getUrl());
+            if (runningFlow == null) {
+                continue;
+            }
+            detail.getTasks().forEach(taskDetail -> {
+                ITask task = runningFlow.getTaskById(taskDetail.getId());
+                if (task != null) {
+                    taskDetail.setState(task.getStatus());
+                }
+            });
+        }
     }
 
 }

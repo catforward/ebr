@@ -29,10 +29,12 @@ public interface IPool {
     IPool init();
     void close();
 
-    DAGWorkflow getFlowByUrl(String url);
-    DAGWorkflow getFlowByInstanceId(String instanceId);
+    int getActiveTaskCount();
+
+    DAGWorkflow getWorkflowByUrl(String url);
+    DAGWorkflow getWorkflowByInstanceId(String instanceId);
     void setFlow(DAGWorkflow flow);
-    DAGWorkflow removeFlowByInstanceId(String instanceId);
+    DAGWorkflow removeWorkflowByInstanceId(String instanceId);
 
     void addRunnableTaskQueue(ITask task);
     ITask pollRunnableTaskQueue();
