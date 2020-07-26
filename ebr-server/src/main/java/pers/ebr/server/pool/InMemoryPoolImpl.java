@@ -61,11 +61,6 @@ public final class InMemoryPoolImpl implements IPool {
     }
 
     @Override
-    public int getActiveTaskCount() {
-        return taskQueue.size();
-    }
-
-    @Override
     public DAGWorkflow getWorkflowByUrl(String url) {
         checkNotNull(url);
         for (var entry : allFlows.entrySet()) {

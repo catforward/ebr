@@ -29,8 +29,6 @@ public interface IPool {
     IPool init();
     void close();
 
-    int getActiveTaskCount();
-
     DAGWorkflow getWorkflowByUrl(String url);
     DAGWorkflow getWorkflowByInstanceId(String instanceId);
     void setFlow(DAGWorkflow flow);

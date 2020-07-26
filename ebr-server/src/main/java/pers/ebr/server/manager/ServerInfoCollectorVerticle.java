@@ -17,6 +17,7 @@
  */
 package pers.ebr.server.manager;
 
+import io.vertx.core.AsyncResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,7 +27,7 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 
 import static pers.ebr.server.common.Const.*;
-import static pers.ebr.server.common.Topic.REQ_GET_SERVER_INFO;
+import static pers.ebr.server.common.Topic.*;
 
 /**
  * The ServerInfoVerticle
@@ -44,6 +45,7 @@ public class ServerInfoCollectorVerticle extends AbstractVerticle {
         super.start();
         EventBus bus = vertx.eventBus();
         bus.consumer(REQ_GET_SERVER_INFO, this::handleGetServerInfo);
+        bus.consumer(REQ_EXEC_STATISTICS,  this::handleGetExecStatistics);
     }
 
     @Override
@@ -69,6 +71,21 @@ public class ServerInfoCollectorVerticle extends AbstractVerticle {
         resultBody.put(RESPONSE_RESULT_INFO_CONFIG, cfgVars);
 
         msg.reply(result);
+    }
+
+    private void handleGetExecStatistics(Message<JsonObject> msg) {
+        vertx.eventBus().request(MSG_EXEC_STATISTICS, new JsonObject(), (AsyncResult<Message<JsonObject>> res) -> {
+            JsonObject result = new JsonObject();
+            result.put(REQUEST_PARAM_REQ, msg.body().getString(REQUEST_PARAM_REQ));
+            if (res.failed()) {
+                JsonObject errInfo = new JsonObject();
+                errInfo.put(RESPONSE_INFO, res.cause());
+                result.put(RESPONSE_ERROR, errInfo);
+            } else {
+                result.put(RESPONSE_RESULT, res.result().body());
+            }
+            msg.reply(result);
+        });
     }
 
 }

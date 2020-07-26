@@ -176,6 +176,7 @@ html, body {
 .ebr-sidebar-button {
     padding-top: 20px;
     padding-bottom: 10px;
+    text-align: center;
 }
 
 .ebr-sidebar-button-bottom {
@@ -186,7 +187,7 @@ html, body {
     padding-bottom: 10px;
 }
 
-.ebr-icon-32 {
+/* .ebr-icon-32 {
     display: block;
     margin: auto;
     width: 32px;
@@ -220,4 +221,4 @@ html, body {
     width: 24px;
     height: 24px;
     color: #007bff !important;
-}
+} */

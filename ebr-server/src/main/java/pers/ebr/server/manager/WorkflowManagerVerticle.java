@@ -18,7 +18,6 @@
 package pers.ebr.server.manager;
 
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.AsyncResult;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
@@ -36,7 +35,6 @@ import java.util.Optional;
 
 import static pers.ebr.server.common.Const.*;
 import static pers.ebr.server.common.Topic.*;
-import static pers.ebr.server.common.model.ITask.TASK_ID;
 
 /**
  * The ManageVerticle
@@ -51,8 +49,7 @@ public class WorkflowManagerVerticle extends AbstractVerticle {
         super.start();
         EventBus bus = vertx.eventBus();
         bus.consumer(REQ_ALL_WORKFLOW, this::handleGetAllWorkflow);
-        bus.consumer(REQ_SCHD_SUMMARY,  this::handleGetStatusSummary);
-        bus.consumer(REQ_RUN_FLOW, this::handleRunFlow);
+        bus.consumer(REQ_RUN_WORKFLOW, this::handleRunWorkflow);
     }
 
     @Override
@@ -81,35 +78,26 @@ public class WorkflowManagerVerticle extends AbstractVerticle {
         }
     }
 
-    private void handleGetStatusSummary(Message<JsonObject> msg) {
-        vertx.eventBus().request(MSG_SCHD_SUMMARY, new JsonObject(), (AsyncResult<Message<JsonObject>> res) -> {
-            JsonObject result = new JsonObject();
-            result.put(REQUEST_PARAM_REQ, msg.body().getString(REQUEST_PARAM_REQ));
-            if (res.failed()) {
-                JsonObject errInfo = new JsonObject();
-                errInfo.put(RESPONSE_INFO, res.cause());
-                result.put(RESPONSE_ERROR, errInfo);
-            } else {
-                result.put(RESPONSE_RESULT, res.result().body().encode());
-            }
-            msg.reply(result);
-        });
-    }
-
-    private void handleRunFlow(Message<JsonObject> msg) {
+    private void handleRunWorkflow(Message<JsonObject> msg) {
         JsonObject result = new JsonObject();
         result.put(REQUEST_PARAM_REQ, msg.body().getString(REQUEST_PARAM_REQ));
         try {
             JsonObject reqBody = Optional.ofNullable(msg.body().getJsonObject(REQUEST_PARAM_PARAM)).orElse(new JsonObject());
-            String flowId = reqBody.getString(TASK_ID, "");
+            String flowId = reqBody.getString(MSG_PARAM_WORKFLOW_ID, "");
             // check
             if (flowId.isBlank()) {
                 JsonObject errInfo = new JsonObject();
-                errInfo.put(RESPONSE_INFO, String.format("invalid task flow id: [%s]", flowId));
+                errInfo.put(RESPONSE_INFO, String.format("invalid workflow id: [%s]", flowId));
                 result.put(RESPONSE_ERROR, errInfo);
                 return;
             }
-            // 暂时只有启动workflow的http请求
+            String flowUrl = String.format("/%s", flowId);
+            if (Pool.get().getWorkflowByUrl(flowUrl) != null) {
+                JsonObject errInfo = new JsonObject();
+                errInfo.put(RESPONSE_INFO, String.format("workflow id: [%s] is already running", flowId));
+                result.put(RESPONSE_ERROR, errInfo);
+                return;
+            }
             String flowDefine = Repository.get().getWorkflow(flowId);
             if (flowDefine == null || flowDefine.isBlank()) {
                 JsonObject errInfo = new JsonObject();

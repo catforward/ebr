@@ -38,23 +38,33 @@ const REQ_ALL_WORKFLOW = "req.AllWorkflow";
 
 /**
  * 获取workflow运行状态概要
- * 请求：{req: "req.SchdSummary", param: {空参数}}
- * 正常响应：{req: "req.SchdSummary", result: {"complete":int,"failed":int,"unknown":int}}
- * 异常响应：{req: "req.SchdSummary", error: {空数据 }}
+ * 请求：{req: "req.ExecStatistics", param: {空参数}}
+ * 正常响应：{req: "req.ExecStatistics", result: {"complete":int,"failed":int,"active":int}}
+ * 异常响应：{req: "req.ExecStatistics", error: {"info":string}}
  */
-const REQ_SCHD_SUMMARY = "req.SchdSummary";
+const REQ_EXEC_STATISTICS = "req.ExecStatistics";
+
+/**
+ * 启动指定ID的workflow
+ * 请求：{req: "req.RunWorkflow", param: {"workflow_id":string}}
+ * 正常响应：{req: "req.RunWorkflow", result: {"info":string}}
+ * 异常响应：{req: "req.RunWorkflow", error: {"info":string}}
+ */
+const REQ_RUN_WORKFLOW = "req.RunWorkflow";
 
 
 /*******************************************************************************************************
- *  TASK STATE
+ *  CONST
  * *****************************************************************************************************/
 
-const TASK_STATE_UNKNOWN = -1;
+const TASK_STATE_UNKNOWN  = -1;
 const TASK_STATE_INACTIVE = 1;
-const TASK_STATE_ACTIVE = 2;
+const TASK_STATE_ACTIVE   = 2;
 const TASK_STATE_COMPLETE = 3;
-const TASK_STATE_FAILED = 4;
+const TASK_STATE_FAILED   = 4;
 
+const SSK_PROC_CMD = "proc_cmd";
+const SSK_WORKFLOW_ID = "workflow_id";
 
 /*******************************************************************************************************
  *  根对象
@@ -120,15 +130,16 @@ ebr.sidebar = {};
 ebr.sidebar.view = {
     Init : () => {
         $("#serverInfoPanelBtn").click(() => {
+            ebr.sidebar.view.ShiftPanel("serverInfoPanel");
             ebr.com.EmitQuery(REQ_GET_SERVER_INFO);
         });
-        $("#flowStatusInfoPanelBtn").click(() => {
-            ebr.sidebar.view.ShiftPanel("flowStatusInfoPanel");
-            ebr.com.EmitQuery(REQ_SCHD_SUMMARY);
+        $("#workflowStatusInfoPanelBtn").click(() => {
+            ebr.sidebar.view.ShiftPanel("workflowStatusInfoPanel");
+            ebr.com.EmitQuery(REQ_EXEC_STATISTICS);
             ebr.com.EmitQuery(REQ_ALL_WORKFLOW);
         });
-        $("#flowDefineViewerPanelBtn").click(() => {
-            ebr.sidebar.view.ShiftPanel("flowDefineViewerPanel");
+        $("#workflowDefineViewerPanelBtn").click(() => {
+            ebr.sidebar.view.ShiftPanel("workflowDefineViewerPanel");
         });
     },
 
@@ -140,10 +151,10 @@ ebr.sidebar.view = {
             });
             $("#" + panelId).removeClass("ebr-invisible");
             // sidebar button
-            $(".feather").each((index, element) => {
-                $(element).removeClass("ebr-icon-32-current");
-            });
-            $("#" + panelId + "Btn").find(".ebr-icon-32").addClass("ebr-icon-32-current");
+            // $(".feather").each((index, element) => {
+            //     $(element).removeClass("ebr-icon-32-current");
+            // });
+            // $("#" + panelId + "Btn").find(".ebr-icon-32").addClass("ebr-icon-32-current");
         }
     },
 };
@@ -160,13 +171,28 @@ ebr.state_viewer = {};
 ebr.state_viewer.view = {
     Init : () => {
         document.querySelector("#getAllFlowBtn").addEventListener("click", () => {
-            ebr.com.EmitQuery(REQ_SCHD_SUMMARY);
+            ebr.com.EmitQuery(REQ_EXEC_STATISTICS);
             ebr.com.EmitQuery(REQ_ALL_WORKFLOW);
         }, false);
     },
 
+    Process : (lnkObj) => {
+        let workflow_id = $(lnkObj).attr(SSK_WORKFLOW_ID);
+        let title = $(lnkObj).attr("title");
+        sessionStorage.setItem(SSK_WORKFLOW_ID, workflow_id);
+        if ("run" === title) {
+            ebr.com.EmitQuery(REQ_RUN_WORKFLOW);
+        } else if ("log" === title) {
+            // TODO
+        } else if ("download" === title) {
+            // TODO
+        } else if ("delete" === title) {
+            // TODO
+        }
+    },
+
     AddWorkflowDetailView : (jsonResultData) => {
-        console.log(jsonResultData);
+        // console.log(jsonResultData);
         $("#accordionFlowList").empty();
         for (let i = 0; i < jsonResultData.length; i++) {
             ebr.state_viewer.view.updateWorkflowStateList(jsonResultData[i]);
@@ -179,8 +205,8 @@ ebr.state_viewer.view = {
         let tmpCard = $("#taskStatusCard").clone();
         tmpCard.attr("id", "taskStatusCard-" + detailData.workflow_id);
 
-        let tmpCardHeader = $("#headingOne");
-        tmpCardHeader.attr("id", "headingOne" + detailData.workflow_id);
+        let tmpCardHeader = $("#statusHeadingOne");
+        tmpCardHeader.attr("id", "statusHeadingOne" + detailData.workflow_id);
 
         let tmpCardTitle = tmpCard.find("#taskStatusCardTitle");
         tmpCardTitle.html(detailData.workflow_id);
@@ -191,6 +217,11 @@ ebr.state_viewer.view = {
         tmpCardBody.attr("id", "collapseOne-" + detailData.workflow_id);
         tmpCardBody.attr("data-parent", "#" + tmpCard.attr("id"));
         tmpCardBody.attr("aria-labelledby", tmpCardHeader.attr("id"));
+
+        tmpCard.find(".ebr-card-flex-bar-btn-link").each((idx, elem) => {
+            // <a>
+            $(elem).attr(SSK_WORKFLOW_ID, detailData.workflow_id);
+        });
 
         for (let i = 0; i < detailData.tasks.length; i++) {
             let taskDetail = detailData.tasks[i];
@@ -224,12 +255,35 @@ ebr.state_viewer.view = {
         tmpCard.appendTo($("#accordionFlowList"));
     },
 
+    UpdateStatusNum : (jsonResultData) => {
+        let activeNum = 0;
+        let completeNum = 0;
+        let failedNum = 0
+        for (let schd in jsonResultData) {
+            let schdData = jsonResultData[schd];
+            for (let key in schdData) {
+                if ("active" === key) {
+                    activeNum += schdData[key];
+                } else if ("complete" === key) {
+                    completeNum += schdData[key];
+                } else if ("failed" === key) {
+                    failedNum += schdData[key];
+                }
+            }
+        }
+
+        $("#labelActiveNum").html(activeNum);
+        $("#labelCompleteNum").html(completeNum);
+        $("#labelFailedNum").html(failedNum);
+    }
+
 };
 ebr.state_viewer.ctl = {
     Init : () => {
         ebr.state_viewer.view.Init();
         ebr.com.BindQuery(REQ_ALL_WORKFLOW, ebr.state_viewer.ctl.GetAllWorkflowRequest, ebr.state_viewer.ctl.GetAllWorkflowResponse);
-        ebr.com.BindQuery(REQ_SCHD_SUMMARY, ebr.state_viewer.ctl.GetSchdSummaryRequest, ebr.state_viewer.ctl.GetSchdSummaryResponse);
+        ebr.com.BindQuery(REQ_EXEC_STATISTICS, ebr.state_viewer.ctl.GetExecStatisticsRequest, ebr.state_viewer.ctl.GetExecStatisticsResponse);
+        ebr.com.BindQuery(REQ_RUN_WORKFLOW, ebr.state_viewer.ctl.RunWorkflowRequest, ebr.state_viewer.ctl.RunWorkflowResponse);
     },
 
     GetAllWorkflowRequest : function() {
@@ -242,11 +296,23 @@ ebr.state_viewer.ctl = {
         }
     },
 
-    GetSchdSummaryRequest : function() {
+    GetExecStatisticsRequest : function() {
         return {};
     },
 
-    GetSchdSummaryResponse : function(jsonData) {
+    GetExecStatisticsResponse : function(jsonData) {
+        if (typeof jsonData.result === "object" && jsonData.result !== null) {
+            ebr.state_viewer.view.UpdateStatusNum(jsonData.result);
+        }
+    },
+
+    RunWorkflowRequest : function() {
+        let workflow_id = sessionStorage.getItem(SSK_WORKFLOW_ID);
+        sessionStorage.removeItem(SSK_WORKFLOW_ID);
+        return {  "workflow_id" : workflow_id };
+    },
+
+    RunWorkflowResponse : function(jsonData) {
         if (typeof jsonData.result === "object" && jsonData.result !== null) {
             console.log(jsonData.result)
         }
@@ -277,7 +343,7 @@ ebr.define_viewer.view = {
             let updFiles = e.dataTransfer.files;
             ebr.define_viewer.ctl.saveJsonFileContent(updFiles[0]);
         }, false);
-        let defineViewerPanel = document.getElementById("flowDefineViewerPanel");
+        let defineViewerPanel = document.getElementById("workflowDefineViewerPanel");
         defineViewerPanel.addEventListener("fileStorageEvent", (e) => {
             ebr.define_viewer.view.updateFlowDefineView(e.detail.fileName);
         });
@@ -450,7 +516,7 @@ ebr.define_viewer.ctl = {
                 let contentStr = e.target.result;
                 sessionStorage.removeItem(jsonFile.name);
                 sessionStorage.setItem(jsonFile.name, contentStr);
-                let defineViewerPanel = document.getElementById("flowDefineViewerPanel");
+                let defineViewerPanel = document.getElementById("workflowDefineViewerPanel");
                 defineViewerPanel.dispatchEvent(new CustomEvent('fileStorageEvent', { bubbles: true, detail: { fileName: jsonFile.name } }));
             };
         }
@@ -465,7 +531,6 @@ ebr.server_info.view = {
     Init : () => {},
 
     AddServerInfoTableView : function(jsonResultData) {
-        ebr.sidebar.view.ShiftPanel("serverInfoPanel");
         let infoPanel = $("#serverInfoPanel");
         // environment variables
         if (typeof jsonResultData.env === "object" && jsonResultData.env !== null) {

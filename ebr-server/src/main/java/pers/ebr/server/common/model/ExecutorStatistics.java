@@ -17,12 +17,9 @@
  */
 package pers.ebr.server.common.model;
 
-import io.vertx.core.json.Json;
 import io.vertx.core.json.JsonObject;
 
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static pers.ebr.server.common.model.ITask.*;
 
 /**
  * <pre>
@@ -31,9 +28,9 @@ import static pers.ebr.server.common.model.ITask.*;
  *
  * @author l.gong
  */
-public final class SchdSummary implements IJsonObjectConverter {
+public final class ExecutorStatistics implements IJsonObjectConverter {
 
-    private final String schdType;
+    private final String type;
     /**
      * 执行中任务数
      */
@@ -47,8 +44,8 @@ public final class SchdSummary implements IJsonObjectConverter {
      */
     private final AtomicInteger failedSumCnt;
 
-    SchdSummary(String schdType) {
-        this.schdType = schdType;
+    ExecutorStatistics(String schdType) {
+        this.type = schdType;
         this.activeCnt = new AtomicInteger();
         this.completeSumCnt = new AtomicInteger();
         this.failedSumCnt = new AtomicInteger();
@@ -60,8 +57,14 @@ public final class SchdSummary implements IJsonObjectConverter {
         this.failedSumCnt.set(0);
     }
 
-    public void setActiveCnt(int newValue) {
-        this.activeCnt.set(newValue);
+    public void incActiveCnt() {
+        this.activeCnt.incrementAndGet();
+    }
+
+    public void decActiveCnt() {
+        if (this.activeCnt.get() > 0) {
+            this.activeCnt.decrementAndGet();
+        }
     }
 
     public void incCompleteSumCnt() {
@@ -70,18 +73,6 @@ public final class SchdSummary implements IJsonObjectConverter {
 
     public void incFailedSumCnt() {
         this.failedSumCnt.incrementAndGet();
-    }
-
-    public int getActiveCnt() {
-        return this.activeCnt.get();
-    }
-
-    public int getCompleteSumCnt() {
-        return this.completeSumCnt.get();
-    }
-
-    public int getFailedSumCnt() {
-        return this.failedSumCnt.get();
     }
 
     /**

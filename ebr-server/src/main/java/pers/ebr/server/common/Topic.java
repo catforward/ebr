@@ -59,14 +59,19 @@ public interface Topic {
 
     /**
      * 获取workflow运行状态概要
-     * 请求：{req: "req.StatusSummary", param: {空参数}}
-     * 正常响应：{req: "req.StatusSummary", result: {"complete":int,"failed":int,"unknown":int}}
-     * 异常响应：{req: "req.StatusSummary", error: {空数据 }}
+     * 请求：{req: "req.ExecStatistics", param: {空参数}}
+     * 正常响应：{req: "req.ExecStatistics", result: {"complete":int,"failed":int,"active":int}}
+     * 异常响应：{req: "req.ExecStatistics", error: {"info":string}}
      */
-    String REQ_SCHD_SUMMARY = "req.SchdSummary";
+    String REQ_EXEC_STATISTICS = "req.ExecStatistics";
 
-    /** 启动指定ID的task */
-    String REQ_RUN_FLOW = "req.flow.RunFlow";
+    /**
+     * 启动指定ID的workflow
+     * 请求：{req: "req.RunWorkflow", param: {"workflow_id":string}}
+     * 正常响应：{req: "req.RunWorkflow", result: {"info":string}}
+     * 异常响应：{req: "req.RunWorkflow", error: {"info":string}}
+     */
+    String REQ_RUN_WORKFLOW = "req.RunWorkflow";
 
     /**
      * 消息：通知运行Flow
@@ -95,6 +100,6 @@ public interface Topic {
      * 正常响应：{req: "req.GetSchdSummary", result: {schd_name:{key:value}}}
      * 异常响应：{req: "req.GetSchdSummary", error: {空数据 }}
      */
-    String MSG_SCHD_SUMMARY = "msg.schd.GetSchdSummary";
+    String MSG_EXEC_STATISTICS = "msg.schd.GetExecStatistics";
     
 }

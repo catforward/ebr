@@ -42,8 +42,6 @@ import static pers.ebr.server.common.model.TaskType.GROUP;
  */
 public class DAGSchedulerVerticle extends AbstractVerticle {
     private final static Logger logger = LoggerFactory.getLogger(DAGSchedulerVerticle.class);
-    private final static String TYPE = "DAG";
-    private final SchdSummary summary = ModelItemBuilder.buildSchdSummary(TYPE);
 
     @Override
     public void start() throws Exception {
@@ -52,13 +50,11 @@ public class DAGSchedulerVerticle extends AbstractVerticle {
         bus.consumer(MSG_RUN_FLOW, this::handleRunFlow);
         bus.consumer(MSG_TASK_STATE_CHANGED, this::handleTaskStateChanged);
         bus.consumer(MSG_WORKFLOW_FINISHED, this::handleWorkflowFinished);
-        bus.consumer(MSG_SCHD_SUMMARY, this::handleGetSchdSummary);
     }
 
     @Override
     public void stop() throws Exception {
         super.stop();
-        summary.reset();
     }
 
     private void handleRunFlow(Message<JsonObject> msg) {
@@ -91,20 +87,12 @@ public class DAGSchedulerVerticle extends AbstractVerticle {
 
         updateTaskState(taskInstanceId, target, newState);
         collectExecutableTasks(flow, target.getGroup(), target);
-
-        updateSchdSummaryData(newState);
     }
 
     private void handleWorkflowFinished(Message<JsonObject> msg) {
         String taskInstanceId = msg.body().getString(MSG_PARAM_INSTANCE_ID, "");
         DAGWorkflow flow = Optional.ofNullable(Pool.get().removeWorkflowByInstanceId(taskInstanceId)).orElseThrow();
         flow.release();
-    }
-
-    private void handleGetSchdSummary(Message<JsonObject> msg) {
-        JsonObject result = new JsonObject();
-        result.put(TYPE, summary.toJsonObject());
-        msg.reply(result);
     }
 
     private void updateTaskState(String instanceId, ITask target, TaskState newState) {
@@ -163,24 +151,6 @@ public class DAGSchedulerVerticle extends AbstractVerticle {
                     Pool.get().addRunnableTaskQueue(successor);
                 }
             });
-        }
-    }
-
-    private void updateSchdSummaryData(TaskState newState) {
-        switch (newState) {
-            case ACTIVE: {
-                summary.setActiveCnt(Pool.get().getActiveTaskCount());
-                break;
-            }
-            case COMPLETE: {
-                summary.incCompleteSumCnt();
-                break;
-            }
-            case FAILED: {
-                summary.incFailedSumCnt();
-                break;
-            }
-            default: { break; }
         }
     }
 }

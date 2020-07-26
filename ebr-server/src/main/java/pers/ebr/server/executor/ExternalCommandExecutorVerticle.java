@@ -18,10 +18,13 @@
 package pers.ebr.server.executor;
 
 import io.vertx.core.AbstractVerticle;
+import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pers.ebr.server.common.model.ITask;
+import pers.ebr.server.common.model.ModelItemBuilder;
+import pers.ebr.server.common.model.ExecutorStatistics;
 import pers.ebr.server.common.model.TaskState;
 import pers.ebr.server.pool.IPool;
 import pers.ebr.server.pool.Pool;
@@ -36,6 +39,7 @@ import java.util.function.Supplier;
 import static pers.ebr.server.common.Configs.KEY_EXECUTOR_MAX;
 import static pers.ebr.server.common.Configs.KEY_EXECUTOR_MIN;
 import static pers.ebr.server.common.Const.*;
+import static pers.ebr.server.common.Topic.MSG_EXEC_STATISTICS;
 import static pers.ebr.server.common.Topic.MSG_TASK_STATE_CHANGED;
 import static pers.ebr.server.common.model.TaskState.*;
 import static pers.ebr.server.common.model.TaskType.GROUP;
@@ -47,6 +51,8 @@ import static pers.ebr.server.common.model.TaskType.GROUP;
  */
 public class ExternalCommandExecutorVerticle extends AbstractVerticle {
     private final static Logger logger = LoggerFactory.getLogger(ExternalCommandExecutorVerticle.class);
+    private final static String TYPE = "EC";
+    private final ExecutorStatistics statistics = ModelItemBuilder.buildExecutorStatistics(TYPE);
     /** 执行队列 */
     private ExecutorService executorPool;
     long timerId;
@@ -61,6 +67,7 @@ public class ExternalCommandExecutorVerticle extends AbstractVerticle {
                 new LinkedBlockingQueue<>(), new RunnerThreadFactory("ebr-runner-"));
 
         timerId = vertx.setPeriodic(1000, this::handlePeriodic);
+        vertx.eventBus().consumer(MSG_EXEC_STATISTICS, this::handleGetExecSummary);
     }
 
     @Override
@@ -68,6 +75,7 @@ public class ExternalCommandExecutorVerticle extends AbstractVerticle {
         super.stop();
         executorPool.shutdown();
         vertx.cancelTimer(timerId);
+        statistics.reset();
     }
 
     private void handlePeriodic(Long id) {
@@ -83,6 +91,32 @@ public class ExternalCommandExecutorVerticle extends AbstractVerticle {
             } else{
                 launchExecutableTask(task);
             }
+        }
+    }
+
+    private void handleGetExecSummary(Message<JsonObject> msg) {
+        JsonObject result = new JsonObject();
+        result.put(TYPE, statistics.toJsonObject());
+        msg.reply(result);
+    }
+
+    private void updateExecStatisticsData(TaskState newState) {
+        switch (newState) {
+            case ACTIVE: {
+                statistics.incActiveCnt();
+                break;
+            }
+            case COMPLETE: {
+                statistics.decActiveCnt();
+                statistics.incCompleteSumCnt();
+                break;
+            }
+            case FAILED: {
+                statistics.decActiveCnt();
+                statistics.incFailedSumCnt();
+                break;
+            }
+            default: { break; }
         }
     }
 
@@ -105,6 +139,8 @@ public class ExternalCommandExecutorVerticle extends AbstractVerticle {
         beginNoticeParam.put(MSG_PARAM_TASK_URL, task.getUrl());
         beginNoticeParam.put(MSG_PARAM_TASK_STATE, ACTIVE);
         vertx.eventBus().publish(MSG_TASK_STATE_CHANGED, beginNoticeParam);
+
+        updateExecStatisticsData(ACTIVE);
 
         CompletableFuture<TaskState> future = deployTaskAsync(() -> {
             try {
@@ -129,6 +165,7 @@ public class ExternalCommandExecutorVerticle extends AbstractVerticle {
         });
 
         future.whenComplete((retValue, exception) -> {
+            updateExecStatisticsData(retValue);
             JsonObject endNoticeParam = new JsonObject();
             endNoticeParam.put(MSG_PARAM_INSTANCE_ID, task.getInstanceId());
             endNoticeParam.put(MSG_PARAM_TASK_URL, task.getUrl());
