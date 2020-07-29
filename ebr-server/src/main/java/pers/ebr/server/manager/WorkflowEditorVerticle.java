@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pers.ebr.server.common.model.ModelItemBuilder;
 import pers.ebr.server.common.model.DAGWorkflow;
+import pers.ebr.server.pool.Pool;
 import pers.ebr.server.repository.Repository;
 
 import java.util.Optional;
@@ -46,6 +47,8 @@ public class WorkflowEditorVerticle extends AbstractVerticle {
         EventBus bus = vertx.eventBus();
         bus.consumer(REQ_VALIDATE_WORKFLOW, this::handleValidateWorkflow);
         bus.consumer(REQ_SAVE_WORKFLOW, this::handleSaveWorkflow);
+        bus.consumer(REQ_DEL_WORKFLOW, this::handleDeleteWorkflow);
+        bus.consumer(REQ_DUMP_WORKFLOW_DEF, this::handleDumpWorkflowDefine);
     }
 
     @Override
@@ -87,6 +90,54 @@ public class WorkflowEditorVerticle extends AbstractVerticle {
             msg.reply(result);
         }
 
+    }
+
+    private void handleDeleteWorkflow(Message<JsonObject> msg) {
+        JsonObject result = new JsonObject();
+        result.put(REQUEST_PARAM_REQ, msg.body().getString(REQUEST_PARAM_REQ));
+        try {
+            JsonObject reqBody = Optional.ofNullable(msg.body().getJsonObject(REQUEST_PARAM_PARAM)).orElse(new JsonObject());
+            String flowId = reqBody.getString(MSG_PARAM_WORKFLOW_ID, "");
+            // check
+            if (flowId.isBlank()) {
+                JsonObject errInfo = new JsonObject();
+                errInfo.put(RESPONSE_INFO, String.format("invalid workflow id: [%s]", flowId));
+                result.put(RESPONSE_ERROR, errInfo);
+                return;
+            }
+            String flowUrl = String.format("/%s", flowId);
+            if (Pool.get().getWorkflowByUrl(flowUrl) != null) {
+                JsonObject errInfo = new JsonObject();
+                errInfo.put(RESPONSE_INFO, String.format("workflow id: [%s] is already running", flowId));
+                result.put(RESPONSE_ERROR, errInfo);
+                return;
+            }
+            // delete it
+            int cnt = Repository.get().removeWorkflow(flowId);
+            if (cnt == 0) {
+                JsonObject errInfo = new JsonObject();
+                errInfo.put(RESPONSE_INFO, String.format("workflow id: [%s] is already running", flowId));
+                result.put(RESPONSE_ERROR, errInfo);
+                return;
+            } else {
+                JsonObject retInfo = new JsonObject();
+                retInfo.put(RESPONSE_INFO, String.format("delete workflow's record: [%s]", cnt));
+                result.put(RESPONSE_RESULT, retInfo);
+            }
+        } catch (Exception ex) {
+            logger.error("procedure [handleStartTask] error:", ex);
+            JsonObject errInfo = new JsonObject();
+            errInfo.put(RESPONSE_INFO, ex.getMessage());
+            result.put(RESPONSE_ERROR, errInfo);
+        } finally {
+            msg.reply(result);
+        }
+    }
+
+    private void handleDumpWorkflowDefine(Message<JsonObject> msg) {
+        JsonObject result = new JsonObject();
+        result.put(REQUEST_PARAM_REQ, msg.body().getString(REQUEST_PARAM_REQ));
+        // TODO
     }
 
 }

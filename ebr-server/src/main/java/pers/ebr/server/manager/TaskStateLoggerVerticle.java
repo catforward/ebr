@@ -58,7 +58,7 @@ public class TaskStateLoggerVerticle extends AbstractVerticle {
             return;
         }
         try {
-            Repository.get().setTaskState(taskInstanceId, taskUrl, newState);
+            Repository.get().setTaskExecHist(taskInstanceId, taskUrl, newState);
         } catch (Exception ex) {
             logger.error("procedure [handleTaskStateChanged] error:", ex);
         }

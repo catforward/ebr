@@ -52,6 +52,14 @@ const REQ_EXEC_STATISTICS = "req.ExecStatistics";
  */
 const REQ_RUN_WORKFLOW = "req.RunWorkflow";
 
+/**
+ * 删除指定ID的workflow
+ * 请求：{req: "req.DeleteWorkflow", param: {"workflow_id":string}}
+ * 正常响应：{req: "req.DeleteWorkflow", result: {"info":string}}
+ * 异常响应：{req: "req.DeleteWorkflow", error: {"info":string}}
+ */
+const REQ_DEL_WORKFLOW = "req.DeleteWorkflow";
+
 
 /*******************************************************************************************************
  *  CONST
@@ -63,7 +71,7 @@ const TASK_STATE_ACTIVE   = 2;
 const TASK_STATE_COMPLETE = 3;
 const TASK_STATE_FAILED   = 4;
 
-const SSK_PROC_CMD = "proc_cmd";
+const SSK_PROC_CMD    = "proc_cmd";
 const SSK_WORKFLOW_ID = "workflow_id";
 
 /*******************************************************************************************************
@@ -150,11 +158,6 @@ ebr.sidebar.view = {
                 $(element).addClass("ebr-invisible");
             });
             $("#" + panelId).removeClass("ebr-invisible");
-            // sidebar button
-            // $(".feather").each((index, element) => {
-            //     $(element).removeClass("ebr-icon-32-current");
-            // });
-            // $("#" + panelId + "Btn").find(".ebr-icon-32").addClass("ebr-icon-32-current");
         }
     },
 };
@@ -187,7 +190,7 @@ ebr.state_viewer.view = {
         } else if ("download" === title) {
             // TODO
         } else if ("delete" === title) {
-            // TODO
+            ebr.com.EmitQuery(REQ_DEL_WORKFLOW);
         }
     },
 
@@ -284,6 +287,7 @@ ebr.state_viewer.ctl = {
         ebr.com.BindQuery(REQ_ALL_WORKFLOW, ebr.state_viewer.ctl.GetAllWorkflowRequest, ebr.state_viewer.ctl.GetAllWorkflowResponse);
         ebr.com.BindQuery(REQ_EXEC_STATISTICS, ebr.state_viewer.ctl.GetExecStatisticsRequest, ebr.state_viewer.ctl.GetExecStatisticsResponse);
         ebr.com.BindQuery(REQ_RUN_WORKFLOW, ebr.state_viewer.ctl.RunWorkflowRequest, ebr.state_viewer.ctl.RunWorkflowResponse);
+        ebr.com.BindQuery(REQ_DEL_WORKFLOW, ebr.state_viewer.ctl.DelWorkflowRequest, ebr.state_viewer.ctl.DelWorkflowResponse);
     },
 
     GetAllWorkflowRequest : function() {
@@ -314,7 +318,25 @@ ebr.state_viewer.ctl = {
 
     RunWorkflowResponse : function(jsonData) {
         if (typeof jsonData.result === "object" && jsonData.result !== null) {
-            console.log(jsonData.result)
+            alert("workflow started");
+        } else if (typeof jsonData.result === "object" && jsonData.error !== null) {
+            alert("start a workflow failed. info:[" + jsonData.error.info + "]");
+        }
+    },
+
+    DelWorkflowRequest : function() {
+        let workflow_id = sessionStorage.getItem(SSK_WORKFLOW_ID);
+        sessionStorage.removeItem(SSK_WORKFLOW_ID);
+        return {  "workflow_id" : workflow_id };
+    },
+
+    DelWorkflowResponse : function(jsonData) {
+        console.log(jsonData)
+        if (typeof jsonData.result === "object" && jsonData.result !== null) {
+            ebr.com.EmitQuery(REQ_ALL_WORKFLOW);
+            alert(jsonData.result.info);
+        } else if (typeof jsonData.result === "object" && jsonData.error !== null) {
+            alert("delete a workflow failed. info:[" + jsonData.error.info + "]");
         }
     },
 };

@@ -74,6 +74,22 @@ public interface Topic {
     String REQ_RUN_WORKFLOW = "req.RunWorkflow";
 
     /**
+     * 下载指定ID的workflow定义
+     * 请求：{req: "req.DumpWorkflowDef", param: {"workflow_id":string}}
+     * 正常响应：{req: "req.DumpWorkflowDef", result: {"workflow_id":string}}
+     * 异常响应：{req: "req.DumpWorkflowDef", error: {"info":string}}
+     */
+    String REQ_DUMP_WORKFLOW_DEF = "req.DumpWorkflowDef";
+
+    /**
+     * 删除指定ID的workflow
+     * 请求：{req: "req.DeleteWorkflow", param: {"workflow_id":string}}
+     * 正常响应：{req: "req.DeleteWorkflow", result: {"info":string}}
+     * 异常响应：{req: "req.DeleteWorkflow", error: {"info":string}}
+     */
+    String REQ_DEL_WORKFLOW = "req.DeleteWorkflow";
+
+    /**
      * 消息：通知运行Flow
      * 请求：{req: "msg.schd.RunFlow", param: {"workflow_id":string,"workflow_def":string}}
      * 无响应

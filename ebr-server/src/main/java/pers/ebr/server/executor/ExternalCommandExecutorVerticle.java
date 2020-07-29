@@ -51,7 +51,8 @@ import static pers.ebr.server.common.model.TaskType.GROUP;
  */
 public class ExternalCommandExecutorVerticle extends AbstractVerticle {
     private final static Logger logger = LoggerFactory.getLogger(ExternalCommandExecutorVerticle.class);
-    private final static String TYPE = "EC";
+
+    public final static String TYPE = "EC";
     private final ExecutorStatistics statistics = ModelItemBuilder.buildExecutorStatistics(TYPE);
     /** 执行队列 */
     private ExecutorService executorPool;
@@ -165,12 +166,13 @@ public class ExternalCommandExecutorVerticle extends AbstractVerticle {
         });
 
         future.whenComplete((retValue, exception) -> {
-            updateExecStatisticsData(retValue);
             JsonObject endNoticeParam = new JsonObject();
             endNoticeParam.put(MSG_PARAM_INSTANCE_ID, task.getInstanceId());
             endNoticeParam.put(MSG_PARAM_TASK_URL, task.getUrl());
             endNoticeParam.put(MSG_PARAM_TASK_STATE, retValue);
             vertx.eventBus().publish(MSG_TASK_STATE_CHANGED, endNoticeParam);
+
+            updateExecStatisticsData(retValue);
         });
     }
 

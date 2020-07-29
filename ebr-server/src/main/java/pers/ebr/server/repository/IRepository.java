@@ -31,9 +31,15 @@ import java.util.Collection;
  * @author l.gong
  */
 public interface IRepository {
-    void setWorkflow(String flowId, String flowDetail) throws RepositoryException;
-    void setTaskDetail(DAGWorkflow flow) throws RepositoryException;
-    void setTaskState(String instanceId, String taskUrl, TaskState newState) throws RepositoryException;
+
+    void setWorkflow(String flowId, String flowBody) throws RepositoryException;
     String getWorkflow(String flowId) throws RepositoryException;
+    int removeWorkflow(String flowId) throws RepositoryException;
+
+    void setTaskExecHist(String instanceId, String taskUrl, TaskState newState) throws RepositoryException;
+
+    // TODO hide it
+    void setTaskDetail(DAGWorkflow flow) throws RepositoryException;
+    // TODO
     Collection<WorkflowDetail> getAllWorkflowDetail() throws RepositoryException;
 }

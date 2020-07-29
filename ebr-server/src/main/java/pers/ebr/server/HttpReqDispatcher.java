@@ -46,9 +46,11 @@ public class HttpReqDispatcher implements Handler<RoutingContext> {
             case REQ_GET_SERVER_INFO:
             case REQ_VALIDATE_WORKFLOW:
             case REQ_SAVE_WORKFLOW:
+            case REQ_DEL_WORKFLOW:
             case REQ_ALL_WORKFLOW:
             case REQ_EXEC_STATISTICS:
-            case REQ_RUN_WORKFLOW: {
+            case REQ_RUN_WORKFLOW:
+            case REQ_DUMP_WORKFLOW_DEF: {
                 handleReqRequest(address, reqBody, routingContext);
                 break;
             }

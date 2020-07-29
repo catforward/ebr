@@ -47,11 +47,11 @@ final class SqliteRepositoryImpl implements IRepository {
     }
 
     @Override
-    public void setWorkflow(String flowId, String flowDetail) throws RepositoryException {
+    public void setWorkflow(String flowId, String flowBody) throws RepositoryException {
         String saveSql = sqlTpl.getProperty(SQL_SAVE_WORKFLOW);
         try (PreparedStatement statement = connection.prepareStatement(saveSql);) {
             statement.setString(1, flowId);
-            statement.setString(2, flowDetail);
+            statement.setString(2, flowBody);
             statement.executeUpdate();
             commit();
         } catch (SQLException ex) {
@@ -59,6 +59,48 @@ final class SqliteRepositoryImpl implements IRepository {
             logger.error("database error occurred...", ex);
             throw new RepositoryException(ex);
         }
+    }
+
+    @Override
+    public String getWorkflow(String flowId) throws RepositoryException {
+        String loadSql = sqlTpl.getProperty(SQL_LOAD_WORKFLOW);
+        try {
+            List<Map<String, String>> result = query(loadSql, flowId);
+            if (result.isEmpty()) {
+                return "";
+            }
+            return result.get(0).getOrDefault(COL_WORKFLOW_DEFINE, "");
+        } catch (SQLException ex) {
+            logger.error("database error occurred...", ex);
+            throw new RepositoryException(ex);
+        }
+    }
+
+    @Override
+    public int removeWorkflow(String flowId) throws RepositoryException {
+        int workflowCnt = 0;
+        int taskDetailCnt = 0;
+        int execHistCnt = 0;
+        String sql = sqlTpl.getProperty(SQL_DEL_WORKFLOW);
+        try (PreparedStatement statement = connection.prepareStatement(sql);) {
+            statement.setString(1, flowId);
+            workflowCnt = statement.executeUpdate();
+            String url = String.format("/%s", flowId);
+            String prefix = String.format("/%s/", flowId);
+            taskDetailCnt = this.removeTaskDetail(url, prefix);
+            execHistCnt = this.removeTaskExecHist(url, prefix);
+            commit();
+            logger.info("delete workflow record:[{}], task detail record:[{}], execute hist record:[{}]",
+                    workflowCnt, taskDetailCnt, execHistCnt);
+        } catch (SQLException ex) {
+            rollback();
+            workflowCnt = 0;
+            taskDetailCnt = 0;
+            execHistCnt = 0;
+            logger.error("database error occurred...", ex);
+            throw new RepositoryException(ex);
+        }
+        return (workflowCnt + taskDetailCnt + execHistCnt);
     }
 
     @Override
@@ -101,10 +143,19 @@ final class SqliteRepositoryImpl implements IRepository {
         }
     }
 
+    private int removeTaskDetail(String url, String prefix) throws SQLException {
+        String sql = sqlTpl.getProperty(SQL_DEL_TASK_DETAIL);
+        try (PreparedStatement statement = connection.prepareStatement(sql);) {
+            statement.setString(1, url);
+            statement.setString(2, prefix + "%");
+            return statement.executeUpdate();
+        }
+    }
+
     @Override
-    public void setTaskState(String instanceId, String taskUrl, TaskState newState) throws RepositoryException {
+    public void setTaskExecHist(String instanceId, String taskUrl, TaskState newState) throws RepositoryException {
         // TODO
-        String sql = sqlTpl.getProperty(SQL_WORKFLOW_HIST_EXISTS);
+        String sql = sqlTpl.getProperty(SQL_EXEC_HIST_HIST_EXISTS);
         boolean histRecExist = false;
         try {
             var result = query(sql, instanceId, taskUrl);
@@ -119,7 +170,7 @@ final class SqliteRepositoryImpl implements IRepository {
         try {
             if (histRecExist) {
                 if (COMPLETE == newState || FAILED == newState) {
-                    sql = sqlTpl.getProperty(SQL_UPDATE_WORKFLOW_HIST_RESULT);
+                    sql = sqlTpl.getProperty(SQL_UPDATE_EXEC_HIST_HIST_RESULT);
                     try (PreparedStatement statement = connection.prepareStatement(sql);) {
                         statement.setLong(1, System.currentTimeMillis());
                         statement.setInt(2, newState.ordinal());
@@ -129,7 +180,7 @@ final class SqliteRepositoryImpl implements IRepository {
                         commit();
                     }
                 } else {
-                    sql = sqlTpl.getProperty(SQL_UPDATE_WORKFLOW_HIST_STATE);
+                    sql = sqlTpl.getProperty(SQL_UPDATE_EXEC_HIST_HIST_STATE);
                     try (PreparedStatement statement = connection.prepareStatement(sql);) {
                         statement.setInt(1, newState.ordinal());
                         statement.setString(2, instanceId);
@@ -139,7 +190,7 @@ final class SqliteRepositoryImpl implements IRepository {
                     }
                 }
             } else {
-                sql = sqlTpl.getProperty(SQL_SAVE_WORKFLOW_HIST);
+                sql = sqlTpl.getProperty(SQL_SAVE_EXEC_HIST_HIST);
                 try (PreparedStatement statement = connection.prepareStatement(sql);) {
                     statement.setString(1, instanceId);
                     statement.setString(2, taskUrl);
@@ -156,18 +207,12 @@ final class SqliteRepositoryImpl implements IRepository {
         }
     }
 
-    @Override
-    public String getWorkflow(String flowId) throws RepositoryException {
-        String loadSql = sqlTpl.getProperty(SQL_LOAD_WORKFLOW);
-        try {
-            List<Map<String, String>> result = query(loadSql, flowId);
-            if (result.isEmpty()) {
-                return "";
-            }
-            return result.get(0).getOrDefault(COL_WORKFLOW_DEFINE, "");
-        } catch (SQLException ex) {
-            logger.error("database error occurred...", ex);
-            throw new RepositoryException(ex);
+    private int removeTaskExecHist(String url, String prefix) throws SQLException {
+        String sql = sqlTpl.getProperty(SQL_DEL_EXEC_HIST_HIST);
+        try (PreparedStatement statement = connection.prepareStatement(sql);) {
+            statement.setString(1, url);
+            statement.setString(2, prefix + "%");
+            return statement.executeUpdate();
         }
     }
 
@@ -212,6 +257,10 @@ final class SqliteRepositoryImpl implements IRepository {
         }
         return flows.values();
     }
+
+    //===========================================================================================================
+    // Basic Proc
+    //===========================================================================================================
 
     public void connect() throws RepositoryException {
         String connStr = String.format("jdbc:sqlite:%s%s%s",
