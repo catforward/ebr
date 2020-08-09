@@ -15,23 +15,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.server.common.model;
+package pers.ebr.server.model;
 
 import io.vertx.core.json.JsonObject;
+import pers.ebr.server.common.TaskState;
 
-import static pers.ebr.server.common.model.ITask.*;
-import static pers.ebr.server.common.model.TaskState.INACTIVE;
+import static pers.ebr.server.model.IExternalCommandTask.*;
+import static pers.ebr.server.common.TaskState.INACTIVE;
 
 /**
- * <pre>
- * TaskDetail Object
- *
- * </pre>
+ * <p>
+ * 任务(Task)的视图数据，与客户端交互时使用
+ * </p>
  *
  * @author l.gong
  */
-public final class TaskDetail implements IJsonObjectConverter {
-    String url;
+public final class ExternalCommandTaskView implements IObjectConverter {
+    String path;
     String id;
     String group;
     String cmd;
@@ -39,60 +39,130 @@ public final class TaskDetail implements IJsonObjectConverter {
     String deps;
     TaskState state = INACTIVE;
 
-    TaskDetail() {}
+    ExternalCommandTaskView() {}
 
-    public String getUrl() {
-        return url;
+    /**
+     * 获取任务逻辑路径
+     *
+     * @return String
+     */
+    public String getPath() {
+        return path;
     }
 
+    /**
+     * 获取任务ID
+     *
+     * @return String
+     */
     public String getId() {
         return id;
     }
 
+    /**
+     * 获取任务所在组的ID
+     *
+     * @return String
+     */
     public String getGroup() {
         return group;
     }
 
+    /**
+     * 获取任务的目标命令
+     *
+     * @return String
+     */
     public String getCmd() {
         return cmd;
     }
 
+    /**
+     * 获取任务描述
+     *
+     * @return String
+     */
     public String getDesc() {
         return desc;
     }
 
-    public String getDeps() {
+    /**
+     * 获取任务的依赖任务列表
+     *
+     * @return String
+     */
+    public String getDepends() {
         return deps;
     }
 
+    /**
+     * 获取任务状态
+     *
+     * @return TaskState
+     */
     public TaskState getState() {
         return state;
     }
 
-    public void setUrl(String url) {
-        this.url = url;
+    /**
+     * 设置任务的逻辑路径
+     *
+     * @param path [in] 待设置任务的逻辑路径
+     */
+    public void setPath(String path) {
+        this.path = path;
     }
 
+    /**
+     * 设置任务ID
+     *
+     * @param id [in] 待设置任务id
+     */
     public void setId(String id) {
         this.id = id;
     }
 
+    /**
+     * 设置任务所在组的Id
+     *
+     * @param group [in] 待设置所在组的Id
+     */
     public void setGroup(String group) {
         this.group = group;
     }
 
+    /**
+     * 设置任务目标命令
+     *
+     * @param cmd [in] 待设置命令行字符
+     */
     public void setCmd(String cmd) {
         this.cmd = cmd;
     }
 
+    /**
+     * 设置任务描述
+     *
+     * @param desc [in] 待设置任务描述
+     */
     public void setDesc(String desc) {
         this.desc = desc;
     }
 
-    public void setDeps(String deps) {
-        this.deps = deps;
+    /**
+     * 增加任务所依赖的其他任务Id定义
+     *
+     * @param id [in] 待设置其他任务Id
+     */
+    public void setDepends(String id) {
+        this.deps = id;
     }
 
+    /**
+     * 设置任务状态
+     *
+     * @param newState [in] 待设置任务的状态
+     */
     public void setState(TaskState newState) {
         this.state = newState;
     }
@@ -104,7 +174,7 @@ public final class TaskDetail implements IJsonObjectConverter {
     @Override
     public JsonObject toJsonObject() {
         JsonObject jsonObject = new JsonObject();
-        jsonObject.put(TASK_URL, url);
+        jsonObject.put(TASK_PATH, path);
         jsonObject.put(TASK_ID, id);
         jsonObject.put(TASK_GROUP, group);
         jsonObject.put(TASK_DESC, desc);

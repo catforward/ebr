@@ -15,12 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.server.pool;
+package pers.ebr.server.repository;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pers.ebr.server.common.model.ITask;
-import pers.ebr.server.common.model.DAGWorkflow;
+import pers.ebr.server.model.IExternalCommandTask;
+import pers.ebr.server.model.IWorkflow;
 
 import java.util.Map;
 import java.util.Queue;
@@ -34,19 +34,19 @@ import static pers.ebr.server.common.Utils.checkNotNull;
  *
  * @author l.gong
  */
-public final class InMemoryPoolImpl implements IPool {
-    private final static Logger logger = LoggerFactory.getLogger(InMemoryPoolImpl.class);
+public final class MemoryPoolImpl implements IPool {
+    private final static Logger logger = LoggerFactory.getLogger(MemoryPoolImpl.class);
     final static String TYPE = "memory";
     /**
      * active task flow pool
      * key : flow's instanceId
      * value : flow instance
      */
-    private final Map<String, DAGWorkflow> allFlows = new ConcurrentHashMap<>();
-    private final Queue<ITask> taskQueue = new ConcurrentLinkedQueue<>();
+    private final Map<String, IWorkflow> allFlows = new ConcurrentHashMap<>();
+    private final Queue<IExternalCommandTask> taskQueue = new ConcurrentLinkedQueue<>();
 
 
-    InMemoryPoolImpl() {
+    MemoryPoolImpl() {
     }
 
     @Override
@@ -61,45 +61,47 @@ public final class InMemoryPoolImpl implements IPool {
     }
 
     @Override
-    public DAGWorkflow getWorkflowByUrl(String url) {
+    public IWorkflow getRunningWorkflowByPath(String url) {
         checkNotNull(url);
         for (var entry : allFlows.entrySet()) {
-            DAGWorkflow flow = entry.getValue();
-            if (flow.getRootTask().getUrl().equals(url)) {
-                return flow;
+            IWorkflow workflow = entry.getValue();
+            if (workflow.getRootTask().getPath().equals(url)) {
+                return workflow;
             }
         }
         return null;
     }
 
     @Override
-    public DAGWorkflow getWorkflowByInstanceId(String instanceId) {
+    public IWorkflow getRunningWorkflowByInstanceId(String instanceId) {
         checkNotNull(instanceId);
         return allFlows.get(instanceId);
     }
 
     @Override
-    public void setFlow(DAGWorkflow flow) {
-        checkNotNull(flow);
-        allFlows.put(flow.getInstanceId(), flow);
+    public void addRunningWorkflow(IWorkflow workflow) {
+        checkNotNull(workflow);
+        allFlows.put(workflow.getInstanceId(), workflow);
     }
 
     @Override
-    public DAGWorkflow removeWorkflowByInstanceId(String instanceId) {
+    public void removeRunningWorkflowByInstanceId(String instanceId) {
         checkNotNull(instanceId);
-        DAGWorkflow flow = allFlows.get(instanceId);
-        allFlows.remove(instanceId);
-        return flow;
+        IWorkflow workflow = allFlows.get(instanceId);
+        if (workflow != null) {
+            workflow.release();
+            allFlows.remove(instanceId, workflow);
+        }
     }
 
     @Override
-    public void addRunnableTaskQueue(ITask task) {
+    public void addRunnableTaskQueue(IExternalCommandTask task) {
         checkNotNull(task);
         taskQueue.add(task);
     }
 
     @Override
-    public ITask pollRunnableTaskQueue() {
+    public IExternalCommandTask pollRunnableTaskQueue() {
         // 从队列的头部取出并删除该条数据
         return taskQueue.poll();
     }

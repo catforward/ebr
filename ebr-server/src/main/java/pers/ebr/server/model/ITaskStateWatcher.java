@@ -15,24 +15,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.server.common.model;
+package pers.ebr.server.model;
+
+import pers.ebr.server.common.TaskState;
 
 /**
- * <pre>
- * Task Type in EBR
- * </pre>
+ * <p>
+ * 向本接口的实现者推送任务的新旧状态信息
+ * </p>
  *
  * @author l.gong
  */
-public enum TaskType {
-    /** 可包含子任务 */
-    GROUP(1),
-    /** 不能拥有子任务 */
-    UNIT(2);
+public interface ITaskStateWatcher {
 
-    private final int type;
-
-    TaskType(int type) {
-        this.type = type;
-    }
+    /**
+     * 推送任务新状态信息
+     * @param instanceId 任务所在工作流实例ID
+     * @param path       任务逻辑路径
+     * @param isRootTask 是否是根任务
+     * @param src        旧状态
+     * @param dst        新状态
+     */
+    void onStateChanged(String instanceId, String path, boolean isRootTask, TaskState src, TaskState dst);
 }

@@ -23,12 +23,12 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pers.ebr.server.common.model.TaskState;
+import pers.ebr.server.common.TaskState;
 import pers.ebr.server.repository.Repository;
 
 import static pers.ebr.server.common.Const.*;
 import static pers.ebr.server.common.Topic.MSG_TASK_STATE_CHANGED;
-import static pers.ebr.server.common.model.TaskState.UNKNOWN;
+import static pers.ebr.server.common.TaskState.UNKNOWN;
 
 /**
  * The TaskStateSaverVerticle
@@ -51,14 +51,14 @@ public class TaskStateLoggerVerticle extends AbstractVerticle {
     }
 
     private void handleTaskStateChanged(Message<JsonObject> msg) {
-        String taskUrl = msg.body().getString(MSG_PARAM_TASK_URL, "");
+        String taskUrl = msg.body().getString(MSG_PARAM_TASK_PATH, "");
         String taskInstanceId = msg.body().getString(MSG_PARAM_INSTANCE_ID, "");
         TaskState newState = TaskState.valueOf(msg.body().getString(MSG_PARAM_TASK_STATE, "-1"));
         if (taskUrl.isBlank() || taskInstanceId.isBlank() || UNKNOWN == newState) {
             return;
         }
         try {
-            Repository.get().setTaskExecHist(taskInstanceId, taskUrl, newState);
+            Repository.get().saveTaskExecHist(taskInstanceId, taskUrl, newState);
         } catch (Exception ex) {
             logger.error("procedure [handleTaskStateChanged] error:", ex);
         }

@@ -18,9 +18,9 @@
 package pers.ebr.server.common;
 
 /**
- * <pre>
- * Define the constant variables which can be used in this whole application.
- * </pre>
+ * <p>
+ * 定义应用内使用的常量
+ * </p>
  * 
  * @author l.gong
  */
@@ -37,9 +37,8 @@ public interface Const {
 
     /** 内部消息参数 */
     String MSG_PARAM_WORKFLOW_ID = "workflow_id";
-    String MSG_PARAM_WORKFLOW_DEF = "workflow_def";
     String MSG_PARAM_INSTANCE_ID = "instance_id";
-    String MSG_PARAM_TASK_URL = "task_url";
+    String MSG_PARAM_TASK_PATH = "task_path";
     String MSG_PARAM_TASK_STATE = "task_state";
     String MSG_PARAM_TASKS = "tasks";
 

@@ -15,62 +15,68 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.server.common.model;
+package pers.ebr.server.model;
 
 import io.vertx.core.json.JsonObject;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * <pre>
- * TaskPoolDetail Object
- * </pre>
+ * <p>
+ * 执行器的执行状态统计数据
+ * </p>
  *
  * @author l.gong
  */
-public final class ExecutorStatistics implements IJsonObjectConverter {
+public final class ExecutorStatisticsView implements IObjectConverter {
 
     private final String type;
-    /**
-     * 执行中任务数
-     */
     private final AtomicInteger activeCnt;
-    /**
-     * 正常结束累计任务数
-     */
     private final AtomicInteger completeSumCnt;
-    /**
-     * 异常结束累计任务数
-     */
     private final AtomicInteger failedSumCnt;
 
-    ExecutorStatistics(String schdType) {
+    ExecutorStatisticsView(String schdType) {
         this.type = schdType;
         this.activeCnt = new AtomicInteger();
         this.completeSumCnt = new AtomicInteger();
         this.failedSumCnt = new AtomicInteger();
     }
 
+    /**
+     * 重置统计数据
+     */
     public void reset() {
         this.activeCnt.set(0);
         this.completeSumCnt.set(0);
         this.failedSumCnt.set(0);
     }
 
+    /**
+     * 运行中任务计数器自增
+     */
     public void incActiveCnt() {
         this.activeCnt.incrementAndGet();
     }
 
+    /**
+     * 运行中任务计数器自减
+     */
     public void decActiveCnt() {
         if (this.activeCnt.get() > 0) {
             this.activeCnt.decrementAndGet();
         }
     }
 
+    /**
+     * 执行完成任务计数器自增
+     */
     public void incCompleteSumCnt() {
         this.completeSumCnt.incrementAndGet();
     }
 
+    /**
+     * 执行失败任务计数器自增
+     */
     public void incFailedSumCnt() {
         this.failedSumCnt.incrementAndGet();
     }

@@ -17,29 +17,65 @@
  */
 package pers.ebr.server.repository;
 
-import pers.ebr.server.common.model.DAGWorkflow;
-import pers.ebr.server.common.model.TaskState;
-import pers.ebr.server.common.model.WorkflowDetail;
+import pers.ebr.server.model.IWorkflow;
+import pers.ebr.server.common.TaskState;
+import pers.ebr.server.model.ExternalCommandWorkflowView;
 
 import java.util.Collection;
 
 /**
- * <pre>
- * The Repository Interface
- * </pre>
+ * <p>
+ * 任务仓库
+ * </p>
  *
  * @author l.gong
  */
 public interface IRepository {
 
-    void setWorkflow(String flowId, String flowBody) throws RepositoryException;
-    String getWorkflow(String flowId) throws RepositoryException;
+    /**
+     * 保存任务流对象
+     * @param workflow [in] 待保存的任务流
+     * @throws RepositoryException 发生SQL异常时转换并抛出此异常
+     */
+    void saveWorkflow(IWorkflow workflow) throws RepositoryException;
+
+    /**
+     * 使用id查找并读取一个任务流
+     * @param flowId 任务流ID
+     * @return IWorkflow
+     * @throws RepositoryException 发生SQL异常时转换并抛出此异常
+     */
+    IWorkflow loadWorkflow(String flowId) throws RepositoryException;
+
+    /**
+     * 使用id删除一个任务流
+     * @param flowId 任务流ID
+     * @return int
+     * @throws RepositoryException 发生SQL异常时转换并抛出此异常
+     */
     int removeWorkflow(String flowId) throws RepositoryException;
 
-    void setTaskExecHist(String instanceId, String taskUrl, TaskState newState) throws RepositoryException;
+    /**
+     * 判断给定ID的任务流定义是否存在
+     * @param flowId 任务流ID
+     * @return boolean
+     * @throws RepositoryException 发生SQL异常时转换并抛出此异常
+     */
+    boolean isWorkflowExists(String flowId) throws RepositoryException;
 
-    // TODO hide it
-    void setTaskDetail(DAGWorkflow flow) throws RepositoryException;
-    // TODO
-    Collection<WorkflowDetail> getAllWorkflowDetail() throws RepositoryException;
+    /**
+     * 保存一次任务执行记录
+     * @param instanceId 任务实例ID
+     * @param path       任务逻辑路径
+     * @param newState   任务最终状态
+     * @throws RepositoryException 发生SQL异常时转换并抛出此异常
+     */
+    void saveTaskExecHist(String instanceId, String path, TaskState newState) throws RepositoryException;
+
+    /**
+     * 获取所有已保存的任务详细数据
+     * @return Collection
+     * @throws RepositoryException 发生SQL异常时转换并抛出此异常
+     */
+    Collection<ExternalCommandWorkflowView> getAllWorkflowDetail() throws RepositoryException;
 }

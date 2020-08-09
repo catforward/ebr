@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.server.common.model;
+package pers.ebr.server.model;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
@@ -24,43 +24,63 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static pers.ebr.server.common.Const.*;
-import static pers.ebr.server.common.model.ITask.*;
+import static pers.ebr.server.model.IExternalCommandTask.*;
 
 /**
- * <pre>
- * WorkflowDetail Object
- * </pre>
+ * <p>
+ * 工作流(Workflow)的视图数据，与客户端交互时使用
+ * </p>
  *
  * @author l.gong
  */
-public final class WorkflowDetail implements IJsonObjectConverter {
+public final class ExternalCommandWorkflowView implements IObjectConverter {
     private String instanceId;
-    private final TaskDetail rootDetail;
-    private final ArrayList<TaskDetail> tasks = new ArrayList<>();
+    private final ExternalCommandTaskView rootDetail;
+    private final ArrayList<ExternalCommandTaskView> views = new ArrayList<>();
 
-    WorkflowDetail(TaskDetail root) {
+    ExternalCommandWorkflowView(ExternalCommandTaskView root) {
         rootDetail = root;
     }
 
-    public TaskDetail getRootDetail() {
+    /**
+     * 获取根任务视图
+     * @return ExternalCommandTaskView
+     */
+    public ExternalCommandTaskView getRootView() {
         return rootDetail;
     }
 
+    /**
+     * 获取任务的实例ID
+     * @return String
+     */
     public String getInstanceId() {
         return instanceId;
     }
 
-    public List<TaskDetail> getTasks() {
-        return tasks;
+    /**
+     * 获取所有任务视图数据
+     * @return List
+     */
+    public List<ExternalCommandTaskView> getTaskViews() {
+        return views;
     }
 
+    /**
+     * 设置任务的实例ID
+     * @param instanceId [in] 待设置任务的实例ID
+     */
     public void setInstanceId(String instanceId) {
         this.instanceId = instanceId;
     }
 
-    public void addTaskDetail(TaskDetail task) {
-        if (!rootDetail.getId().equals(task.getId())) {
-            tasks.add(task);
+    /**
+     * 添加任务视图数据
+     * @param taskView [in] 待添加的任务
+     */
+    public void addTaskView(ExternalCommandTaskView taskView) {
+        if (!rootDetail.getId().equals(taskView.getId())) {
+            views.add(taskView);
         }
     }
 
@@ -75,7 +95,7 @@ public final class WorkflowDetail implements IJsonObjectConverter {
         jsonObject.put(MSG_PARAM_INSTANCE_ID, instanceId);
         jsonObject.put(TASK_DESC, rootDetail.getDesc());
         JsonArray taskArr = new JsonArray();
-        tasks.forEach(taskDetail -> {taskArr.add(taskDetail.toJsonObject());});
+        views.forEach(taskView -> {taskArr.add(taskView.toJsonObject());});
         jsonObject.put(MSG_PARAM_TASKS, taskArr);
         return jsonObject;
     }

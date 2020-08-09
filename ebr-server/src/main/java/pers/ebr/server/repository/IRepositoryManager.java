@@ -18,14 +18,29 @@
 package pers.ebr.server.repository;
 
 /**
- * <pre>
- * The Repository Manager Interface
- * </pre>
+ * <p>
+ * 仓储管理
+ * </p>
  *
  * @author l.gong
  */
 interface IRepositoryManager {
+
+    /**
+     * 仓储初始化
+     * @throws RepositoryException 发生SQL异常时转换并抛出此异常
+     */
     void init() throws RepositoryException;
+
+    /**
+     * 仓储结束
+     * @throws RepositoryException 发生SQL异常时转换并抛出此异常
+     */
     void finish() throws RepositoryException;
+
+    /**
+     * 获取仓储服务
+     * @return IRepository
+     */
     IRepository getRepository();
 }

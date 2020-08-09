@@ -18,9 +18,9 @@
 package pers.ebr.server.repository;
 
 /**
- * <pre>
- * The Defines of DataBase
- * </pre>
+ * <p>
+ * SQLite实现的仓储服务中使用的常量
+ * </p>
  *
  * @author l.gong
  */
@@ -39,6 +39,7 @@ interface SqliteRepositoryConst {
     String SQL_RENAME_TABLE = "RENAME_TABLE";
     String SQL_GET_TABLE_NAME = "GET_TABLE_NAME";
 
+    String SQL_WORKFLOW_EXISTS = "WORKFLOW_EXISTS";
     String SQL_SAVE_WORKFLOW = "SAVE_WORKFLOW";
     String SQL_LOAD_WORKFLOW = "LOAD_WORKFLOW";
     String SQL_LOAD_ALL_WORKFLOW_DEFINE = "LOAD_ALL_WORKFLOW_DEFINE";

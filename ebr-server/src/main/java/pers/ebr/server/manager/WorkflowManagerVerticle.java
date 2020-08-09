@@ -24,10 +24,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pers.ebr.server.common.model.DAGWorkflow;
-import pers.ebr.server.common.model.ITask;
-import pers.ebr.server.common.model.WorkflowDetail;
-import pers.ebr.server.pool.Pool;
+import pers.ebr.server.model.ExternalCommandWorkflowView;
 import pers.ebr.server.repository.Repository;
 
 import java.util.Collection;
@@ -61,11 +58,11 @@ public class WorkflowManagerVerticle extends AbstractVerticle {
         JsonObject result = new JsonObject();
         result.put(REQUEST_PARAM_REQ, msg.body().getString(REQUEST_PARAM_REQ));
         try {
-            Collection<WorkflowDetail> flows = Repository.get().getAllWorkflowDetail();
+            Collection<ExternalCommandWorkflowView> flows = Repository.get().getAllWorkflowDetail();
             if (!flows.isEmpty()) {
-                updateWorkflowStatus(flows);
+                //updateWorkflowStatus(flows);
                 JsonArray array = new JsonArray();
-                flows.forEach(workflowDetail -> {array.add(workflowDetail.toJsonObject());});
+                flows.forEach(workflowView -> {array.add(workflowView.toJsonObject());});
                 result.put(RESPONSE_RESULT, array);
             } else {
                 result.put(RESPONSE_RESULT, new JsonObject());
@@ -91,15 +88,14 @@ public class WorkflowManagerVerticle extends AbstractVerticle {
                 result.put(RESPONSE_ERROR, errInfo);
                 return;
             }
-            String flowUrl = String.format("/%s", flowId);
-            if (Pool.get().getWorkflowByUrl(flowUrl) != null) {
+            String flowPath = String.format("/%s", flowId);
+            if (Repository.getPool().getRunningWorkflowByPath(flowPath) != null) {
                 JsonObject errInfo = new JsonObject();
                 errInfo.put(RESPONSE_INFO, String.format("workflow id: [%s] is already running", flowId));
                 result.put(RESPONSE_ERROR, errInfo);
                 return;
             }
-            String flowDefine = Repository.get().getWorkflow(flowId);
-            if (flowDefine == null || flowDefine.isBlank()) {
+            if (!Repository.get().isWorkflowExists(flowId)) {
                 JsonObject errInfo = new JsonObject();
                 errInfo.put(RESPONSE_INFO, String.format("define is not exists (id: [%s])", flowId));
                 result.put(RESPONSE_ERROR, errInfo);
@@ -109,7 +105,6 @@ public class WorkflowManagerVerticle extends AbstractVerticle {
             EventBus bus = vertx.eventBus();
             JsonObject noticeParam = new JsonObject();
             noticeParam.put(MSG_PARAM_WORKFLOW_ID, flowId);
-            noticeParam.put(MSG_PARAM_WORKFLOW_DEF, flowDefine);
             bus.publish(MSG_RUN_FLOW, noticeParam);
 
             // response
@@ -126,19 +121,19 @@ public class WorkflowManagerVerticle extends AbstractVerticle {
         }
     }
 
-    private void updateWorkflowStatus(Collection<WorkflowDetail> flows) {
-        for (var detail : flows) {
-            DAGWorkflow runningFlow = Pool.get().getWorkflowByUrl(detail.getRootDetail().getUrl());
-            if (runningFlow == null) {
-                continue;
-            }
-            detail.getTasks().forEach(taskDetail -> {
-                ITask task = runningFlow.getTaskById(taskDetail.getId());
-                if (task != null) {
-                    taskDetail.setState(task.getStatus());
-                }
-            });
-        }
-    }
+//    private void updateWorkflowStatus(Collection<WorkflowView> flows) {
+//        for (var detail : flows) {
+//            IWorkflow runningFlow = Pool.get().getWorkflowByPath(detail.getRootView().getPath());
+//            if (runningFlow == null) {
+//                continue;
+//            }
+//            detail.getTasks().forEach(taskDetail -> {
+//                IExternalTask task = runningFlow.getTaskById(taskDetail.getId());
+//                if (task != null) {
+//                    taskDetail.setState(task.getState());
+//                }
+//            });
+//        }
+//    }
 
 }

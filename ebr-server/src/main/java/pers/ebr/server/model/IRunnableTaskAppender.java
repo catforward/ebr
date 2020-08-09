@@ -15,21 +15,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.server.pool;
+package pers.ebr.server.model;
 
 /**
- * <pre>
- * The TaskPool Exception Interface
- * </pre>
+ * <p>
+ * 向本接口的实现者中添加可运行的任务对象引用
+ * </p>
  *
  * @author l.gong
  */
-public final class PoolException extends Exception {
-    public PoolException(Throwable cause) {
-        super(cause);
-    }
-
-    public PoolException(String message, Throwable cause) {
-        super(message, cause);
-    }
+public interface IRunnableTaskAppender {
+    /**
+     * 追加一个新的任务对象引用
+     * @param workflow 待追加的任务所在任务流
+     * @param task     待追加的任务
+     */
+    void append(IWorkflow workflow, IExternalCommandTask task);
 }

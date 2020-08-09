@@ -15,34 +15,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.server.common.model;
+package pers.ebr.server.model;
+
+import io.vertx.core.json.JsonObject;
 
 /**
- * <pre>
- * Task Type in EBR
- * </pre>
+ * <p>
+ * VO数据，与客户端交互时使用
+ * </p>
  *
  * @author l.gong
  */
-public enum TaskState {
-    /** 未知状态 */
-    UNKNOWN(-1),
-    /** 任务待机时 */
-    INACTIVE(1),
-    /** 任务执行时 */
-    ACTIVE(2),
-    /** 任务执行成功时 */
-    COMPLETE(3),
-    /** 任务执行异常时 */
-    FAILED(4);
-    /** 任务执行暂停时 */
-    //PAUSE(5),
-    /** 任务执行跳过时 */
-    //SKIP(6);
+public interface IObjectConverter {
 
-    private final int state;
-
-    TaskState(int state) {
-        this.state = state;
-    }
+    /**
+     * 返回此数据的JSON对象
+     * @return String
+     */
+    JsonObject toJsonObject();
 }

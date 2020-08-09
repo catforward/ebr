@@ -23,9 +23,8 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pers.ebr.server.common.model.ModelItemBuilder;
-import pers.ebr.server.common.model.DAGWorkflow;
-import pers.ebr.server.pool.Pool;
+import pers.ebr.server.model.IWorkflow;
+import pers.ebr.server.model.ModelItemBuilder;
 import pers.ebr.server.repository.Repository;
 
 import java.util.Optional;
@@ -62,8 +61,8 @@ public class WorkflowEditorVerticle extends AbstractVerticle {
         boolean ret = false;
         try {
             Optional<JsonObject> flowBody = Optional.ofNullable(msg.body().getJsonObject(REQUEST_PARAM_PARAM));
-            DAGWorkflow flow = ModelItemBuilder.buildDagTaskFlow(flowBody.orElseThrow());
-            logger.info("create a task flow -> {}", flow.toString());
+            IWorkflow workflow = ModelItemBuilder.createExternalTaskWorkflow(flowBody.orElseThrow());
+            logger.info("create a task flow -> {}", workflow.toString());
             ret = true;
         } finally {
             result.put(ret ? RESPONSE_RESULT : RESPONSE_ERROR, new JsonObject());
@@ -78,10 +77,8 @@ public class WorkflowEditorVerticle extends AbstractVerticle {
         boolean ret = true;
         try {
             Optional<JsonObject> flowBody = Optional.ofNullable(msg.body().getJsonObject(REQUEST_PARAM_PARAM));
-            DAGWorkflow flow = ModelItemBuilder.buildDagTaskFlow(flowBody.orElseThrow());
-            Repository.get().setWorkflow(Optional.ofNullable(flow.getRootTask()).orElseThrow().getId(),
-                                        flowBody.orElseThrow().encode());
-            Repository.get().setTaskDetail(flow);
+            IWorkflow workflow = ModelItemBuilder.createExternalTaskWorkflow(flowBody.orElseThrow());
+            Repository.get().saveWorkflow(workflow);
         } catch (Exception ex) {
             logger.error("procedure [saveTaskFlow] error:", ex);
             ret = false;
@@ -106,7 +103,7 @@ public class WorkflowEditorVerticle extends AbstractVerticle {
                 return;
             }
             String flowUrl = String.format("/%s", flowId);
-            if (Pool.get().getWorkflowByUrl(flowUrl) != null) {
+            if (Repository.getPool().getRunningWorkflowByPath(flowUrl) != null) {
                 JsonObject errInfo = new JsonObject();
                 errInfo.put(RESPONSE_INFO, String.format("workflow id: [%s] is already running", flowId));
                 result.put(RESPONSE_ERROR, errInfo);

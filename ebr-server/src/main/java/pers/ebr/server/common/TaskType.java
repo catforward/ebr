@@ -15,22 +15,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.server.common.model;
-
-import io.vertx.core.json.JsonObject;
+package pers.ebr.server.common;
 
 /**
- * <pre>
- * DTO数据，发送至客户端
- * </pre>
+ * <p>
+ * 任务运行时类型
+ * </p>
  *
  * @author l.gong
  */
-public interface IJsonObjectConverter {
+public enum TaskType {
+    /** 可包含子任务 */
+    GROUP(1),
+    /** 不能拥有子任务 */
+    UNIT(2);
 
-    /**
-     * 返回此数据的JSON对象
-     * @return String
-     */
-    JsonObject toJsonObject();
+    private final int type;
+
+    TaskType(int type) {
+        this.type = type;
+    }
 }

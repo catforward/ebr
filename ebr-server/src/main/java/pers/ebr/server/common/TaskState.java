@@ -15,25 +15,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.server.pool;
-
-import pers.ebr.server.common.model.ITask;
-import pers.ebr.server.common.model.DAGWorkflow;
+package pers.ebr.server.common;
 
 /**
- * The TaskPool Interface
+ * <p>
+ * 任务运行时状态
+ * </p>
  *
  * @author l.gong
  */
-public interface IPool {
-    IPool init();
-    void close();
+public enum TaskState {
+    /** 未知状态 */
+    UNKNOWN(-1),
+    /** 任务待机时 */
+    INACTIVE(1),
+    /** 任务执行时 */
+    ACTIVE(2),
+    /** 任务执行成功时 */
+    COMPLETE(3),
+    /** 任务执行异常时 */
+    FAILED(4);
+    /** 任务执行暂停时 */
+    //PAUSE(5),
+    /** 任务执行跳过时 */
+    //SKIP(6);
 
-    DAGWorkflow getWorkflowByUrl(String url);
-    DAGWorkflow getWorkflowByInstanceId(String instanceId);
-    void setFlow(DAGWorkflow flow);
-    DAGWorkflow removeWorkflowByInstanceId(String instanceId);
+    private final int state;
 
-    void addRunnableTaskQueue(ITask task);
-    ITask pollRunnableTaskQueue();
+    TaskState(int state) {
+        this.state = state;
+    }
 }

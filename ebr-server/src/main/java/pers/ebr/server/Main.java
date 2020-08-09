@@ -24,10 +24,9 @@ import org.slf4j.LoggerFactory;
 import pers.ebr.server.common.Configs;
 import pers.ebr.server.manager.WorkflowEditorVerticle;
 import pers.ebr.server.manager.WorkflowManagerVerticle;
-import pers.ebr.server.pool.Pool;
 import pers.ebr.server.executor.ExternalCommandExecutorVerticle;
 import pers.ebr.server.manager.ServerInfoCollectorVerticle;
-import pers.ebr.server.executor.DAGSchedulerVerticle;
+import pers.ebr.server.executor.ExternalTaskSchedulerVerticle;
 import pers.ebr.server.repository.Repository;
 import pers.ebr.server.manager.TaskStateLoggerVerticle;
 
@@ -53,7 +52,6 @@ public class Main {
                     vertx.close();
                 }
                 try {
-                    Pool.finish();
                     Repository.finish();
                 } catch (Exception ex) {
                     logger.error("error occurred!", ex);
@@ -72,7 +70,6 @@ public class Main {
     private static void initBasicComponents() throws Exception {
         Configs.load();
         Repository.init(Configs.get());
-        Pool.init(Configs.get());
     }
 
     private static void deployWorkerVerticle() {
@@ -91,7 +88,7 @@ public class Main {
 
         DeploymentOptions schdOpts = new DeploymentOptions()
                 .setInstances(1).setWorker(true);
-        vertx.deployVerticle(DAGSchedulerVerticle::new, schdOpts);
+        vertx.deployVerticle(ExternalTaskSchedulerVerticle::new, schdOpts);
 
         DeploymentOptions execOpts = new DeploymentOptions()
                 .setConfig(Configs.get())

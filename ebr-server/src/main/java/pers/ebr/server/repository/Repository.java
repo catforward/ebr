@@ -34,47 +34,76 @@ import java.io.IOException;
 public final class Repository {
     private final static Logger logger = LoggerFactory.getLogger(Repository.class);
     private IRepositoryManager mng;
+    private IPool pool;
 
     private static class Holder {
-        static final Repository INSTANCE = new Repository();
+        static final Repository REPO = new Repository();
     }
 
     private Repository() {}
 
     public static void init(JsonObject config) throws IOException, RepositoryException {
-        synchronized (Holder.INSTANCE) {
-            if (Holder.INSTANCE.mng == null) {
-                Holder.INSTANCE.mng = Holder.INSTANCE.build(config);
+        synchronized (Holder.REPO) {
+            if (Holder.REPO.mng == null) {
+                Holder.REPO.mng = Holder.REPO.build(config);
             }
-            Holder.INSTANCE.mng.init();
+            if (Holder.REPO.pool == null) {
+                Holder.REPO.pool = Holder.REPO.buildPool(config);
+            }
+            Holder.REPO.mng.init();
+            Holder.REPO.pool.init();
         }
         logger.info("Repository Init Success...");
     }
 
     public static void finish() throws RepositoryException {
-        synchronized (Holder.INSTANCE) {
-            if (Holder.INSTANCE.mng != null) {
-                Holder.INSTANCE.mng.finish();
+        synchronized (Holder.REPO) {
+            if (Holder.REPO.mng != null) {
+                Holder.REPO.mng.finish();
+            }
+            if (Holder.REPO.pool != null) {
+                Holder.REPO.pool.close();
             }
         }
     }
 
     public static IRepository get() {
-        if (Holder.INSTANCE.mng == null) {
+        if (Holder.REPO.mng == null) {
             throw new RuntimeException("database is not initialized...");
         }
-        return Holder.INSTANCE.mng.getRepository();
+        return Holder.REPO.mng.getRepository();
+    }
+
+    public static IPool getPool() {
+        if (Holder.REPO.pool == null) {
+            throw new RuntimeException("pool is not initialized...");
+        }
+        return Holder.REPO.pool;
     }
 
     IRepositoryManager build(JsonObject config) throws IOException {
         String type = config.getString(Configs.KEY_MANAGER_REPO_TYPE, SqliteRepositoryManager.TYPE);
         switch (type) {
-            case SqliteRepositoryManager.TYPE : {
+            case SqliteRepositoryManager.TYPE: {
                 return new SqliteRepositoryManager();
             }
             default: {
                 logger.error("unknown db connection type:{}", type);
                 throw new RuntimeException(String.format("unknown db connection type: %s", type));
+            }
+        }
+    }
+
+    IPool buildPool(JsonObject config) throws IOException {
+        // pool
+        String type = config.getString(Configs.KEY_EXECUTOR_POOL_TYPE, MemoryPoolImpl.TYPE);
+        switch (type) {
+            case MemoryPoolImpl.TYPE : {
+                return new MemoryPoolImpl();
+            }
+            default: {
+                logger.error("unknown task pool type:{}", type);
+                throw new RuntimeException(String.format("unknown task pool type: %s", type));
             }
         }
     }
