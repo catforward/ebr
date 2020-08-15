@@ -18,9 +18,9 @@
 package pers.ebr.server.repository;
 
 /**
- * <pre>
- * The Repository Exception Interface
- * </pre>
+ * <p>
+ * 仓储异常
+ * </p>
  *
  * @author l.gong
  */

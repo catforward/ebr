@@ -18,7 +18,7 @@
 package pers.ebr.server.repository;
 
 import pers.ebr.server.model.IExternalCommandTask;
-import pers.ebr.server.model.IWorkflow;
+import pers.ebr.server.model.ITaskflow;
 
 /**
  * <p>
@@ -42,33 +42,33 @@ public interface IPool {
 
     /**
      * 使用任务流的逻辑路径来获取任务流对象
-     * @param path 任务流的逻辑路径
+     * @param path [in] 任务流的逻辑路径
      * @return IWorkflow
      */
-    IWorkflow getRunningWorkflowByPath(String path);
+    ITaskflow getRunningTaskflowByPath(String path);
 
     /**
      * 使用实例ID来获取任务流对象
-     * @param instanceId 实例ID
+     * @param instanceId [in] 实例ID
      * @return IWorkflow
      */
-    IWorkflow getRunningWorkflowByInstanceId(String instanceId);
+    ITaskflow getRunningTaskflowByInstanceId(String instanceId);
 
     /**
      * 添加一个任务流对象至对象池
-     * @param workflow 任务流对象
+     * @param workflow [in] 任务流对象
      */
-    void addRunningWorkflow(IWorkflow workflow);
+    void addRunningTaskflow(ITaskflow workflow);
 
     /**
      * 使用实例ID从对象池中删除一个任务流对象
-     * @param instanceId 实例ID
+     * @param instanceId [in] 实例ID
      */
-    void removeRunningWorkflowByInstanceId(String instanceId);
+    void removeRunningTaskflowByInstanceId(String instanceId);
 
     /**
      * 增加一个任务至可执行任务队列
-     * @param task 待添加的任务
+     * @param task [in] 待添加的任务
      */
     void addRunnableTaskQueue(IExternalCommandTask task);
 

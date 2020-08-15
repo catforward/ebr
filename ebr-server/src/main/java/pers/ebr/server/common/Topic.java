@@ -43,39 +43,39 @@ public interface Topic {
 
     /**
      * <p>
-     * 服务器端验证workflow的定义合法性
+     * 服务器端验证taskflow的定义合法性
      * <ul>
-     * <li>请求：{req: "req.ValidateWorkflow", param: {workflow的json定义体}}</li>
-     * <li>正常响应：{req: "req.ValidateWorkflow", result: {空数据 }}</li>
-     * <li>异常响应：{req: "req.ValidateWorkflow", error: {空数据 }}</li>
+     * <li>请求：{req: "req.ValidateFlow", param: {taskflow的json定义体}}</li>
+     * <li>正常响应：{req: "req.ValidateFlow", result: {空数据 }}</li>
+     * <li>异常响应：{req: "req.ValidateFlow", error: {空数据 }}</li>
      * </ul>
      * </p>
      */
-    String REQ_VALIDATE_WORKFLOW = "req.ValidateWorkflow";
+    String REQ_VALIDATE_FLOW = "req.ValidateFlow";
 
     /**
      * <p>
-     * 保存workflow定义
+     * 保存taskflow定义
      * <ul>
-     * <li>请求：{req: "req.SaveWorkFlow", param: {workflow的json定义体}}</li>
-     * <li>正常响应：{req: "req.SaveWorkFlow", result: {空数据 }}</li>
-     * <li>异常响应：{req: "req.SaveWorkFlow", error: {空数据 }}</li>
+     * <li>请求：{req: "req.SaveFlow", param: {taskflow的json定义体}}</li>
+     * <li>正常响应：{req: "req.SaveFlow", result: {空数据 }}</li>
+     * <li>异常响应：{req: "req.SaveFlow", error: {空数据 }}</li>
      * </ul>
      * </p>
      */
-    String REQ_SAVE_WORKFLOW = "req.SaveWorkflow";
+    String REQ_SAVE_FLOW = "req.SaveFlow";
 
     /**
      * <p>
-     * 获取所有workflow的定义以及状态
+     * 获取所有taskflow的定义以及状态
      * <ul>
-     * <li>请求：{req: "req.AllWorkflow", param: {空参数}}</li>
-     * <li>正常响应：{req: "req.AllWorkflow", result: {["workflow_id": value, "instance_id": value, "tasks": [task detail array]]}}</li>
-     * <li>异常响应：{req: "req.AllWorkflow", error: {空数据 }}</li>
+     * <li>请求：{req: "req.AllFlow", param: {空参数}}</li>
+     * <li>正常响应：{req: "req.AllFlow", result: {["taskflow_id": value, "instance_id": value, "tasks": [task detail array]]}}</li>
+     * <li>异常响应：{req: "req.AllFlow", error: {空数据 }}</li>
      * </ul>
      * </p>
      */
-    String REQ_ALL_WORKFLOW = "req.AllWorkflow";
+    String REQ_ALL_FLOW = "req.AllFlow";
 
     /**
      * <p>
@@ -91,50 +91,50 @@ public interface Topic {
 
     /**
      * <p>
-     * 启动指定ID的workflow
+     * 启动指定ID的taskflow
      * <ul>
-     * <li>请求：{req: "req.RunWorkflow", param: {"workflow_id":string}}</li>
-     * <li>正常响应：{req: "req.RunWorkflow", result: {"info":string}}</li>
-     * <li>异常响应：{req: "req.RunWorkflow", error: {"info":string}}</li>
+     * <li>请求：{req: "req.LaunchFlow", param: {"taskflow_id":string}}</li>
+     * <li>正常响应：{req: "req.LaunchFlow", result: {"info":string}}</li>
+     * <li>异常响应：{req: "req.LaunchFlow", error: {"info":string}}</li>
      * </ul>
      * </p>
      */
-    String REQ_RUN_WORKFLOW = "req.RunWorkflow";
+    String REQ_LAUNCH_FLOW = "req.LaunchFlow";
 
     /**
      * <p>
-     * 下载指定ID的workflow定义
+     * 下载指定ID的taskflow定义
      * <ul>
-     * <li>请求：{req: "req.DumpWorkflowDef", param: {"workflow_id":string}}</li>
-     * <li>正常响应：{req: "req.DumpWorkflowDef", result: {"workflow_id":string}}</li>
-     * <li>异常响应：{req: "req.DumpWorkflowDef", error: {"info":string}}</li>
+     * <li>请求：{req: "req.DumpFlowDef", param: {"taskflow_id":string}}</li>
+     * <li>正常响应：{req: "req.DumpFlowDef", result: {"taskflow_id":string}}</li>
+     * <li>异常响应：{req: "req.DumpFlowDef", error: {"info":string}}</li>
      * </ul>
      * </p>
      */
-    String REQ_DUMP_WORKFLOW_DEF = "req.DumpWorkflowDef";
+    String REQ_DUMP_FLOW_DEF = "req.DumpFlowDef";
 
     /**
      * <p>
-     * 删除指定ID的workflow
+     * 删除指定ID的taskflow
      * <ul>
-     * <li>请求：{req: "req.DeleteWorkflow", param: {"workflow_id":string}}</li>
-     * <li>正常响应：{req: "req.DeleteWorkflow", result: {"info":string}}</li>
-     * <li>异常响应：{req: "req.DeleteWorkflow", error: {"info":string}}</li>
+     * <li>请求：{req: "req.DeleteFlow", param: {"taskflow_id":string}}</li>
+     * <li>正常响应：{req: "req.DeleteFlow", result: {"info":string}}</li>
+     * <li>异常响应：{req: "req.DeleteFlow", error: {"info":string}}</li>
      * </ul>
      * </p>
      */
-    String REQ_DEL_WORKFLOW = "req.DeleteWorkflow";
+    String REQ_DEL_FLOW = "req.DeleteFlow";
 
     /**
      * <p>
      * 消息：通知运行Flow
      * <ul>
-     * <li>消息体：{workflow_id: string}</li>
+     * <li>消息体：{taskflow_id: string}</li>
      * <li>无响应</li>
      * </ul>
      * </p>
      */
-    String MSG_RUN_FLOW = "msg.schd.RunFlow";
+    String MSG_LAUNCH_FLOW = "msg.schd.LaunchFlow";
 
     /**
      * <p>
@@ -156,7 +156,7 @@ public interface Topic {
      * </ul>
      * </p>
      */
-    String MSG_WORKFLOW_FINISHED = "msg.schd.WorkflowFinished";
+    String MSG_FLOW_FINISHED = "msg.schd.FlowFinished";
 
     /**
      * <p>

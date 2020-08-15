@@ -49,9 +49,9 @@ public class ExternalTaskSchedulerVerticle extends AbstractVerticle implements I
     public void start() throws Exception {
         super.start();
         EventBus bus = vertx.eventBus();
-        bus.consumer(MSG_RUN_FLOW, this::handleRunFlow);
+        bus.consumer(MSG_LAUNCH_FLOW, this::handleRunFlow);
         bus.consumer(MSG_EXEC_RESULT, this::handleExecuteResult);
-        bus.consumer(MSG_WORKFLOW_FINISHED, this::handleWorkflowFinished);
+        bus.consumer(MSG_FLOW_FINISHED, this::handleWorkflowFinished);
     }
 
     @Override
@@ -60,10 +60,10 @@ public class ExternalTaskSchedulerVerticle extends AbstractVerticle implements I
     }
 
     private void handleRunFlow(Message<JsonObject> msg) {
-        String flowId = msg.body().getString(MSG_PARAM_WORKFLOW_ID, "");
-        IWorkflow workflow;
+        String flowId = msg.body().getString(MSG_PARAM_TASKFLOW_ID, "");
+        ITaskflow workflow;
         try {
-            workflow = Repository.get().loadWorkflow(flowId);
+            workflow = Repository.getDb().loadTaskflow(flowId);
         } catch (RepositoryException e) {
             throw new RuntimeException(e);
         }
@@ -72,7 +72,7 @@ public class ExternalTaskSchedulerVerticle extends AbstractVerticle implements I
             return;
         }
 
-        Optional<IWorkflow> oldOne = Optional.ofNullable(Repository.getPool().getRunningWorkflowByPath(workflow.getRootTask().getPath()));
+        Optional<ITaskflow> oldOne = Optional.ofNullable(Repository.getPool().getRunningTaskflowByPath(workflow.getRootTask().getPath()));
         if (oldOne.isPresent() && TaskState.ACTIVE == oldOne.get().getState()) {
             logger.error(String.format("task flow is already running. (id: [%s])", flowId));
             return;
@@ -80,7 +80,7 @@ public class ExternalTaskSchedulerVerticle extends AbstractVerticle implements I
         workflow.setInstanceId(UUID.randomUUID().toString());
         workflow.setRunnableTaskAppender(this);
         workflow.setTaskStateWatcher(this);
-        Repository.getPool().addRunningWorkflow(workflow);
+        Repository.getPool().addRunningTaskflow(workflow);
         workflow.standby();
     }
 
@@ -89,26 +89,26 @@ public class ExternalTaskSchedulerVerticle extends AbstractVerticle implements I
         String taskInstanceId = msg.body().getString(MSG_PARAM_INSTANCE_ID, "");
         TaskState newState = TaskState.valueOf(msg.body().getString(MSG_PARAM_TASK_STATE, "-1"));
 
-        IWorkflow workflow = Optional.ofNullable(Repository.getPool().getRunningWorkflowByInstanceId(taskInstanceId)).orElseThrow();
+        ITaskflow workflow = Optional.ofNullable(Repository.getPool().getRunningTaskflowByInstanceId(taskInstanceId)).orElseThrow();
         workflow.setTaskState(taskPath, newState);
     }
 
     private void handleWorkflowFinished(Message<JsonObject> msg) {
         String taskInstanceId = msg.body().getString(MSG_PARAM_INSTANCE_ID, "");
-        Repository.getPool().removeRunningWorkflowByInstanceId(taskInstanceId);
+        Repository.getPool().removeRunningTaskflowByInstanceId(taskInstanceId);
     }
 
     /**
      * 追加一个新的任务对象引用
      *
-     * @param workflow 待追加的任务所在任务流
+     * @param taskflow 待追加的任务所在任务流
      * @param task 待追加的任务
      */
     @Override
-    public void append(IWorkflow workflow, IExternalCommandTask task) {
+    public void append(ITaskflow taskflow, IExternalCommandTask task) {
         checkNotNull(task);
         if (GROUP == task.getType()) {
-            workflow.setTaskState(task.getPath(), ACTIVE);
+            taskflow.setTaskState(task.getPath(), ACTIVE);
         } else {
             Repository.getPool().addRunnableTaskQueue(task);
         }
@@ -142,7 +142,7 @@ public class ExternalTaskSchedulerVerticle extends AbstractVerticle implements I
                 param.put(MSG_PARAM_INSTANCE_ID, instanceId);
                 param.put(MSG_PARAM_TASK_PATH, path);
                 param.put(MSG_PARAM_TASK_STATE, dst);
-                vertx.eventBus().publish(MSG_WORKFLOW_FINISHED, param);
+                vertx.eventBus().publish(MSG_FLOW_FINISHED, param);
             }
         } else if (FAILED == dst) {
             JsonObject param = new JsonObject();

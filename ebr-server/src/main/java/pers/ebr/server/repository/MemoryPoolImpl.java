@@ -17,10 +17,8 @@
  */
 package pers.ebr.server.repository;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import pers.ebr.server.model.IExternalCommandTask;
-import pers.ebr.server.model.IWorkflow;
+import pers.ebr.server.model.ITaskflow;
 
 import java.util.Map;
 import java.util.Queue;
@@ -30,76 +28,110 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import static pers.ebr.server.common.Utils.checkNotNull;
 
 /**
- * The InMemory TaskPool Implementation
+ * <p>
+ * 任务对象池的纯内存实现
+ * </p>
  *
  * @author l.gong
  */
 public final class MemoryPoolImpl implements IPool {
-    private final static Logger logger = LoggerFactory.getLogger(MemoryPoolImpl.class);
-    final static String TYPE = "memory";
+
     /**
-     * active task flow pool
-     * key : flow's instanceId
-     * value : flow instance
+     * 运行中taskflow对象
+     * key : 实例ID
+     * value : taskflow对象
      */
-    private final Map<String, IWorkflow> allFlows = new ConcurrentHashMap<>();
+    private final Map<String, ITaskflow> allFlows = new ConcurrentHashMap<>();
     private final Queue<IExternalCommandTask> taskQueue = new ConcurrentLinkedQueue<>();
 
 
-    MemoryPoolImpl() {
-    }
+    MemoryPoolImpl() {}
 
+    /**
+     * 初始化对象池
+     *
+     * @return IPool
+     */
     @Override
     public IPool init() {
         return this;
     }
 
+    /**
+     * 关闭对象池
+     */
     @Override
     public void close() {
         allFlows.clear();
         taskQueue.clear();
     }
 
+    /**
+     * 使用任务流的逻辑路径来获取任务流对象
+     * @param path 任务流的逻辑路径
+     * @return IWorkflow
+     */
     @Override
-    public IWorkflow getRunningWorkflowByPath(String url) {
-        checkNotNull(url);
+    public ITaskflow getRunningTaskflowByPath(String path) {
+        checkNotNull(path);
         for (var entry : allFlows.entrySet()) {
-            IWorkflow workflow = entry.getValue();
-            if (workflow.getRootTask().getPath().equals(url)) {
-                return workflow;
+            ITaskflow taskflow = entry.getValue();
+            if (taskflow.getRootTask().getPath().equals(path)) {
+                return taskflow;
             }
         }
         return null;
     }
 
+    /**
+     * 使用实例ID来获取任务流对象
+     * @param instanceId [in] 实例ID
+     * @return IWorkflow
+     */
     @Override
-    public IWorkflow getRunningWorkflowByInstanceId(String instanceId) {
+    public ITaskflow getRunningTaskflowByInstanceId(String instanceId) {
         checkNotNull(instanceId);
         return allFlows.get(instanceId);
     }
 
+    /**
+     * 添加一个任务流对象至对象池
+     * @param taskflow [in] 任务流对象
+     */
     @Override
-    public void addRunningWorkflow(IWorkflow workflow) {
-        checkNotNull(workflow);
-        allFlows.put(workflow.getInstanceId(), workflow);
+    public void addRunningTaskflow(ITaskflow taskflow) {
+        checkNotNull(taskflow);
+        allFlows.put(taskflow.getInstanceId(), taskflow);
     }
 
+    /**
+     * 使用实例ID从对象池中删除一个任务流对象
+     * @param instanceId [in] 实例ID
+     */
     @Override
-    public void removeRunningWorkflowByInstanceId(String instanceId) {
+    public void removeRunningTaskflowByInstanceId(String instanceId) {
         checkNotNull(instanceId);
-        IWorkflow workflow = allFlows.get(instanceId);
-        if (workflow != null) {
-            workflow.release();
-            allFlows.remove(instanceId, workflow);
+        ITaskflow taskflow = allFlows.get(instanceId);
+        if (taskflow != null) {
+            taskflow.release();
+            allFlows.remove(instanceId, taskflow);
         }
     }
 
+    /**
+     * 增加一个任务至可执行任务队列
+     * @param task [in] 待添加的任务
+     */
     @Override
     public void addRunnableTaskQueue(IExternalCommandTask task) {
         checkNotNull(task);
         taskQueue.add(task);
     }
 
+    /**
+     * 从可执行队列头获取一个待执行的任务
+     * @return IExternalCommandTask
+     */
     @Override
     public IExternalCommandTask pollRunnableTaskQueue() {
         // 从队列的头部取出并删除该条数据

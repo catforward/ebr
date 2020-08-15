@@ -29,15 +29,15 @@ import static pers.ebr.server.model.IExternalCommandTask.*;
  *
  * @author l.gong
  */
-public final class ModelItemBuilder {
+public final class ModelItemMaker {
 
-    private ModelItemBuilder() {}
+    private ModelItemMaker() {}
 
     /**
      * 创建一个任务视图数据
      * @return TaskView
      */
-    public static ExternalCommandTaskView createTaskView() {
+    public static ExternalCommandTaskView makeTaskView() {
         return new ExternalCommandTaskView();
     }
 
@@ -46,8 +46,8 @@ public final class ModelItemBuilder {
      * @param root [in] 根任务对象
      * @return WorkflowView
      */
-    public static ExternalCommandWorkflowView createWorkflowView(ExternalCommandTaskView root) {
-        return new ExternalCommandWorkflowView(root);
+    public static ExternalCommandTaskflowView makeTaskflowView(ExternalCommandTaskView root) {
+        return new ExternalCommandTaskflowView(root);
     }
 
     /**
@@ -55,17 +55,17 @@ public final class ModelItemBuilder {
      * @param type [in] 任务执行器类型
      * @return ExecutorStatisticsView
      */
-    public static ExecutorStatisticsView createExecutorStatistics(String type) {
+    public static ExecutorStatisticsView makeExecutorStatistics(String type) {
         return new ExecutorStatisticsView(type);
     }
 
     /**
      * 创建一个任务流对象
      * @param define [in] 任务流的JSON定义
-     * @return IWorkflow
+     * @return ITaskflow
      */
-    public static IWorkflow createExternalTaskWorkflow(JsonObject define) {
-        ExternalCommandWorkflow workflow = new ExternalCommandWorkflow();
+    public static ITaskflow makeExternalTaskflow(JsonObject define) {
+        ExternalCommandTaskflow taskflow = new ExternalCommandTaskflow();
         for (String taskId : define.getMap().keySet()) {
             JsonObject taskBody = define.getJsonObject(taskId);
             ExternalCommandTask task = new ExternalCommandTask(taskId);
@@ -75,9 +75,9 @@ public final class ModelItemBuilder {
             task.meta.setCmd(taskBody.getString(TASK_CMD_LINE));
             JsonArray dependsArray = taskBody.getJsonArray(TASK_DEPENDS_LIST, new JsonArray());
             dependsArray.stream().forEach(dependTaskId -> task.meta.addDepends(dependTaskId.toString()));
-            workflow.addTask(task);
+            taskflow.addTask(task);
         }
-        return workflow.build();
+        return taskflow.build();
     }
 
 }

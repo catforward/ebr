@@ -31,9 +31,9 @@ import org.slf4j.LoggerFactory;
 import io.vertx.core.json.JsonObject;
 
 /**
- * <pre>
- * The utility of EBR-Server's configurations.
- * </pre>
+ * <p>
+ * EBR的配置工具
+ * </p>
  *
  * @author l.gong
  */
@@ -44,8 +44,7 @@ public final class Configs {
     private final static String CONFIG_EXT = "extConfig";
     private final static String CONFIG_INNER = "innerConfig";
 
-    public final static String KEY_MANAGER_REPO_TYPE = "manager.repo.type";
-    public final static String KEY_EXECUTOR_POOL_TYPE = "executor.pool.type";
+    public final static String KEY_REPO_MODE = "repository.mode";
     public final static String KEY_EXECUTOR_MIN = "executor.min";
     public final static String KEY_EXECUTOR_MAX = "executor.max";
     public final static String KEY_HTTP_PORT = "http.port";
@@ -58,7 +57,12 @@ public final class Configs {
 
     private Configs() {}
 
-    public static void load() throws Exception {
+    /**
+     * 读取配置文件
+     * @throws IOException 读取配置文件失败时
+     * @throws URISyntaxException 获取配置文件URI资源失败时
+     */
+    public static void load() throws IOException, URISyntaxException {
         HashMap<String, JsonObject> map = new HashMap<>(2);
         InstanceHolder.INSTANCE.loadConfigFile(map);
         InstanceHolder.INSTANCE.mergeConfig(map);
@@ -68,10 +72,20 @@ public final class Configs {
         map.clear();
     }
 
+    /**
+     * 取得一份配置文件的拷贝
+     * @return JsonObject
+     */
     public static JsonObject get() {
         return InstanceHolder.INSTANCE.config.copy();
     }
 
+    /**
+     * 读取配置文件
+     * @param holder 保存内部配置文件的集合
+     * @throws IOException 读取配置文件失败时
+     * @throws URISyntaxException 获取配置文件URI资源失败时
+     */
     private void loadConfigFile(Map<String, JsonObject> holder) throws IOException, URISyntaxException {
         String configFile = String.format("%s%s%s", Paths.getConfPath(), File.separator, "ebr-server.json");
         File cfgFile = new File(configFile);
@@ -82,6 +96,10 @@ public final class Configs {
         holder.put(CONFIG_INNER, new JsonObject(Files.readString(java.nio.file.Paths.get(innerConfigFile))));
     }
 
+    /**
+     * 合并外部和默认的配置文件内容
+     * @param holder 保存内部配置文件的集合
+     */
     private void mergeConfig(Map<String, JsonObject> holder) {
         JsonObject extObj = holder.getOrDefault(CONFIG_EXT, null);
         JsonObject innerObj = holder.get(CONFIG_INNER);
@@ -90,20 +108,22 @@ public final class Configs {
             return;
         }
         // base info
-        config.put(KEY_MANAGER_REPO_TYPE, extObj.getString(KEY_MANAGER_REPO_TYPE, innerObj.getString(KEY_MANAGER_REPO_TYPE)).strip());
+        config.put(KEY_REPO_MODE, extObj.getString(KEY_REPO_MODE, innerObj.getString(KEY_REPO_MODE)).strip());
         config.put(KEY_EXECUTOR_MIN, extObj.getInteger(KEY_EXECUTOR_MIN, innerObj.getInteger(KEY_EXECUTOR_MIN)));
         config.put(KEY_EXECUTOR_MAX, extObj.getInteger(KEY_EXECUTOR_MAX, innerObj.getInteger(KEY_EXECUTOR_MAX)));
-        // pool info
-        config.put(KEY_EXECUTOR_POOL_TYPE, extObj.getString(KEY_EXECUTOR_POOL_TYPE, innerObj.getString(KEY_EXECUTOR_POOL_TYPE)).strip());
         // http info
         config.put(KEY_HTTP_PORT, extObj.getInteger(KEY_HTTP_PORT, innerObj.getInteger(KEY_HTTP_PORT)));
     }
 
+    /**
+     * 验证合并后配置文件的合法性
+     * @throws InvalidPropertiesFormatException 配置冲突或非法值时
+     */
     private void validateConfig() throws InvalidPropertiesFormatException {
         // base info
-        String value = config.getString(KEY_MANAGER_REPO_TYPE, "").strip();
+        String value = config.getString(KEY_REPO_MODE, "").strip();
         if (value.isEmpty()) {
-            throw new InvalidPropertiesFormatException(String.format("property [%s] cannot be empty...", KEY_MANAGER_REPO_TYPE));
+            throw new InvalidPropertiesFormatException(String.format("property [%s] cannot be empty...", KEY_REPO_MODE));
         }
         Integer intValue = config.getInteger(KEY_EXECUTOR_MIN, 0);
         if (intValue.compareTo(0) <= 0) {
@@ -112,11 +132,6 @@ public final class Configs {
         intValue = config.getInteger(KEY_EXECUTOR_MAX, 0);
         if (intValue.compareTo(0) <= 0) {
             throw new InvalidPropertiesFormatException(String.format("property [%s] cannot be empty...", KEY_EXECUTOR_MAX));
-        }
-        // pool
-        value = config.getString(KEY_EXECUTOR_POOL_TYPE, "").strip();
-        if (value.isEmpty()) {
-            throw new InvalidPropertiesFormatException(String.format("property [%s] cannot be empty...", KEY_EXECUTOR_POOL_TYPE));
         }
         // http info
         int port = config.getInteger(KEY_HTTP_PORT, 0);

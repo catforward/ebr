@@ -18,8 +18,6 @@
 package pers.ebr.server.model;
 
 import io.vertx.core.json.JsonObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import pers.ebr.server.common.TaskState;
 import pers.ebr.server.common.graph.DirectedGraph;
 import pers.ebr.server.common.graph.GraphBuilder;
@@ -46,8 +44,7 @@ import static pers.ebr.server.common.TaskType.GROUP;
  *
  * @author l.gong
  */
-public final class ExternalCommandWorkflow implements IWorkflow {
-    private final static Logger logger = LoggerFactory.getLogger(ExternalCommandWorkflow.class);
+public final class ExternalCommandTaskflow implements ITaskflow {
     private ExternalCommandTask rootTask = null;
     private String instanceId = null;
     private IRunnableTaskAppender appender = null;
@@ -56,12 +53,12 @@ public final class ExternalCommandWorkflow implements IWorkflow {
     private final HashMap<String, ExternalCommandTask> idTaskMap = new HashMap<>();
     private final HashMap<String, DirectedGraph<ExternalCommandTask>> idGraphMap = new HashMap<>();
 
-    ExternalCommandWorkflow() {}
+    ExternalCommandTaskflow() {}
 
     /**
      * 创建工作流内部资源
      */
-    ExternalCommandWorkflow build() {
+    ExternalCommandTaskflow build() {
         updatePropInfo();
         updateGraphInfo();
         updatePathInfo(rootTask);
@@ -394,9 +391,7 @@ public final class ExternalCommandWorkflow implements IWorkflow {
     @Override
     public JsonObject toJsonObject() {
         JsonObject jsonObject = new JsonObject();
-        idTaskMap.forEach((id, task) -> {
-            jsonObject.put(task.meta.getId(), task.meta.toJsonObject());
-        });
+        idTaskMap.forEach((id, task) -> jsonObject.put(task.meta.getId(), task.meta.toJsonObject()));
         return jsonObject;
     }
 }

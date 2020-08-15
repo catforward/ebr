@@ -27,8 +27,8 @@ package pers.ebr.server.model;
 public interface IRunnableTaskAppender {
     /**
      * 追加一个新的任务对象引用
-     * @param workflow 待追加的任务所在任务流
+     * @param taskflow 待追加的任务所在任务流
      * @param task     待追加的任务
      */
-    void append(IWorkflow workflow, IExternalCommandTask task);
+    void append(ITaskflow taskflow, IExternalCommandTask task);
 }

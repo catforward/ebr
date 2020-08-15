@@ -1,6 +1,5 @@
 {
-  "manager.repo.type" : "sqlite",
-  "executor.pool.type" : "memory",
+  "repository.mode": "local",
   "executor.min" : 4,
   "executor.max" : 12,
   "http.port" : 8114

@@ -39,8 +39,14 @@ interface IRepositoryManager {
     void finish() throws RepositoryException;
 
     /**
-     * 获取仓储服务
-     * @return IRepository
+     * 获取数据库存储服务
+     * @return IDatabase
      */
-    IRepository getRepository();
+    IDatabase getDb();
+
+    /**
+     * 获取对象池服务
+     * @return IPool
+     */
+    IPool getPool();
 }

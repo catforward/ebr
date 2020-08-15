@@ -44,13 +44,13 @@ public class HttpReqDispatcher implements Handler<RoutingContext> {
         String address = reqBody.getString(REQUEST_PARAM_REQ, "");
         switch (address) {
             case REQ_GET_SERVER_INFO:
-            case REQ_VALIDATE_WORKFLOW:
-            case REQ_SAVE_WORKFLOW:
-            case REQ_DEL_WORKFLOW:
-            case REQ_ALL_WORKFLOW:
+            case REQ_VALIDATE_FLOW:
+            case REQ_SAVE_FLOW:
+            case REQ_DEL_FLOW:
+            case REQ_ALL_FLOW:
             case REQ_EXEC_STATISTICS:
-            case REQ_RUN_WORKFLOW:
-            case REQ_DUMP_WORKFLOW_DEF: {
+            case REQ_LAUNCH_FLOW:
+            case REQ_DUMP_FLOW_DEF: {
                 handleReqRequest(address, reqBody, routingContext);
                 break;
             }

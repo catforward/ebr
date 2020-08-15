@@ -24,7 +24,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pers.ebr.server.model.ExternalCommandWorkflowView;
+import pers.ebr.server.model.ExternalCommandTaskflowView;
 import pers.ebr.server.repository.Repository;
 
 import java.util.Collection;
@@ -38,15 +38,15 @@ import static pers.ebr.server.common.Topic.*;
  *
  * @author l.gong
  */
-public class WorkflowManagerVerticle extends AbstractVerticle {
-    private final static Logger logger = LoggerFactory.getLogger(WorkflowManagerVerticle.class);
+public class TaskflowManagerVerticle extends AbstractVerticle {
+    private final static Logger logger = LoggerFactory.getLogger(TaskflowManagerVerticle.class);
 
     @Override
     public void start() throws Exception {
         super.start();
         EventBus bus = vertx.eventBus();
-        bus.consumer(REQ_ALL_WORKFLOW, this::handleGetAllWorkflow);
-        bus.consumer(REQ_RUN_WORKFLOW, this::handleRunWorkflow);
+        bus.consumer(REQ_ALL_FLOW, this::handleGetAllTaskflow);
+        bus.consumer(REQ_LAUNCH_FLOW, this::handleRunTaskflow);
     }
 
     @Override
@@ -54,15 +54,15 @@ public class WorkflowManagerVerticle extends AbstractVerticle {
         super.stop();
     }
 
-    private void handleGetAllWorkflow(Message<JsonObject> msg) {
+    private void handleGetAllTaskflow(Message<JsonObject> msg) {
         JsonObject result = new JsonObject();
         result.put(REQUEST_PARAM_REQ, msg.body().getString(REQUEST_PARAM_REQ));
         try {
-            Collection<ExternalCommandWorkflowView> flows = Repository.get().getAllWorkflowDetail();
+            Collection<ExternalCommandTaskflowView> flows = Repository.getDb().getAllTaskflowDetail();
             if (!flows.isEmpty()) {
                 //updateWorkflowStatus(flows);
                 JsonArray array = new JsonArray();
-                flows.forEach(workflowView -> {array.add(workflowView.toJsonObject());});
+                flows.forEach(workflowView -> array.add(workflowView.toJsonObject()));
                 result.put(RESPONSE_RESULT, array);
             } else {
                 result.put(RESPONSE_RESULT, new JsonObject());
@@ -75,12 +75,12 @@ public class WorkflowManagerVerticle extends AbstractVerticle {
         }
     }
 
-    private void handleRunWorkflow(Message<JsonObject> msg) {
+    private void handleRunTaskflow(Message<JsonObject> msg) {
         JsonObject result = new JsonObject();
         result.put(REQUEST_PARAM_REQ, msg.body().getString(REQUEST_PARAM_REQ));
         try {
             JsonObject reqBody = Optional.ofNullable(msg.body().getJsonObject(REQUEST_PARAM_PARAM)).orElse(new JsonObject());
-            String flowId = reqBody.getString(MSG_PARAM_WORKFLOW_ID, "");
+            String flowId = reqBody.getString(MSG_PARAM_TASKFLOW_ID, "");
             // check
             if (flowId.isBlank()) {
                 JsonObject errInfo = new JsonObject();
@@ -89,13 +89,13 @@ public class WorkflowManagerVerticle extends AbstractVerticle {
                 return;
             }
             String flowPath = String.format("/%s", flowId);
-            if (Repository.getPool().getRunningWorkflowByPath(flowPath) != null) {
+            if (Repository.getPool().getRunningTaskflowByPath(flowPath) != null) {
                 JsonObject errInfo = new JsonObject();
                 errInfo.put(RESPONSE_INFO, String.format("workflow id: [%s] is already running", flowId));
                 result.put(RESPONSE_ERROR, errInfo);
                 return;
             }
-            if (!Repository.get().isWorkflowExists(flowId)) {
+            if (!Repository.getDb().isTaskflowExists(flowId)) {
                 JsonObject errInfo = new JsonObject();
                 errInfo.put(RESPONSE_INFO, String.format("define is not exists (id: [%s])", flowId));
                 result.put(RESPONSE_ERROR, errInfo);
@@ -104,8 +104,8 @@ public class WorkflowManagerVerticle extends AbstractVerticle {
 
             EventBus bus = vertx.eventBus();
             JsonObject noticeParam = new JsonObject();
-            noticeParam.put(MSG_PARAM_WORKFLOW_ID, flowId);
-            bus.publish(MSG_RUN_FLOW, noticeParam);
+            noticeParam.put(MSG_PARAM_TASKFLOW_ID, flowId);
+            bus.publish(MSG_LAUNCH_FLOW, noticeParam);
 
             // response
             JsonObject retInfo = new JsonObject();
@@ -121,7 +121,7 @@ public class WorkflowManagerVerticle extends AbstractVerticle {
         }
     }
 
-//    private void updateWorkflowStatus(Collection<WorkflowView> flows) {
+//    private void updateTaskflowStatus(Collection<WorkflowView> flows) {
 //        for (var detail : flows) {
 //            IWorkflow runningFlow = Pool.get().getWorkflowByPath(detail.getRootView().getPath());
 //            if (runningFlow == null) {

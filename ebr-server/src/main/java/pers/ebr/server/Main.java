@@ -22,8 +22,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import pers.ebr.server.common.Configs;
-import pers.ebr.server.manager.WorkflowEditorVerticle;
-import pers.ebr.server.manager.WorkflowManagerVerticle;
+import pers.ebr.server.manager.TaskflowEditorVerticle;
+import pers.ebr.server.manager.TaskflowManagerVerticle;
 import pers.ebr.server.executor.ExternalCommandExecutorVerticle;
 import pers.ebr.server.manager.ServerInfoCollectorVerticle;
 import pers.ebr.server.executor.ExternalTaskSchedulerVerticle;
@@ -80,11 +80,11 @@ public class Main {
 
         DeploymentOptions editOpts = new DeploymentOptions()
                 .setInstances(1).setWorker(true);
-        vertx.deployVerticle(WorkflowEditorVerticle::new, editOpts);
+        vertx.deployVerticle(TaskflowEditorVerticle::new, editOpts);
 
         DeploymentOptions mngOpts = new DeploymentOptions()
                 .setInstances(1).setWorker(true);
-        vertx.deployVerticle(WorkflowManagerVerticle::new, mngOpts);
+        vertx.deployVerticle(TaskflowManagerVerticle::new, mngOpts);
 
         DeploymentOptions schdOpts = new DeploymentOptions()
                 .setInstances(1).setWorker(true);

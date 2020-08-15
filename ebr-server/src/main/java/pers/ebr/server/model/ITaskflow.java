@@ -28,7 +28,7 @@ import java.util.Set;
  *
  * @author l.gong
  */
-public interface IWorkflow extends IObjectConverter {
+public interface ITaskflow extends IObjectConverter {
 
     /**
      * 工作流执行结束后释放资源

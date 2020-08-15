@@ -25,16 +25,15 @@ import pers.ebr.server.common.Configs;
 import java.io.IOException;
 
 /**
- * <pre>
- * The Database Storage utility
- * </pre>
+ * <p>
+ * 任务仓储
+ * </p>
  *
  * @author l.gong
  */
 public final class Repository {
     private final static Logger logger = LoggerFactory.getLogger(Repository.class);
     private IRepositoryManager mng;
-    private IPool pool;
 
     private static class Holder {
         static final Repository REPO = new Repository();
@@ -42,68 +41,71 @@ public final class Repository {
 
     private Repository() {}
 
+    /**
+     * 初始化
+     * @param config [in] 配置
+     * @throws IOException 内置properties文件读取失败时
+     * @throws RepositoryException 数据库处理错误时
+     */
     public static void init(JsonObject config) throws IOException, RepositoryException {
         synchronized (Holder.REPO) {
             if (Holder.REPO.mng == null) {
                 Holder.REPO.mng = Holder.REPO.build(config);
             }
-            if (Holder.REPO.pool == null) {
-                Holder.REPO.pool = Holder.REPO.buildPool(config);
-            }
             Holder.REPO.mng.init();
-            Holder.REPO.pool.init();
         }
         logger.info("Repository Init Success...");
     }
 
+    /**
+     * 仓储服务结束了
+     * @throws RepositoryException 数据库处理错误时
+     */
     public static void finish() throws RepositoryException {
         synchronized (Holder.REPO) {
             if (Holder.REPO.mng != null) {
                 Holder.REPO.mng.finish();
             }
-            if (Holder.REPO.pool != null) {
-                Holder.REPO.pool.close();
-            }
         }
     }
 
-    public static IRepository get() {
+    /**
+     * 获取数据库服务
+     * @return IDatabase
+     */
+    public static IDatabase getDb() {
         if (Holder.REPO.mng == null) {
             throw new RuntimeException("database is not initialized...");
         }
-        return Holder.REPO.mng.getRepository();
+        return Holder.REPO.mng.getDb();
     }
 
+    /**
+     * 获取对象池服务
+     * @return IPool
+     */
     public static IPool getPool() {
-        if (Holder.REPO.pool == null) {
+        if (Holder.REPO.mng == null) {
             throw new RuntimeException("pool is not initialized...");
         }
-        return Holder.REPO.pool;
+        return Holder.REPO.mng.getPool();
     }
 
+    /**
+     * 创建仓储管理器
+     * @param config [in] 配置
+     * @return IRepositoryManager
+     * @throws IOException
+     */
     IRepositoryManager build(JsonObject config) throws IOException {
-        String type = config.getString(Configs.KEY_MANAGER_REPO_TYPE, SqliteRepositoryManager.TYPE);
+        String type = config.getString(Configs.KEY_REPO_MODE, LocalRepositoryManager.TYPE);
         switch (type) {
-            case SqliteRepositoryManager.TYPE: {
-                return new SqliteRepositoryManager();
+            case LocalRepositoryManager.TYPE: {
+                return new LocalRepositoryManager();
             }
             default: {
                 logger.error("unknown db connection type:{}", type);
                 throw new RuntimeException(String.format("unknown db connection type: %s", type));
-            }
-        }
-    }
-
-    IPool buildPool(JsonObject config) throws IOException {
-        // pool
-        String type = config.getString(Configs.KEY_EXECUTOR_POOL_TYPE, MemoryPoolImpl.TYPE);
-        switch (type) {
-            case MemoryPoolImpl.TYPE : {
-                return new MemoryPoolImpl();
-            }
-            default: {
-                logger.error("unknown task pool type:{}", type);
-                throw new RuntimeException(String.format("unknown task pool type: %s", type));
             }
         }
     }

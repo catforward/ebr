@@ -23,7 +23,7 @@ import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pers.ebr.server.model.IExternalCommandTask;
-import pers.ebr.server.model.ModelItemBuilder;
+import pers.ebr.server.model.ModelItemMaker;
 import pers.ebr.server.model.ExecutorStatisticsView;
 import pers.ebr.server.common.TaskState;
 import pers.ebr.server.repository.Repository;
@@ -51,7 +51,7 @@ public class ExternalCommandExecutorVerticle extends AbstractVerticle {
     private final static Logger logger = LoggerFactory.getLogger(ExternalCommandExecutorVerticle.class);
 
     public final static String TYPE = "EC";
-    private final ExecutorStatisticsView statistics = ModelItemBuilder.createExecutorStatistics(TYPE);
+    private final ExecutorStatisticsView statistics = ModelItemMaker.makeExecutorStatistics(TYPE);
     /** 执行队列 */
     private ExecutorService executorPool;
     long timerId;

@@ -23,9 +23,9 @@ import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
 /**
- * <pre>
+ * <p>
  * 未分类的工具函数集合
- * </pre>
+ * </p>
  *
  * @author l.gong
  */

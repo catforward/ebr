@@ -17,9 +17,9 @@
  */
 package pers.ebr.server.repository;
 
-import pers.ebr.server.model.IWorkflow;
+import pers.ebr.server.model.ITaskflow;
 import pers.ebr.server.common.TaskState;
-import pers.ebr.server.model.ExternalCommandWorkflowView;
+import pers.ebr.server.model.ExternalCommandTaskflowView;
 
 import java.util.Collection;
 
@@ -30,44 +30,44 @@ import java.util.Collection;
  *
  * @author l.gong
  */
-public interface IRepository {
+public interface IDatabase {
 
     /**
      * 保存任务流对象
-     * @param workflow [in] 待保存的任务流
+     * @param taskflow [in] 待保存的任务流
      * @throws RepositoryException 发生SQL异常时转换并抛出此异常
      */
-    void saveWorkflow(IWorkflow workflow) throws RepositoryException;
+    void saveTaskflow(ITaskflow taskflow) throws RepositoryException;
 
     /**
      * 使用id查找并读取一个任务流
-     * @param flowId 任务流ID
-     * @return IWorkflow
+     * @param flowId [in] 任务流ID
+     * @return ITaskflow
      * @throws RepositoryException 发生SQL异常时转换并抛出此异常
      */
-    IWorkflow loadWorkflow(String flowId) throws RepositoryException;
+    ITaskflow loadTaskflow(String flowId) throws RepositoryException;
 
     /**
      * 使用id删除一个任务流
-     * @param flowId 任务流ID
+     * @param flowId [in] 任务流ID
      * @return int
      * @throws RepositoryException 发生SQL异常时转换并抛出此异常
      */
-    int removeWorkflow(String flowId) throws RepositoryException;
+    int removeTaskflow(String flowId) throws RepositoryException;
 
     /**
      * 判断给定ID的任务流定义是否存在
-     * @param flowId 任务流ID
+     * @param flowId [in] 任务流ID
      * @return boolean
      * @throws RepositoryException 发生SQL异常时转换并抛出此异常
      */
-    boolean isWorkflowExists(String flowId) throws RepositoryException;
+    boolean isTaskflowExists(String flowId) throws RepositoryException;
 
     /**
      * 保存一次任务执行记录
-     * @param instanceId 任务实例ID
-     * @param path       任务逻辑路径
-     * @param newState   任务最终状态
+     * @param instanceId [in] 任务实例ID
+     * @param path       [in] 任务逻辑路径
+     * @param newState   [in] 任务最终状态
      * @throws RepositoryException 发生SQL异常时转换并抛出此异常
      */
     void saveTaskExecHist(String instanceId, String path, TaskState newState) throws RepositoryException;
@@ -77,5 +77,5 @@ public interface IRepository {
      * @return Collection
      * @throws RepositoryException 发生SQL异常时转换并抛出此异常
      */
-    Collection<ExternalCommandWorkflowView> getAllWorkflowDetail() throws RepositoryException;
+    Collection<ExternalCommandTaskflowView> getAllTaskflowDetail() throws RepositoryException;
 }

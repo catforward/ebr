@@ -23,8 +23,8 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pers.ebr.server.model.IWorkflow;
-import pers.ebr.server.model.ModelItemBuilder;
+import pers.ebr.server.model.ITaskflow;
+import pers.ebr.server.model.ModelItemMaker;
 import pers.ebr.server.repository.Repository;
 
 import java.util.Optional;
@@ -37,17 +37,17 @@ import static pers.ebr.server.common.Topic.*;
  *
  * @author l.gong
  */
-public class WorkflowEditorVerticle extends AbstractVerticle {
-    private final static Logger logger = LoggerFactory.getLogger(WorkflowEditorVerticle.class);
+public class TaskflowEditorVerticle extends AbstractVerticle {
+    private final static Logger logger = LoggerFactory.getLogger(TaskflowEditorVerticle.class);
 
     @Override
     public void start() throws Exception {
         super.start();
         EventBus bus = vertx.eventBus();
-        bus.consumer(REQ_VALIDATE_WORKFLOW, this::handleValidateWorkflow);
-        bus.consumer(REQ_SAVE_WORKFLOW, this::handleSaveWorkflow);
-        bus.consumer(REQ_DEL_WORKFLOW, this::handleDeleteWorkflow);
-        bus.consumer(REQ_DUMP_WORKFLOW_DEF, this::handleDumpWorkflowDefine);
+        bus.consumer(REQ_VALIDATE_FLOW, this::handleValidateTaskflow);
+        bus.consumer(REQ_SAVE_FLOW, this::handleSaveTaskflow);
+        bus.consumer(REQ_DEL_FLOW, this::handleDeleteTaskflow);
+        bus.consumer(REQ_DUMP_FLOW_DEF, this::handleDumpTaskflowDefine);
     }
 
     @Override
@@ -55,13 +55,13 @@ public class WorkflowEditorVerticle extends AbstractVerticle {
         super.stop();
     }
 
-    private void handleValidateWorkflow(Message<JsonObject> msg) {
+    private void handleValidateTaskflow(Message<JsonObject> msg) {
         JsonObject result = new JsonObject();
         result.put(REQUEST_PARAM_REQ, msg.body().getString(REQUEST_PARAM_REQ));
         boolean ret = false;
         try {
             Optional<JsonObject> flowBody = Optional.ofNullable(msg.body().getJsonObject(REQUEST_PARAM_PARAM));
-            IWorkflow workflow = ModelItemBuilder.createExternalTaskWorkflow(flowBody.orElseThrow());
+            ITaskflow workflow = ModelItemMaker.makeExternalTaskflow(flowBody.orElseThrow());
             logger.info("create a task flow -> {}", workflow.toString());
             ret = true;
         } finally {
@@ -71,14 +71,14 @@ public class WorkflowEditorVerticle extends AbstractVerticle {
 
     }
 
-    private void handleSaveWorkflow(Message<JsonObject> msg) {
+    private void handleSaveTaskflow(Message<JsonObject> msg) {
         JsonObject result = new JsonObject();
         result.put(REQUEST_PARAM_REQ, msg.body().getString(REQUEST_PARAM_REQ));
         boolean ret = true;
         try {
             Optional<JsonObject> flowBody = Optional.ofNullable(msg.body().getJsonObject(REQUEST_PARAM_PARAM));
-            IWorkflow workflow = ModelItemBuilder.createExternalTaskWorkflow(flowBody.orElseThrow());
-            Repository.get().saveWorkflow(workflow);
+            ITaskflow workflow = ModelItemMaker.makeExternalTaskflow(flowBody.orElseThrow());
+            Repository.getDb().saveTaskflow(workflow);
         } catch (Exception ex) {
             logger.error("procedure [saveTaskFlow] error:", ex);
             ret = false;
@@ -89,36 +89,36 @@ public class WorkflowEditorVerticle extends AbstractVerticle {
 
     }
 
-    private void handleDeleteWorkflow(Message<JsonObject> msg) {
+    private void handleDeleteTaskflow(Message<JsonObject> msg) {
         JsonObject result = new JsonObject();
         result.put(REQUEST_PARAM_REQ, msg.body().getString(REQUEST_PARAM_REQ));
         try {
             JsonObject reqBody = Optional.ofNullable(msg.body().getJsonObject(REQUEST_PARAM_PARAM)).orElse(new JsonObject());
-            String flowId = reqBody.getString(MSG_PARAM_WORKFLOW_ID, "");
+            String flowId = reqBody.getString(MSG_PARAM_TASKFLOW_ID, "");
             // check
             if (flowId.isBlank()) {
                 JsonObject errInfo = new JsonObject();
-                errInfo.put(RESPONSE_INFO, String.format("invalid workflow id: [%s]", flowId));
+                errInfo.put(RESPONSE_INFO, String.format("invalid taskflow id: [%s]", flowId));
                 result.put(RESPONSE_ERROR, errInfo);
                 return;
             }
             String flowUrl = String.format("/%s", flowId);
-            if (Repository.getPool().getRunningWorkflowByPath(flowUrl) != null) {
+            if (Repository.getPool().getRunningTaskflowByPath(flowUrl) != null) {
                 JsonObject errInfo = new JsonObject();
-                errInfo.put(RESPONSE_INFO, String.format("workflow id: [%s] is already running", flowId));
+                errInfo.put(RESPONSE_INFO, String.format("taskflow id: [%s] is already running", flowId));
                 result.put(RESPONSE_ERROR, errInfo);
                 return;
             }
             // delete it
-            int cnt = Repository.get().removeWorkflow(flowId);
+            int cnt = Repository.getDb().removeTaskflow(flowId);
             if (cnt == 0) {
                 JsonObject errInfo = new JsonObject();
-                errInfo.put(RESPONSE_INFO, String.format("workflow id: [%s] is already running", flowId));
+                errInfo.put(RESPONSE_INFO, String.format("taskflow id: [%s] is already running", flowId));
                 result.put(RESPONSE_ERROR, errInfo);
                 return;
             } else {
                 JsonObject retInfo = new JsonObject();
-                retInfo.put(RESPONSE_INFO, String.format("delete workflow's record: [%s]", cnt));
+                retInfo.put(RESPONSE_INFO, String.format("delete records of taskflow : [%s]", cnt));
                 result.put(RESPONSE_RESULT, retInfo);
             }
         } catch (Exception ex) {
@@ -131,7 +131,7 @@ public class WorkflowEditorVerticle extends AbstractVerticle {
         }
     }
 
-    private void handleDumpWorkflowDefine(Message<JsonObject> msg) {
+    private void handleDumpTaskflowDefine(Message<JsonObject> msg) {
         JsonObject result = new JsonObject();
         result.put(REQUEST_PARAM_REQ, msg.body().getString(REQUEST_PARAM_REQ));
         // TODO

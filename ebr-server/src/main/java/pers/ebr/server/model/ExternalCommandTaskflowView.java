@@ -33,12 +33,12 @@ import static pers.ebr.server.model.IExternalCommandTask.*;
  *
  * @author l.gong
  */
-public final class ExternalCommandWorkflowView implements IObjectConverter {
+public final class ExternalCommandTaskflowView implements IObjectConverter {
     private String instanceId;
     private final ExternalCommandTaskView rootDetail;
     private final ArrayList<ExternalCommandTaskView> views = new ArrayList<>();
 
-    ExternalCommandWorkflowView(ExternalCommandTaskView root) {
+    ExternalCommandTaskflowView(ExternalCommandTaskView root) {
         rootDetail = root;
     }
 
@@ -91,7 +91,7 @@ public final class ExternalCommandWorkflowView implements IObjectConverter {
     @Override
     public JsonObject toJsonObject() {
         JsonObject jsonObject = new JsonObject();
-        jsonObject.put(MSG_PARAM_WORKFLOW_ID, rootDetail.getId());
+        jsonObject.put(MSG_PARAM_TASKFLOW_ID, rootDetail.getId());
         jsonObject.put(MSG_PARAM_INSTANCE_ID, instanceId);
         jsonObject.put(TASK_DESC, rootDetail.getDesc());
         JsonArray taskArr = new JsonArray();
