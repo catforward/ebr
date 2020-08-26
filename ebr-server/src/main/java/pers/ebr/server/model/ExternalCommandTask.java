@@ -21,6 +21,7 @@ import pers.ebr.server.common.TaskState;
 import pers.ebr.server.common.TaskType;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -40,7 +41,32 @@ public final class ExternalCommandTask implements IExternalCommandTask {
     final ExternalCommandTaskProp prop = new ExternalCommandTaskProp();
 
     ExternalCommandTask(String id) {
-        meta.setId(id);
+        meta.id = id;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(meta, prop);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == this) {
+            return true;
+        }
+
+        if (!(o instanceof ExternalCommandTask)) {
+            return false;
+        }
+
+        ExternalCommandTask other = (ExternalCommandTask) o;
+        return Objects.equals(meta, other.meta) &&
+                Objects.equals(prop, other.prop);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("%s", prop.path);
     }
 
     /**
@@ -50,7 +76,7 @@ public final class ExternalCommandTask implements IExternalCommandTask {
      */
     @Override
     public String getId() {
-        return meta.getId();
+        return meta.id;
     }
 
     /**
@@ -60,7 +86,7 @@ public final class ExternalCommandTask implements IExternalCommandTask {
      */
     @Override
     public String getCmdLine() {
-        return meta.getCmd();
+        return meta.cmd;
     }
 
     /**
@@ -70,7 +96,7 @@ public final class ExternalCommandTask implements IExternalCommandTask {
      */
     @Override
     public String getDesc() {
-        return meta.getDesc();
+        return meta.desc;
     }
 
     /**
@@ -80,7 +106,7 @@ public final class ExternalCommandTask implements IExternalCommandTask {
      */
     @Override
     public String getGroupId() {
-        return meta.getGroup();
+        return meta.group;
     }
 
     /**
@@ -90,7 +116,7 @@ public final class ExternalCommandTask implements IExternalCommandTask {
      */
     @Override
     public List<String> getDepends() {
-        return meta.getDepends();
+        return meta.depends;
     }
 
     /**
@@ -100,7 +126,7 @@ public final class ExternalCommandTask implements IExternalCommandTask {
      */
     @Override
     public String getPath() {
-        return prop.getPath();
+        return prop.path;
     }
 
     /**
@@ -130,7 +156,7 @@ public final class ExternalCommandTask implements IExternalCommandTask {
      */
     @Override
     public Set<? extends IExternalCommandTask> getDependTaskSet() {
-        return prop.getDepTaskSet();
+        return prop.depTaskSet;
     }
 
     /**
@@ -140,7 +166,7 @@ public final class ExternalCommandTask implements IExternalCommandTask {
      */
     @Override
     public Set<? extends IExternalCommandTask> getSubTaskSet() {
-        return prop.getSubTaskSet();
+        return prop.subTaskSet;
     }
 
     /**
@@ -150,7 +176,7 @@ public final class ExternalCommandTask implements IExternalCommandTask {
      */
     @Override
     public String getInstanceId() {
-        return prop.getInstanceId();
+        return prop.instanceId;
     }
 
     /**
@@ -160,7 +186,7 @@ public final class ExternalCommandTask implements IExternalCommandTask {
      */
     @Override
     public boolean isRootTask() {
-        return meta.getId() == null || meta.getId().strip().isEmpty() || meta.getId().equalsIgnoreCase(meta.getGroup());
+        return meta.id == null || meta.id.strip().isEmpty() || meta.id.equalsIgnoreCase(meta.group);
     }
 
     /**

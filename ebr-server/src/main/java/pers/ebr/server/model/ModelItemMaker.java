@@ -70,11 +70,11 @@ public final class ModelItemMaker {
             JsonObject taskBody = define.getJsonObject(taskId);
             ExternalCommandTask task = new ExternalCommandTask(taskId);
             // 如果没有设定group，默认行为group=id
-            task.meta.setGroup(taskBody.getString(TASK_GROUP, taskId));
-            task.meta.setDesc(taskBody.getString(TASK_DESC));
-            task.meta.setCmd(taskBody.getString(TASK_CMD_LINE));
+            task.meta.group = taskBody.getString(TASK_GROUP, taskId);
+            task.meta.desc = taskBody.getString(TASK_DESC);
+            task.meta.cmd = taskBody.getString(TASK_CMD_LINE);
             JsonArray dependsArray = taskBody.getJsonArray(TASK_DEPENDS_LIST, new JsonArray());
-            dependsArray.stream().forEach(dependTaskId -> task.meta.addDepends(dependTaskId.toString()));
+            dependsArray.stream().forEach(dependTaskId -> task.meta.depends.add(dependTaskId.toString()));
             taskflow.addTask(task);
         }
         return taskflow.build();

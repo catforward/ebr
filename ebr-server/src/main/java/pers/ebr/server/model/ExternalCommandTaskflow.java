@@ -38,7 +38,6 @@ import static pers.ebr.server.common.TaskType.GROUP;
  *     <li>运行时的实例ID</li>
  *     <li>运行时任务逻辑路径与任务的映射集合</li>
  *     <li>运行时任务ID与任务的映射集合</li>
- *     <li>运行时封装Group类型任务内所有子任务间依赖关系的图数据集合</li>
  * </ul>
  * </p>
  *
@@ -51,7 +50,6 @@ public final class ExternalCommandTaskflow implements ITaskflow {
     private ITaskStateWatcher watcher = null;
     private final HashMap<String, ExternalCommandTask> pathTaskMap = new HashMap<>();
     private final HashMap<String, ExternalCommandTask> idTaskMap = new HashMap<>();
-    private final HashMap<String, DirectedGraph<ExternalCommandTask>> idGraphMap = new HashMap<>();
 
     ExternalCommandTaskflow() {}
 
@@ -72,12 +70,12 @@ public final class ExternalCommandTaskflow implements ITaskflow {
      * @param task [in] 待添加的任务对象
      */
     void addTask(ExternalCommandTask task) {
-        idTaskMap.put(task.meta.getId(), task);
+        idTaskMap.put(task.meta.id, task);
         if (task.isRootTask()) {
             if (rootTask == null) {
                 rootTask = task;
             } else {
-                throw new RuntimeException(String.format("only one root task can be defined in a signal define file. id:[%s]", task.meta.getId()));
+                throw new RuntimeException(String.format("only one root task can be defined in a signal define file. id:[%s]", task.meta.id));
             }
         }
     }
@@ -89,7 +87,6 @@ public final class ExternalCommandTaskflow implements ITaskflow {
     public void release() {
         appender = null;
         watcher = null;
-        idGraphMap.clear();
         pathTaskMap.clear();
         idTaskMap.forEach((id, task) -> task.release());
         idTaskMap.clear();
@@ -101,9 +98,9 @@ public final class ExternalCommandTaskflow implements ITaskflow {
     @Override
     public void standby() {
         idTaskMap.forEach((id, task) -> task.prop.setState(INACTIVE));
-        TaskState oldState = TaskState.valueOf(rootTask.prop.state.name());
+        TaskState oldState = TaskState.valueOf(rootTask.prop.getState().name());
         rootTask.prop.setState(ACTIVE);
-        notifyTaskStateChanged(rootTask.prop.getPath(), true, oldState, ACTIVE);
+        notifyTaskStateChanged(rootTask.prop.path, true, oldState, ACTIVE);
         collectRunnableTasks(rootTask);
     }
 
@@ -135,7 +132,7 @@ public final class ExternalCommandTaskflow implements ITaskflow {
     @Override
     public void setInstanceId(String newId) {
         instanceId = newId;
-        idTaskMap.forEach((id, task) -> task.prop.setInstanceId(instanceId));
+        idTaskMap.forEach((id, task) -> task.prop.instanceId = instanceId);
     }
 
     /**
@@ -180,7 +177,7 @@ public final class ExternalCommandTaskflow implements ITaskflow {
     @Override
     public synchronized void setTaskState(String path, TaskState newState) {
         ExternalCommandTask task = Optional.ofNullable(pathTaskMap.get(path)).orElseThrow();
-        TaskState oldState = TaskState.valueOf(task.prop.state.name());
+        TaskState oldState = TaskState.valueOf(task.prop.getState().name());
         task.prop.setState(newState);
         notifyTaskStateChanged(path, task.isRootTask(), oldState, newState);
 
@@ -190,7 +187,7 @@ public final class ExternalCommandTaskflow implements ITaskflow {
 
         // 任务失败时，逐级向上传递失败状态
         if (FAILED == task.prop.getState()) {
-            setTaskState(task.prop.getGroupTask().getPath(), FAILED);
+            setTaskState(task.prop.groupTask.getPath(), FAILED);
             return;
         }
         // 任务开始，收集以此任务为中心的可执行任务集合
@@ -203,8 +200,8 @@ public final class ExternalCommandTaskflow implements ITaskflow {
             // 收集以此任务为中心的可执行任务集合
             collectRunnableTasks(task);
             // 如果此任务所在组全部正常结束，则将正常结束状态传递至上级
-            ExternalCommandTask groupTask = idTaskMap.get(task.meta.getGroup());
-            long unfinishedDependTaskCnt = groupTask.prop.getSubTaskSet().stream()
+            ExternalCommandTask groupTask = idTaskMap.get(task.meta.group);
+            long unfinishedDependTaskCnt = groupTask.prop.subTaskSet.stream()
                     .filter(t -> COMPLETE != t.prop.getState()).count();
             if (unfinishedDependTaskCnt == 0) {
                 setTaskState(groupTask.getPath(), COMPLETE);
@@ -240,7 +237,13 @@ public final class ExternalCommandTaskflow implements ITaskflow {
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        idGraphMap.forEach((id, graph) -> sb.append(String.format("\n%s : (\n%s\n)", id, graph.toString())));
+        //idGraphMap.forEach((id, graph) -> sb.append(String.format("\n%s : (\n%s\n)", id, graph.toString())));
+        idTaskMap.entrySet()
+                .stream()
+                .filter(entry -> entry.getValue().prop.getType() == GROUP)
+                .forEach(entry -> sb.append(String.format("\n%s : (\n%s\n)",
+                        entry.getValue().meta.id,
+                        entry.getValue().prop.getGraph().toString())));
         return sb.toString();
     }
 
@@ -257,19 +260,20 @@ public final class ExternalCommandTaskflow implements ITaskflow {
     private void updatePropInfo() {
         idTaskMap.forEach((id, task) -> {
             if (task.isRootTask()) {
-                task.prop.setGroupTask(task);
-                createGraph(task.getId());
+                task.prop.groupTask = task;
+                //createGraph(task.getId());
             } else {
-                ExternalCommandTask groupTask = Optional.ofNullable(idTaskMap.get(task.meta.getGroup())).orElseThrow();
+                ExternalCommandTask groupTask = Optional.ofNullable(idTaskMap.get(task.meta.group)).orElseThrow();
                 if (GROUP != groupTask.prop.getType()) {
                     groupTask.prop.setType(GROUP);
+                    groupTask.prop.setGraph(makeEmptyGraph());
                 }
-                groupTask.prop.addSubTask(task);
-                task.meta.getDepends().forEach(depId -> {
+                groupTask.prop.subTaskSet.add(task);
+                task.meta.depends.forEach(depId -> {
                     ExternalCommandTask depTask = Optional.ofNullable(idTaskMap.get(depId)).orElseThrow();
-                    task.prop.addDepTask(depTask);
+                    task.prop.depTaskSet.add(depTask);
                 });
-                task.prop.setGroupTask(groupTask);
+                task.prop.groupTask = groupTask;
             }
         });
     }
@@ -280,13 +284,13 @@ public final class ExternalCommandTaskflow implements ITaskflow {
     private void updateGraphInfo() {
         idTaskMap.forEach((id, task) -> {
             if (task.isRootTask()) { return; }
-            DirectedGraph<ExternalCommandTask> groupGraph = Optional.ofNullable(idGraphMap.get(task.meta.getGroup())).orElseGet(() -> {
-                createGraph(task.meta.getGroup());
-                return Optional.ofNullable(idGraphMap.get(task.meta.getGroup())).orElseThrow();
+            DirectedGraph<ExternalCommandTask> groupGraph = Optional.ofNullable(task.prop.groupTask.prop.getGraph()).orElseGet(() -> {
+                task.prop.groupTask.prop.setGraph(makeEmptyGraph());
+                return Optional.ofNullable(task.prop.groupTask.prop.getGraph()).orElseThrow();
             });
             groupGraph.addVertex(task);
 
-            task.meta.getDepends().forEach(dependId -> {
+            task.meta.depends.forEach(dependId -> {
                 ExternalCommandTask predecessor = Optional.ofNullable(idTaskMap.get(dependId)).orElseThrow();
                 groupGraph.putEdge(predecessor, task);
             });
@@ -300,27 +304,19 @@ public final class ExternalCommandTaskflow implements ITaskflow {
      */
     private void updatePathInfo(ExternalCommandTask task) {
         if (task.isRootTask()) {
-            task.prop.setPath(String.format("/%s", task.meta.getId()));
+            task.prop.path = String.format("/%s", task.meta.id);
         } else {
-            task.prop.setPath(String.format("%s/%s", task.prop.getGroupTask().getPath(), task.meta.getId()));
+            task.prop.path = String.format("%s/%s", task.prop.groupTask.getPath(), task.meta.id);
         }
         if (GROUP == task.prop.getType()) {
-            for (ExternalCommandTask sub : task.prop.getSubTaskSet()) {
+            for (ExternalCommandTask sub : task.prop.subTaskSet) {
                 if (GROUP == sub.prop.getType()) {
                     updatePathInfo(sub);
                 } else {
-                    sub.prop.setPath(String.format("%s/%s", sub.prop.getGroupTask().getPath(), sub.meta.getId()));
+                    sub.prop.path = String.format("%s/%s", sub.prop.groupTask.getPath(), sub.meta.id);
                 }
             }
         }
-    }
-
-    /**
-     * 创建一个指定ID的图数据
-     * @param graphId [in] 待设置的图数据ID
-     */
-    private void createGraph(String graphId) {
-        idGraphMap.put(graphId, makeEmptyGraph());
     }
 
     /**
@@ -338,16 +334,16 @@ public final class ExternalCommandTaskflow implements ITaskflow {
      */
     private void collectRunnableTasks(ExternalCommandTask task) {
         if (GROUP == task.prop.getType() && ACTIVE == task.prop.getState()) {
-            task.prop.getSubTaskSet().forEach(sub -> {
-                long unfinishedDependTaskCnt = sub.prop.getDepTaskSet().stream()
+            task.prop.subTaskSet.forEach(sub -> {
+                long unfinishedDependTaskCnt = sub.prop.depTaskSet.stream()
                         .filter(t -> COMPLETE != t.prop.getState()).count();
                 if (unfinishedDependTaskCnt == 0 && INACTIVE == sub.prop.getState()) {
                     appendToRunnableQueue(sub);
                 }
             });
         } else if (COMPLETE == task.prop.getState()) {
-            DirectedGraph<ExternalCommandTask> groupGraph = idGraphMap.get(task.meta.getGroup());
-            if (GROUP != task.prop.getGroupTask().getType() || groupGraph == null) {
+            DirectedGraph<ExternalCommandTask> groupGraph = task.prop.groupTask.prop.getGraph();
+            if (GROUP != task.prop.groupTask.getType() || groupGraph == null) {
                 return;
             }
             groupGraph.successors(task).forEach(successor -> {
@@ -391,7 +387,7 @@ public final class ExternalCommandTaskflow implements ITaskflow {
     @Override
     public JsonObject toJsonObject() {
         JsonObject jsonObject = new JsonObject();
-        idTaskMap.forEach((id, task) -> jsonObject.put(task.meta.getId(), task.meta.toJsonObject()));
+        idTaskMap.forEach((id, task) -> jsonObject.put(task.meta.id, task.meta.toJsonObject()));
         return jsonObject;
     }
 }

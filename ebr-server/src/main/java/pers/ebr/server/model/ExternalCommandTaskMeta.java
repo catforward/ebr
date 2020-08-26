@@ -21,7 +21,6 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import static pers.ebr.server.model.IExternalCommandTask.*;
 
@@ -34,103 +33,18 @@ import static pers.ebr.server.model.IExternalCommandTask.*;
  * @author l.gong
  */
 public final class ExternalCommandTaskMeta implements IObjectConverter {
+    /** 任务ID */
     String id;
+    /** 任务所在组的ID */
     String group;
+    /** 任务的目标命令 */
     String cmd;
+    /** 任务描述 */
     String desc;
+    /** 任务的依赖任务集合 */
     final ArrayList<String> depends = new ArrayList<>();
 
     ExternalCommandTaskMeta() {}
-
-    /**
-     * 获取任务ID
-     *
-     * @return String
-     */
-    public String getId() {
-        return id;
-    }
-
-    /**
-     * 设置任务ID
-     *
-     * @param id [in] 待设置任务id
-     */
-    public void setId(String id) {
-        this.id = id;
-    }
-
-    /**
-     * 获取任务所在组的ID
-     *
-     * @return String
-     */
-    public String getGroup() {
-        return group;
-    }
-
-    /**
-     * 设置任务所在组的Id
-     *
-     * @param group [in] 待设置所在组的Id
-     */
-    public void setGroup(String group) {
-        this.group = group;
-    }
-
-    /**
-     * 获取任务的目标命令
-     *
-     * @return String
-     */
-    public String getCmd() {
-        return cmd;
-    }
-
-    /**
-     * 设置任务目标命令
-     *
-     * @param cmd [in] 待设置命令行字符
-     */
-    public void setCmd(String cmd) {
-        this.cmd = cmd;
-    }
-
-    /**
-     * 获取任务描述
-     *
-     * @return String
-     */
-    public String getDesc() {
-        return desc;
-    }
-
-    /**
-     * 设置任务描述
-     *
-     * @param desc [in] 待设置任务描述
-     */
-    public void setDesc(String desc) {
-        this.desc = desc;
-    }
-
-    /**
-     * 获取任务的依赖任务列表
-     *
-     * @return List
-     */
-    public List<String> getDepends() {
-        return depends;
-    }
-
-    /**
-     * 增加任务所依赖的其他任务Id定义
-     *
-     * @param id [in] 待设置其他任务Id
-     */
-    public void addDepends(String id) {
-        this.depends.add(id);
-    }
 
     /**
      * 返回此数据的JSON对象
