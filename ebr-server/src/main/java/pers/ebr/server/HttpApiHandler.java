@@ -26,31 +26,31 @@ import io.vertx.ext.web.RoutingContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static pers.ebr.server.common.Const.REQUEST_PARAM_REQ;
-import static pers.ebr.server.common.Topic.*;
+import static pers.ebr.server.common.verticle.VerticleConst.FACADE_MSG;
+import static pers.ebr.server.facade.FacadeTopic.*;
 
 /**
  * The HttpProcHandler
  *
  * @author l.gong
  */
-public class HttpReqDispatcher implements Handler<RoutingContext> {
-    private final static Logger logger = LoggerFactory.getLogger(HttpReqDispatcher.class);
+public class HttpApiHandler implements Handler<RoutingContext> {
+    private final static Logger logger = LoggerFactory.getLogger(HttpApiHandler.class);
 
     @Override
     public void handle(RoutingContext routingContext) {
         JsonObject reqBody = routingContext.getBodyAsJson();
-        logger.info("HTTP REQ PATH: {} BODY: {}", routingContext.normalisedPath(), reqBody);
-        String address = reqBody.getString(REQUEST_PARAM_REQ, "");
+        logger.debug("HTTP REQ PATH: {} BODY: {}", routingContext.normalisedPath(), reqBody);
+        String address = reqBody.getString(FACADE_MSG, "");
         switch (address) {
-            case REQ_GET_SERVER_INFO:
-            case REQ_VALIDATE_FLOW:
-            case REQ_SAVE_FLOW:
-            case REQ_DEL_FLOW:
-            case REQ_ALL_FLOW:
-            case REQ_EXEC_STATISTICS:
-            case REQ_LAUNCH_FLOW:
-            case REQ_DUMP_FLOW_DEF: {
+            case API_GET_SERVER_INFO:
+            case API_EXEC_STATISTICS:
+            case API_VALIDATE_FLOW:
+            case API_SAVE_FLOW:
+            case API_DELETE_FLOW:
+            case API_QUERY_ALL_FLOW:
+            case API_LAUNCH_FLOW:
+            case API_DUMP_FLOW_DEF: {
                 handleReqRequest(address, reqBody, routingContext);
                 break;
             }

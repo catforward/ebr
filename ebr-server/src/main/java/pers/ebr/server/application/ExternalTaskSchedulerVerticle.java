@@ -34,8 +34,8 @@ import java.util.UUID;
 import static pers.ebr.server.common.Const.*;
 import static pers.ebr.server.common.TaskState.*;
 import static pers.ebr.server.common.TaskType.GROUP;
-import static pers.ebr.server.common.Topic.*;
 import static pers.ebr.server.common.Utils.checkNotNull;
+import static pers.ebr.server.application.AppTopic.*;
 
 /**
  * The SchedulerVerticle

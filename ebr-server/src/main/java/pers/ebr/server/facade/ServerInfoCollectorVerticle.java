@@ -25,13 +25,21 @@ import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.EventBus;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
+import pers.ebr.server.common.verticle.FacadeResponse;
 
 import static pers.ebr.server.common.Const.*;
-import static pers.ebr.server.common.Topic.*;
+import static pers.ebr.server.application.AppTopic.MSG_EXEC_STATISTICS;
+import static pers.ebr.server.common.verticle.VerticleConst.FACADE_DATA;
+import static pers.ebr.server.common.verticle.VerticleConst.FACADE_MSG;
+import static pers.ebr.server.facade.FacadeTopic.API_EXEC_STATISTICS;
+import static pers.ebr.server.facade.FacadeTopic.API_GET_SERVER_INFO;
 
 /**
- * The ServerInfoVerticle
- *
+ * <p>App信息请求处理类</p>
+ * <ul>
+ *      <li>环境变量</li>
+ *      <li>执行器统计</li>
+ *  </ul>
  * @author l.gong
  */
 public class ServerInfoCollectorVerticle extends AbstractVerticle {
@@ -40,25 +48,33 @@ public class ServerInfoCollectorVerticle extends AbstractVerticle {
     private final static String RESPONSE_RESULT_INFO_ENV = "env";
     private final static String RESPONSE_RESULT_INFO_CONFIG = "config";
 
+    /**
+     * Verticle初始化
+     * @throws Exception 任意异常发生时
+     */
     @Override
     public void start() throws Exception {
         super.start();
         EventBus bus = vertx.eventBus();
-        bus.consumer(REQ_GET_SERVER_INFO, this::handleGetServerInfo);
-        bus.consumer(REQ_EXEC_STATISTICS,  this::handleGetExecStatistics);
+        bus.consumer(API_GET_SERVER_INFO, this::handleGetServerInfo);
+        bus.consumer(API_EXEC_STATISTICS,  this::handleGetExecStatistics);
     }
 
+    /**
+     * Verticle结束
+     * @throws Exception 任意异常发生时
+     */
     @Override
     public void stop() throws Exception {
         super.stop();
     }
 
+    /**
+     * 获取环境统计
+     * @param msg 请求体
+     */
     private void handleGetServerInfo(Message<JsonObject> msg) {
-        logger.info("recv data->{}", msg.body().toString());
-        JsonObject result = new JsonObject();
         JsonObject resultBody = new JsonObject();
-        result.put(REQUEST_PARAM_REQ, msg.body().getString(REQUEST_PARAM_REQ));
-        result.put(RESPONSE_RESULT, resultBody);
 
         // get all environment variables
         JsonObject envVars = new JsonObject();
@@ -70,21 +86,29 @@ public class ServerInfoCollectorVerticle extends AbstractVerticle {
         config().getMap().forEach(cfgVars::put);
         resultBody.put(RESPONSE_RESULT_INFO_CONFIG, cfgVars);
 
-        msg.reply(result);
+        FacadeResponse response = FacadeResponse.ok(msg.body().getString(FACADE_MSG));
+        response.setData(resultBody);
+
+        msg.reply(response.toJsonObject());
     }
 
+    /**
+     * 获取执行器状态
+     * @param msg 请求体
+     */
     private void handleGetExecStatistics(Message<JsonObject> msg) {
         vertx.eventBus().request(MSG_EXEC_STATISTICS, new JsonObject(), (AsyncResult<Message<JsonObject>> res) -> {
-            JsonObject result = new JsonObject();
-            result.put(REQUEST_PARAM_REQ, msg.body().getString(REQUEST_PARAM_REQ));
             if (res.failed()) {
+                FacadeResponse response = FacadeResponse.ng(msg.body().getString(FACADE_MSG));
                 JsonObject errInfo = new JsonObject();
                 errInfo.put(RESPONSE_INFO, res.cause());
-                result.put(RESPONSE_ERROR, errInfo);
+                response.setData(errInfo);
+                msg.reply(response.toJsonObject());
             } else {
-                result.put(RESPONSE_RESULT, res.result().body());
+                FacadeResponse response = FacadeResponse.ok(msg.body().getString(FACADE_MSG));
+                response.setData(res.result().body());
+                msg.reply(response.toJsonObject());
             }
-            msg.reply(result);
         });
     }
 

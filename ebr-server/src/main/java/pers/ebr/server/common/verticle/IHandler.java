@@ -15,29 +15,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.server.common;
+package pers.ebr.server.common.verticle;
 
 /**
- * <p>
- * 定义应用内使用的常量
- * </p>
- * 
+ * <p>处理函数接口</p>
  * @author l.gong
  */
-public interface Const {
+@FunctionalInterface
+public interface IHandler<E> {
 
-    String ENV_EBR_ROOT = "EBR_ROOT";
-
-    /** Http请求响应参数 */
-    String REQUEST_FLOW_DEFINE = "flow_define";
-    String REQUEST_FLOW_ARRAY = "flow_array";
-    String RESPONSE_INFO = "info";
-
-    /** 内部消息参数 */
-    String MSG_PARAM_TASKFLOW_ID = "taskflow_id";
-    String MSG_PARAM_INSTANCE_ID = "instance_id";
-    String MSG_PARAM_TASK_PATH = "task_path";
-    String MSG_PARAM_TASK_STATE = "task_state";
-    String MSG_PARAM_TASKS = "tasks";
-
+    /**
+     * 处理函数
+     * @param context 请求上下文
+     * @return boolean true: 执行成功 false: 执行失败
+     * @throws Exception 任意异常发生时
+     */
+    boolean handle(E context) throws Exception;
 }

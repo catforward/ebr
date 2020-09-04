@@ -6,59 +6,59 @@
 
  /**
  * 获取服务器信息
- * 请求：{req: "req.GetServerInfo", param: {空参数}}
- * 正常响应：{req: "req.GetServerInfo", result: {config:{key-value数据}, env:{key-value数据}}}
+ * 请求：请求：{msg: "api.GetServerInfo", data: {空参数}}
+ * 正常响应：{msg: "api.GetServerInfo", code: 10000, ret: true, data: {config:{key-value数据}, env:{key-value数据}}}
  */
-const REQ_GET_SERVER_INFO = "req.GetServerInfo";
+const API_GET_SERVER_INFO = "api.GetServerInfo";
 
 /**
  * 服务器端验证taskflow的定义合法性
- * 请求：{req: "req.ValidateFlow", param: {taskflow的json定义体}}
- * 正常响应：{req: "req.ValidateFlow", result: {空数据 }}
- * 异常响应：{req: "req.ValidateFlow", error: {空数据 }}
+ * 请求：{msg: "api.ValidateFlow", data: { flow_define: {taskflow的json定义体}}}
+ * 正常响应：{msg: "api.ValidateFlow", code: 10000, ret: true, data: {空数据 }}
+ * 异常响应：{msg: "api.ValidateFlow", code: 10001, ret: false, data: {空数据 }}
  */
-const REQ_VALIDATE_FLOW = "req.ValidateFlow";
-
-/**
- * 保存taskflow定义
- * 请求：{req: "req.SaveFlow", param: {taskflow的json定义体}}
- * 正常响应：{req: "req.SaveFlow", result: {空数据 }}
- * 异常响应：{req: "req.SaveFlow", error: {空数据 }}
- */
-const REQ_SAVE_FLOW = "req.SaveFlow";
-
-/**
- * 获取所有taskflow的定义以及状态
- * 请求：{req: "req.AllFlow", param: {空参数}}
- * 正常响应：{req: "req.AllFlow", result: {["taskflow_id": value, "instance_id": value, "tasks": [task detail array]]}}
- * 异常响应：{req: "req.AllFlow", error: {空数据 }}
- */
-
-const REQ_ALL_FLOW = "req.AllFlow";
+const API_VALIDATE_FLOW = "api.ValidateFlow";
 
 /**
  * 获取taskflow运行状态概要
- * 请求：{req: "req.ExecStatistics", param: {空参数}}
- * 正常响应：{req: "req.ExecStatistics", result: {"complete":int,"failed":int,"active":int}}
- * 异常响应：{req: "req.ExecStatistics", error: {"info":string}}
+ * 请求：{msg: "api.ExecStatistics", data: {空参数}}
+ * 正常响应：{msg: "api.ExecStatistics", code: 10000, ret: true, data: {"complete":int,"failed":int,"active":int}}
+ * 异常响应：{msg: "api.ExecStatistics", code: 10001, ret: false, data: {"error":string}}
  */
-const REQ_EXEC_STATISTICS = "req.ExecStatistics";
+const API_EXEC_STATISTICS = "api.ExecStatistics";
 
 /**
- * 启动指定ID的taskflow
- * 请求：{req: "req.LaunchFlow", param: {"taskflow_id":string}}
- * 正常响应：{req: "req.LaunchFlow", result: {"info":string}}
- * 异常响应：{req: "req.LaunchFlow", error: {"info":string}}
+ * 保存taskflow定义
+ * 请求：{msg: "api.SaveFlow", data: {flow_define: {taskflow的json定义体}}}
+ * 正常响应：{msg: "api.SaveFlow", code: 10000, ret: true, data: {空数据 }}
+ * 异常响应：{msg: "api.SaveFlow", code: 10001, ret: false, data: {空数据 }}
  */
-const REQ_LAUNCH_FLOW = "req.LaunchFlow";
+const API_SAVE_FLOW = "api.SaveFlow";
 
 /**
  * 删除指定ID的taskflow
- * 请求：{req: "req.DeleteFlow", param: {"taskflow_id":string}}
- * 正常响应：{req: "req.DeleteFlow", result: {"info":string}}
- * 异常响应：{req: "req.DeleteFlow", error: {"info":string}}
+ * 请求：{msg: "api.DeleteFlow", data: {"taskflow_id":string}}
+ * 正常响应：{msg: "api.DeleteFlow", code: 10000, ret: true, data: {"info":string}}
+ * 异常响应：{msg: "api.DeleteFlow", code: 10001, ret: false, data: {"info":string}}
  */
-const REQ_DEL_FLOW = "req.DeleteFlow";
+const API_DELETE_FLOW = "api.DeleteFlow";
+
+/**
+ * 获取所有taskflow的定义以及状态
+ * 请求：{msg: "api.QueryAllFlow", data: {空参数}}
+ * 正常响应：{msg: "api.QueryAllFlow", code: 10000, ret: true, data: {flow_array : {["taskflow_id": value, "instance_id": value, "tasks": [task detail array]]}}}
+ * 异常响应：{msg: "api.QueryAllFlow", code: 10001, ret: false, data: {空数据 }}
+ */
+
+const API_QUERY_ALL_FLOW = "api.QueryAllFlow";
+
+/**
+ * 启动指定ID的taskflow
+ * 请求：{msg: "api.LaunchFlow", data: {"taskflow_id":string}}
+ * 正常响应：{msg: "api.LaunchFlow", code: 10000, ret: true, data: {"info":string}}
+ * 异常响应：{msg: "api.LaunchFlow", code: 10001, ret: false, data: {"info":string}}
+ */
+const API_LAUNCH_FLOW = "api.LaunchFlow";
 
 
 /*******************************************************************************************************
@@ -109,7 +109,7 @@ ebr.com = {
             alert("Error: [EmitQuery] request data can not be null or undefined...");
             return;
         }
-        ebr.com.postMsg({ req: topic, param: reqData}, ebr.resHandlerMap.get(topic));
+        ebr.com.postMsg({ msg: topic, data: reqData}, ebr.resHandlerMap.get(topic));
     },
 
     postMsg : function(jsonData, resHandler) {
@@ -139,12 +139,12 @@ ebr.sidebar.view = {
     Init : () => {
         $("#serverInfoPanelBtn").click(() => {
             ebr.sidebar.view.ShiftPanel("serverInfoPanel");
-            ebr.com.EmitQuery(REQ_GET_SERVER_INFO);
+            ebr.com.EmitQuery(API_GET_SERVER_INFO);
         });
         $("#flowStatusInfoPanelBtn").click(() => {
             ebr.sidebar.view.ShiftPanel("flowStatusInfoPanel");
-            ebr.com.EmitQuery(REQ_EXEC_STATISTICS);
-            ebr.com.EmitQuery(REQ_ALL_FLOW);
+            ebr.com.EmitQuery(API_EXEC_STATISTICS);
+            ebr.com.EmitQuery(API_QUERY_ALL_FLOW);
         });
         $("#flowDefineViewerPanelBtn").click(() => {
             ebr.sidebar.view.ShiftPanel("flowDefineViewerPanel");
@@ -174,8 +174,8 @@ ebr.state_viewer = {};
 ebr.state_viewer.view = {
     Init : () => {
         document.querySelector("#getAllFlowBtn").addEventListener("click", () => {
-            ebr.com.EmitQuery(REQ_EXEC_STATISTICS);
-            ebr.com.EmitQuery(REQ_ALL_FLOW);
+            ebr.com.EmitQuery(API_EXEC_STATISTICS);
+            ebr.com.EmitQuery(API_QUERY_ALL_FLOW);
         }, false);
     },
 
@@ -184,21 +184,22 @@ ebr.state_viewer.view = {
         let title = $(lnkObj).attr("title");
         sessionStorage.setItem(SSK_FLOW_ID, flow_id);
         if ("run" === title) {
-            ebr.com.EmitQuery(REQ_LAUNCH_FLOW);
+            ebr.com.EmitQuery(API_LAUNCH_FLOW);
         } else if ("log" === title) {
             // TODO
         } else if ("download" === title) {
             // TODO
         } else if ("delete" === title) {
-            ebr.com.EmitQuery(REQ_DEL_FLOW);
+            ebr.com.EmitQuery(API_DELETE_FLOW);
         }
     },
 
     AddFlowDetailView : (jsonResultData) => {
         // console.log(jsonResultData);
         $("#accordionFlowList").empty();
-        for (let i = 0; i < jsonResultData.length; i++) {
-            ebr.state_viewer.view.updateFlowStateList(jsonResultData[i]);
+        if (!jsonResultData.flow_array) { return; }
+        for (let i = 0; i < jsonResultData.flow_array.length; i++) {
+            ebr.state_viewer.view.updateFlowStateList(jsonResultData.flow_array[i]);
         }
     },
 
@@ -284,10 +285,10 @@ ebr.state_viewer.view = {
 ebr.state_viewer.ctl = {
     Init : () => {
         ebr.state_viewer.view.Init();
-        ebr.com.BindQuery(REQ_ALL_FLOW, ebr.state_viewer.ctl.GetAllFlowRequest, ebr.state_viewer.ctl.GetAllFlowResponse);
-        ebr.com.BindQuery(REQ_EXEC_STATISTICS, ebr.state_viewer.ctl.GetExecStatisticsRequest, ebr.state_viewer.ctl.GetExecStatisticsResponse);
-        ebr.com.BindQuery(REQ_LAUNCH_FLOW, ebr.state_viewer.ctl.LaunchFlowRequest, ebr.state_viewer.ctl.LaunchFlowResponse);
-        ebr.com.BindQuery(REQ_DEL_FLOW, ebr.state_viewer.ctl.DelFlowRequest, ebr.state_viewer.ctl.DelFlowResponse);
+        ebr.com.BindQuery(API_QUERY_ALL_FLOW, ebr.state_viewer.ctl.GetAllFlowRequest, ebr.state_viewer.ctl.GetAllFlowResponse);
+        ebr.com.BindQuery(API_EXEC_STATISTICS, ebr.state_viewer.ctl.GetExecStatisticsRequest, ebr.state_viewer.ctl.GetExecStatisticsResponse);
+        ebr.com.BindQuery(API_LAUNCH_FLOW, ebr.state_viewer.ctl.LaunchFlowRequest, ebr.state_viewer.ctl.LaunchFlowResponse);
+        ebr.com.BindQuery(API_DELETE_FLOW, ebr.state_viewer.ctl.DelFlowRequest, ebr.state_viewer.ctl.DelFlowResponse);
     },
 
     GetAllFlowRequest : function() {
@@ -295,8 +296,8 @@ ebr.state_viewer.ctl = {
     },
 
     GetAllFlowResponse : function(jsonData) {
-        if (typeof jsonData.result === "object" && jsonData.result !== null) {
-            ebr.state_viewer.view.AddFlowDetailView(jsonData.result);
+        if (typeof jsonData.ret === "boolean" && jsonData.ret) {
+            ebr.state_viewer.view.AddFlowDetailView(jsonData.data);
         }
     },
 
@@ -305,8 +306,8 @@ ebr.state_viewer.ctl = {
     },
 
     GetExecStatisticsResponse : function(jsonData) {
-        if (typeof jsonData.result === "object" && jsonData.result !== null) {
-            ebr.state_viewer.view.UpdateStatusNum(jsonData.result);
+        if (typeof jsonData.ret === "boolean" && jsonData.ret) {
+            ebr.state_viewer.view.UpdateStatusNum(jsonData.data);
         }
     },
 
@@ -317,10 +318,10 @@ ebr.state_viewer.ctl = {
     },
 
     LaunchFlowResponse : function(jsonData) {
-        if (typeof jsonData.result === "object" && jsonData.result !== null) {
+        if (typeof jsonData.ret === "boolean" && jsonData.ret) {
             alert("taskflow started");
-        } else if (typeof jsonData.result === "object" && jsonData.error !== null) {
-            alert("start a taskflow failed. info:[" + jsonData.error.info + "]");
+        } else if (typeof jsonData.ret === "boolean" && !jsonData.ret) {
+            alert("start a taskflow failed. info:[" + jsonData.data.info + "]");
         }
     },
 
@@ -332,11 +333,11 @@ ebr.state_viewer.ctl = {
 
     DelFlowResponse : function(jsonData) {
         console.log(jsonData)
-        if (typeof jsonData.result === "object" && jsonData.result !== null) {
-            ebr.com.EmitQuery(REQ_ALL_FLOW);
-            alert(jsonData.result.info);
-        } else if (typeof jsonData.result === "object" && jsonData.error !== null) {
-            alert("delete a taskflow failed. info:[" + jsonData.error.info + "]");
+        if (typeof jsonData.ret === "boolean" && jsonData.ret) {
+            ebr.com.EmitQuery(API_QUERY_ALL_FLOW);
+            alert(jsonData.data.info);
+        } else if (typeof jsonData.ret === "boolean" && !jsonData.ret) {
+            alert("delete a taskflow failed. info:[" + jsonData.data.info + "]");
         }
     },
 };
@@ -344,13 +345,13 @@ ebr.state_viewer.ctl = {
 /********************************************************************************************************
  * 定义浏览页面
  ********************************************************************************************************/
-ebr.define_viewer = {};
-ebr.define_viewer.view = {
+ebr.define_uploader = {};
+ebr.define_uploader.view = {
     Init: () => {
         // file selector
         $("#fileSelector").on("change", () => {
             let updFiles = document.getElementById("fileSelector").files;
-            ebr.define_viewer.ctl.saveJsonFileContent(updFiles[0]);
+            ebr.define_uploader.ctl.saveJsonFileContent(updFiles[0]);
         });
         // Setup the dnd listeners.
         let dropZone = document.getElementById("fileContent");
@@ -363,23 +364,23 @@ ebr.define_viewer.view = {
             e.stopPropagation();
             e.preventDefault();
             let updFiles = e.dataTransfer.files;
-            ebr.define_viewer.ctl.saveJsonFileContent(updFiles[0]);
+            ebr.define_uploader.ctl.saveJsonFileContent(updFiles[0]);
         }, false);
         let defineViewerPanel = document.getElementById("flowDefineViewerPanel");
         defineViewerPanel.addEventListener("fileStorageEvent", (e) => {
-            ebr.define_viewer.view.updateFlowDefineView(e.detail.fileName);
+            ebr.define_uploader.view.updateFlowDefineView(e.detail.fileName);
         });
         $("#fileSelectBtn").on("click", (e) => {
             document.getElementById('fileSelector').click();
         });
         $("#fileClearBtn").on("click", (e) => {
-            ebr.define_viewer.view.ClearJsonContent();
+            ebr.define_uploader.view.ClearJsonContent();
         });
         $("#fileValidateBtn").on("click", (e) => {
-            ebr.com.EmitQuery(REQ_VALIDATE_FLOW);
+            ebr.com.EmitQuery(API_VALIDATE_FLOW);
         });
         $("#fileSaveBtn").on("click", (e) => {
-            ebr.com.EmitQuery(REQ_SAVE_FLOW);
+            ebr.com.EmitQuery(API_SAVE_FLOW);
         });
     },
 
@@ -405,8 +406,8 @@ ebr.define_viewer.view = {
                     if (itemMap.has(taskContent.group)) {
                         groupId = taskContent.group;
                     }
-                    ebr.define_viewer.view.createTaskCardItem(taskKey, taskContent, groupId, itemMap);
-                    ebr.define_viewer.view.createTaskSrcItem(taskKey, taskContent, groupId, itemMap);
+                    ebr.define_uploader.view.createTaskCardItem(taskKey, taskContent, groupId, itemMap);
+                    ebr.define_uploader.view.createTaskSrcItem(taskKey, taskContent, groupId, itemMap);
                 };
             } catch(err) {
                 alert(err.name + " : " + err.message);
@@ -466,7 +467,7 @@ ebr.define_viewer.view = {
     },
 
     ClearJsonContent : function() {
-        let fileName = ebr.define_viewer.view.GetFlowDefineFileName();
+        let fileName = ebr.define_uploader.view.GetFlowDefineFileName();
         sessionStorage.removeItem(fileName);
         $("#fileNameLabel").empty();
         $("#lastModifiedDate").empty();
@@ -476,49 +477,45 @@ ebr.define_viewer.view = {
     },
 
 };
-ebr.define_viewer.ctl = {
+ebr.define_uploader.ctl = {
     Init : () => {
-        ebr.com.BindQuery(REQ_VALIDATE_FLOW, ebr.define_viewer.ctl.ValidateFlowRequest, ebr.define_viewer.ctl.ValidateFlowResponse);
-        ebr.com.BindQuery(REQ_SAVE_FLOW, ebr.define_viewer.ctl.SaveFlowRequest, ebr.define_viewer.ctl.SaveFlowResponse);
-        ebr.define_viewer.view.Init();
+        ebr.com.BindQuery(API_VALIDATE_FLOW, ebr.define_uploader.ctl.ValidateFlowRequest, ebr.define_uploader.ctl.ValidateFlowResponse);
+        ebr.com.BindQuery(API_SAVE_FLOW, ebr.define_uploader.ctl.SaveFlowRequest, ebr.define_uploader.ctl.SaveFlowResponse);
+        ebr.define_uploader.view.Init();
     },
 
     ValidateFlowRequest : function() {
-        let fileName = ebr.define_viewer.view.GetFlowDefineFileName();
+        let fileName = ebr.define_uploader.view.GetFlowDefineFileName();
         let strContent = sessionStorage.getItem(fileName);
         if (typeof strContent !== "string" || strContent.trim() === "") {
             return null;
         }
-        return JSON.parse(strContent);
+        return { flow_define : strContent };
     },
 
     ValidateFlowResponse : function(jsonData) {
-        let resultStr = "unknown result...";
-        if (typeof jsonData.result === "object") {
-            resultStr = "success...";
-        } else if (typeof jsonData.error === "object") {
-            resultStr = "failed...";
-        }
-        alert("validate result : " + resultStr);
+        if (typeof jsonData.ret !== "boolean") {
+            alert("validate result : unknown result...");
+        } else {
+            alert("validate result : " + (jsonData.ret ? "success..." : "failed..."));
+        }        
     },
 
     SaveFlowRequest : function() {
-        let fileName = ebr.define_viewer.view.GetFlowDefineFileName();
+        let fileName = ebr.define_uploader.view.GetFlowDefineFileName();
         let strContent = sessionStorage.getItem(fileName);
         if (typeof strContent !== "string" || strContent.trim() === "") {
             alert("Error: [SaveFlowRequest] The Content of JSON file is empty...");
         }
-        return JSON.parse(strContent);
+        return { flow_define : strContent };
     },
 
     SaveFlowResponse : function(jsonData) {
-        let resultStr = "unknown result...";
-        if (typeof jsonData.result === "object") {
-            resultStr = "success...";
-        } else if (typeof jsonData.error === "object") {
-            resultStr = "failed...";
+        if (typeof jsonData.ret === "boolean" && jsonData.ret) {
+            alert("save result : success...");
+        } else {
+            alert("save result : failed...");
         }
-        alert("save result : " + resultStr);
     },
 
     saveJsonFileContent : function(jsonFile) {
@@ -587,7 +584,7 @@ ebr.server_info.view = {
 };
 ebr.server_info.ctl = {
     Init : () => {
-        ebr.com.BindQuery(REQ_GET_SERVER_INFO, ebr.server_info.ctl.GetServerInfoRequest, ebr.server_info.ctl.GetServerInfoResponse);
+        ebr.com.BindQuery(API_GET_SERVER_INFO, ebr.server_info.ctl.GetServerInfoRequest, ebr.server_info.ctl.GetServerInfoResponse);
     },
 
     GetServerInfoRequest : function() {
@@ -595,8 +592,8 @@ ebr.server_info.ctl = {
     },
 
     GetServerInfoResponse : function(jsonData) {
-        if (typeof jsonData.result === "object" && jsonData.result !== null) {
-            ebr.server_info.view.AddServerInfoTableView(jsonData.result);
+        if (typeof jsonData.data === "object" && jsonData.data !== null) {
+            ebr.server_info.view.AddServerInfoTableView(jsonData.data);
         }
     },
 };
@@ -607,6 +604,6 @@ ebr.server_info.ctl = {
 (function() {
     ebr.sidebar.ctl.Init();
     ebr.state_viewer.ctl.Init();
-    ebr.define_viewer.ctl.Init();
+    ebr.define_uploader.ctl.Init();
     ebr.server_info.ctl.Init();
 })();

@@ -27,8 +27,8 @@ import pers.ebr.server.common.TaskState;
 import pers.ebr.server.common.repository.Repository;
 
 import static pers.ebr.server.common.Const.*;
-import static pers.ebr.server.common.Topic.MSG_TASK_STATE_CHANGED;
 import static pers.ebr.server.common.TaskState.UNKNOWN;
+import static pers.ebr.server.application.AppTopic.MSG_TASK_STATE_CHANGED;
 
 /**
  * The TaskStateSaverVerticle

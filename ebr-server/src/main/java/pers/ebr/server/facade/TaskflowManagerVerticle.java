@@ -17,123 +17,114 @@
  */
 package pers.ebr.server.facade;
 
-import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.EventBus;
-import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pers.ebr.server.common.repository.Repository;
+import pers.ebr.server.common.repository.RepositoryException;
+import pers.ebr.server.common.verticle.MulitFunctionalFacadeVerticle;
+import pers.ebr.server.common.verticle.FacadeContext;
 import pers.ebr.server.domain.ExternalCommandTaskflowView;
 
 import java.util.Collection;
-import java.util.Optional;
 
+import static pers.ebr.server.application.AppTopic.MSG_LAUNCH_FLOW;
 import static pers.ebr.server.common.Const.*;
-import static pers.ebr.server.common.Topic.*;
+import static pers.ebr.server.facade.FacadeTopic.API_QUERY_ALL_FLOW;
+import static pers.ebr.server.facade.FacadeTopic.API_LAUNCH_FLOW;
 
 /**
- * The ManageVerticle
- *
+ * <p>taskflow的管理请求处理类</p>
+ *  <ul>
+ *      <li>获取所有taskflow</li>
+ *      <li>启动指定的taskflow</li>
+ *      <li>停止指定的taskflow</li>
+ *  </ul>
  * @author l.gong
  */
-public class TaskflowManagerVerticle extends AbstractVerticle {
+public class TaskflowManagerVerticle extends MulitFunctionalFacadeVerticle {
     private final static Logger logger = LoggerFactory.getLogger(TaskflowManagerVerticle.class);
 
+    /**
+     * Verticle初始化
+     *
+     * @throws Exception 任意异常发生时
+     */
     @Override
-    public void start() throws Exception {
-        super.start();
-        EventBus bus = vertx.eventBus();
-        bus.consumer(REQ_ALL_FLOW, this::handleGetAllTaskflow);
-        bus.consumer(REQ_LAUNCH_FLOW, this::handleRunTaskflow);
+    protected void onStart() throws Exception {
+        subscribe(API_QUERY_ALL_FLOW, this::handleQueryAllTaskflow);
+        subscribe(API_LAUNCH_FLOW, this::handleLaunchTaskflow);
     }
 
+    /**
+     * Verticle结束
+     *
+     * @throws Exception 任意异常发生时
+     */
     @Override
-    public void stop() throws Exception {
-        super.stop();
+    protected void onStop() throws Exception {
+
     }
 
-    private void handleGetAllTaskflow(Message<JsonObject> msg) {
-        JsonObject result = new JsonObject();
-        result.put(REQUEST_PARAM_REQ, msg.body().getString(REQUEST_PARAM_REQ));
-        try {
-            Collection<ExternalCommandTaskflowView> flows = Repository.getDb().getAllTaskflowDetail();
-            if (!flows.isEmpty()) {
-                //updateWorkflowStatus(flows);
-                JsonArray array = new JsonArray();
-                flows.forEach(workflowView -> array.add(workflowView.toJsonObject()));
-                result.put(RESPONSE_RESULT, array);
-            } else {
-                result.put(RESPONSE_RESULT, new JsonObject());
-            }
-        } catch (Exception ex) {
-            logger.error("procedure [handleGetAllTaskFlow] error:", ex);
-            result.put(RESPONSE_ERROR, new JsonObject());
-        } finally {
-            msg.reply(result);
+    /**
+     * 获取所有taskflow定义
+     * @param ctx 请求上下文
+     * @return boolean true: 处理成功 false: 处理失败
+     * @throws RepositoryException 存储异常发生时
+     */
+    private boolean handleQueryAllTaskflow(FacadeContext ctx) throws RepositoryException {
+        Collection<ExternalCommandTaskflowView> flows = Repository.getDb().getAllTaskflowDetail();
+        if (!flows.isEmpty()) {
+            JsonArray array = new JsonArray();
+            flows.forEach(workflowView -> array.add(workflowView.toJsonObject()));
+            ctx.setResponseData(new JsonObject().put(REQUEST_FLOW_ARRAY, array));
+        } else {
+            ctx.setResponseData(new JsonObject());
         }
+        return true;
     }
 
-    private void handleRunTaskflow(Message<JsonObject> msg) {
-        JsonObject result = new JsonObject();
-        result.put(REQUEST_PARAM_REQ, msg.body().getString(REQUEST_PARAM_REQ));
-        try {
-            JsonObject reqBody = Optional.ofNullable(msg.body().getJsonObject(REQUEST_PARAM_PARAM)).orElse(new JsonObject());
-            String flowId = reqBody.getString(MSG_PARAM_TASKFLOW_ID, "");
+    /**
+     * 启动指定的taskflow
+     * @param ctx 请求上下文
+     * @return boolean true: 处理成功 false: 处理失败
+     * @throws RepositoryException 存储异常发生时
+     */
+    private boolean handleLaunchTaskflow(FacadeContext ctx) throws RepositoryException  {
+        String flowId = (String) ctx.getRequest().getData(MSG_PARAM_TASKFLOW_ID);
             // check
-            if (flowId.isBlank()) {
-                JsonObject errInfo = new JsonObject();
-                errInfo.put(RESPONSE_INFO, String.format("invalid workflow id: [%s]", flowId));
-                result.put(RESPONSE_ERROR, errInfo);
-                return;
-            }
-            String flowPath = String.format("/%s", flowId);
-            if (Repository.getPool().getRunningTaskflowByPath(flowPath) != null) {
-                JsonObject errInfo = new JsonObject();
-                errInfo.put(RESPONSE_INFO, String.format("workflow id: [%s] is already running", flowId));
-                result.put(RESPONSE_ERROR, errInfo);
-                return;
-            }
-            if (!Repository.getDb().isTaskflowExists(flowId)) {
-                JsonObject errInfo = new JsonObject();
-                errInfo.put(RESPONSE_INFO, String.format("define is not exists (id: [%s])", flowId));
-                result.put(RESPONSE_ERROR, errInfo);
-                return;
-            }
-
-            EventBus bus = vertx.eventBus();
-            JsonObject noticeParam = new JsonObject();
-            noticeParam.put(MSG_PARAM_TASKFLOW_ID, flowId);
-            bus.publish(MSG_LAUNCH_FLOW, noticeParam);
-
-            // response
-            JsonObject retInfo = new JsonObject();
-            retInfo.put(RESPONSE_INFO, String.format("task flow start. (id: [%s])", flowId));
-            result.put(RESPONSE_RESULT, retInfo);
-        } catch (Exception ex) {
-            logger.error("procedure [handleStartTask] error:", ex);
+        if (flowId == null || flowId.isBlank()) {
             JsonObject errInfo = new JsonObject();
-            errInfo.put(RESPONSE_INFO, ex.getMessage());
-            result.put(RESPONSE_ERROR, errInfo);
-        } finally {
-            msg.reply(result);
+            errInfo.put(RESPONSE_INFO, String.format("invalid workflow id: [%s]", flowId));
+            ctx.setResponseData(errInfo);
+            return false;
         }
-    }
+        String flowPath = String.format("/%s", flowId);
+        if (Repository.getPool().getRunningTaskflowByPath(flowPath) != null) {
+            JsonObject errInfo = new JsonObject();
+            errInfo.put(RESPONSE_INFO, String.format("workflow id: [%s] is already running", flowId));
+            ctx.setResponseData(errInfo);
+            return false;
+        }
+        if (!Repository.getDb().isTaskflowExists(flowId)) {
+            JsonObject errInfo = new JsonObject();
+            errInfo.put(RESPONSE_INFO, String.format("define is not exists (id: [%s])", flowId));
+            ctx.setResponseData(errInfo);
+            return false;
+        }
 
-//    private void updateTaskflowStatus(Collection<WorkflowView> flows) {
-//        for (var detail : flows) {
-//            IWorkflow runningFlow = Pool.get().getWorkflowByPath(detail.getRootView().getPath());
-//            if (runningFlow == null) {
-//                continue;
-//            }
-//            detail.getTasks().forEach(taskDetail -> {
-//                IExternalTask task = runningFlow.getTaskById(taskDetail.getId());
-//                if (task != null) {
-//                    taskDetail.setState(task.getState());
-//                }
-//            });
-//        }
-//    }
+        EventBus bus = vertx.eventBus();
+        JsonObject noticeParam = new JsonObject();
+        noticeParam.put(MSG_PARAM_TASKFLOW_ID, flowId);
+        bus.publish(MSG_LAUNCH_FLOW, noticeParam);
+
+        // response
+        JsonObject retInfo = new JsonObject();
+        retInfo.put(RESPONSE_INFO, String.format("task flow start. (id: [%s])", flowId));
+        ctx.setResponseData(retInfo);
+        return true;
+    }
 
 }

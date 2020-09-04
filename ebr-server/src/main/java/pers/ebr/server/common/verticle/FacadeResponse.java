@@ -15,12 +15,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.server.common;
+package pers.ebr.server.common.verticle;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import io.vertx.core.json.JsonObject;
+import pers.ebr.server.common.IObjectConverter;
+import pers.ebr.server.common.ResultEnum;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static pers.ebr.server.common.verticle.VerticleConst.*;
 
 /**
  * <p>
@@ -50,7 +55,7 @@ import java.util.Map;
  *
  * @author l.gong
  */
-public final class Result implements IObjectConverter {
+public final class FacadeResponse implements IObjectConverter {
     /** 响应是否成功 */
     private final Boolean ret;
     /** 响应状态码 */
@@ -58,43 +63,48 @@ public final class Result implements IObjectConverter {
     /** 响应信息(请求ID) */
     private final String msg;
     /** 响应结果数据 */
-    private Map<String, Object> data = new HashMap<>();
+    private JsonObject data = new JsonObject();
 
-    public Result(String message, Boolean success, Integer code) {
+    public FacadeResponse(String message, Boolean success, Integer code) {
         this.msg = message;
         this.ret = success;
         this.code = code;
     }
 
-    public Result(ResultEnum result) {
+    public FacadeResponse(ResultEnum result) {
         this.msg = result.getMessage();
         this.ret = result.getSuccess();
         this.code = result.getCode();
     }
 
-    public static Result ok(String message) {
-        return new Result(message,
+    public static FacadeResponse ok(String message) {
+        return new FacadeResponse(message,
                 ResultEnum.SUCCESS.getSuccess(),
                 ResultEnum.SUCCESS.getCode());
     }
 
-    public static Result ng(String message) {
-        return new Result(message,
+    public static FacadeResponse ng(String message) {
+        return new FacadeResponse(message,
                 ResultEnum.ERROR.getSuccess(),
                 ResultEnum.ERROR.getCode());
     }
 
-    public static Result of(ResultEnum result) {
-        return new Result(result);
+    public static FacadeResponse of(ResultEnum result) {
+        return new FacadeResponse(result);
     }
 
-    public Result data(Map<String,Object> map) {
-        this.data = map;
+    public FacadeResponse setData(Map<String,Object> map) {
+        map.forEach(this.data::put);
         return this;
     }
 
-    public Result data(String key,Object value) {
+    public FacadeResponse setData(String key, Object value) {
         this.data.put(key, value);
+        return this;
+    }
+
+    public FacadeResponse setData(JsonObject data) {
+        this.data.mergeIn(data);
         return this;
     }
 
@@ -106,10 +116,10 @@ public final class Result implements IObjectConverter {
     @Override
     public JsonObject toJsonObject() {
         JsonObject jsonObject = new JsonObject();
-        jsonObject.put("msg", msg);
-        jsonObject.put("ret", ret);
-        jsonObject.put("code", code);
-        jsonObject.put("data", data);
+        jsonObject.put(FACADE_MSG, msg);
+        jsonObject.put(FACADE_RESULT, ret);
+        jsonObject.put(FACADE_CODE, code);
+        jsonObject.put(FACADE_DATA, data);
         return jsonObject;
     }
 }

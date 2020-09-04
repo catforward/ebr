@@ -18,7 +18,7 @@
     <maven.compiler.target>${java.version}</maven.compiler.target>
     <sonar.java.binaries>${project.basedir}/target/classes</sonar.java.binaries>
     <ebr.main>pers.ebr.server.Main</ebr.main>
-    <vertx.version>3.9.1</vertx.version>
+    <vertx.version>3.9.2</vertx.version>
     <log4j2.version>2.13.3</log4j2.version>
     <sqlite-jdbc.version>3.32.3</sqlite-jdbc.version>
   </properties>

@@ -40,7 +40,7 @@ import static pers.ebr.server.common.Configs.KEY_EXECUTOR_MIN;
 import static pers.ebr.server.common.Const.*;
 import static pers.ebr.server.common.TaskState.*;
 import static pers.ebr.server.common.TaskType.GROUP;
-import static pers.ebr.server.common.Topic.*;
+import static pers.ebr.server.application.AppTopic.*;
 
 /**
  * The Runner Verticle

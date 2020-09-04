@@ -59,7 +59,7 @@ public class HttpServer extends AbstractVerticle {
         router.route().handler(BodyHandler.create());
         router.route().failureHandler(ErrorHandler.create());
         router.get(GET_REQ_ALL).handler(staticHandler);
-        router.post(PROC_URL).handler(new HttpReqDispatcher());
+        router.post(PROC_URL).handler(new HttpApiHandler());
 
         server.requestHandler(router::handle).listen(config.getInteger(KEY_HTTP_PORT), res -> {
             if (res.succeeded()) {

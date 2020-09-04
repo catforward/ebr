@@ -15,29 +15,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.ebr.server.common;
+package pers.ebr.server.common.verticle;
 
 /**
  * <p>
- * 定义应用内使用的常量
+ *   基础Verticle
  * </p>
- * 
+ *
  * @author l.gong
  */
-public interface Const {
-
-    String ENV_EBR_ROOT = "EBR_ROOT";
+public interface VerticleConst {
 
     /** Http请求响应参数 */
-    String REQUEST_FLOW_DEFINE = "flow_define";
-    String REQUEST_FLOW_ARRAY = "flow_array";
-    String RESPONSE_INFO = "info";
-
-    /** 内部消息参数 */
-    String MSG_PARAM_TASKFLOW_ID = "taskflow_id";
-    String MSG_PARAM_INSTANCE_ID = "instance_id";
-    String MSG_PARAM_TASK_PATH = "task_path";
-    String MSG_PARAM_TASK_STATE = "task_state";
-    String MSG_PARAM_TASKS = "tasks";
+    String FACADE_MSG = "msg";
+    String FACADE_DATA = "data";
+    String FACADE_RESULT = "ret";
+    String FACADE_CODE = "code";
+    String FACADE_ERROR_MSG = "error";
 
 }
