@@ -1,31 +1,123 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
-  
-    <groupId>tsm</groupId>
-    <artifactId>ebr</artifactId>
-    <version>3</version>
-    <packaging>pom</packaging>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
 
-    <name>EBR</name>
-    <description>External Batch Runner</description>
-    <url>https://github.com/catforward/ebr</url>
-    <licenses>
+	<groupId>pers.tsm</groupId>
+	<artifactId>ebr</artifactId>
+	<version>4</version>
+	<packaging>jar</packaging>
+
+	<name>EBR</name>
+	<description>External Batch Runner</description>
+	<url>https://github.com/catforward/ebr</url>
+	<licenses>
         <license>
             <name>Apache License, Version 2.0</name>
             <url>http://www.apache.org/licenses/LICENSE-2.0</url>
         </license>
     </licenses>
-    <scm>
+	<scm>
         <url>https://github.com/catforward/ebr</url>
         <connection>https://github.com/catforward/ebr.git</connection>
     </scm>
 
-    <modules>
-        <module>ebr-cli</module>
-        <module>ebr-server</module>
-    </modules>
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+		<java.version>11</java.version>
+		<maven.compiler.source>${java.version}</maven.compiler.source>
+		<maven.compiler.target>${java.version}</maven.compiler.target>
+		<sonar.java.binaries>${project.basedir}/target/classes</sonar.java.binaries>
+		<ebr.main>pers.tsm.ebr.AppMain</ebr.main>
+		<vertx.version>4.1.0</vertx.version>
+		<log4j2.version>2.14.1</log4j2.version>
+	</properties>
 
-    <dependencies>
-    </dependencies>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>io.vertx</groupId>
+				<artifactId>vertx-dependencies</artifactId>
+				<version>${vertx.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
+	<dependencies>
+		<dependency>
+			<groupId>io.vertx</groupId>
+			<artifactId>vertx-web</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-core</artifactId>
+			<version>${log4j2.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-slf4j-impl</artifactId>
+			<version>${log4j2.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.13.1</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+	<build>
+		<resources>
+			<resource>
+				<directory>${project.basedir}/src/main/resources</directory>
+			</resource>
+		</resources>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-shade-plugin</artifactId>
+				<version>3.2.0</version>
+				<configuration>
+					<createDependencyReducedPom>false</createDependencyReducedPom>
+				</configuration>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>shade</goal>
+						</goals>
+						<configuration>
+							<outputFile>${project.basedir}/dist/lib/${project.artifactId}.jar</outputFile>
+							<minimizeJar>false</minimizeJar>
+							<transformers>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+									<manifestEntries>
+										<Main-Class>${ebr.main}</Main-Class>
+										<!--<Main-Class>io.vertx.core.Launcher</Main-Class> <Main-Verticle>${verticle.main}</Main-Verticle> -->
+									</manifestEntries>
+								</transformer>
+								<transformer
+									implementation="org.apache.maven.plugins.shade.resource.AppendingTransformer">
+									<resource>META-INF/services/io.vertx.core.spi.VerticleFactory</resource>
+								</transformer>
+							</transformers>
+							<artifactSet>
+								<excludes>
+									<exclude>classworlds:classworlds</exclude>
+									<exclude>junit:junit</exclude>
+									<exclude>*Test</exclude>
+									<exclude>jmock:*</exclude>
+									<exclude>*:xml-apis</exclude>
+									<exclude>org.apache.maven:lib:tests</exclude>
+								</excludes>
+							</artifactSet>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
 </project>

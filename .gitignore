@@ -15,3 +15,4 @@ ebr-server/target/
 ebr.iml
 ebr-cli/ebr-cli.iml
 ebr-server/ebr-server.iml
+/target/
