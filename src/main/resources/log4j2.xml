@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="OFF" name="EBR-Server" packages="pers.tsm.ebr">
+    <!-- All < Trace < Debug < Info < Warn < Error < Fatal < OFF -->
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <ThresholdFilter level="ALL"/>
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} - %msg%n"/>
+        </Console>
+        <RollingFile name="RollingFileInfo" fileName="${env:EBR_ROOT}/logs/info.log"
+                     filePattern="${env:EBR_ROOT}/logs/%d{yyyy-MM-dd}/info_%d{yyyy-MM-dd}_%i.log">
+            <Filters>
+                <!--只接受TRACE, DEBUG, INFO级别的日志，其余的全部拒绝处理-->
+                <ThresholdFilter level="TRACE"/>
+                <ThresholdFilter level="WARN" onMatch="DENY" onMismatch="NEUTRAL"/>
+            </Filters>
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss:SSS}] [%p] - %l - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+                <SizeBasedTriggeringPolicy size="10MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="32"/>
+        </RollingFile>
+        <RollingFile name="RollingFileError" fileName="${env:EBR_ROOT}/logs/error.log"
+                     filePattern="${env:EBR_ROOT}/logs/%d{yyyy-MM-dd}/error_%d{yyyy-MM-dd}_%i.log">
+            <!--WARN, ERROR, FATAL级别的日志-->
+            <ThresholdFilter level="WARN"/>
+            <PatternLayout pattern="[%d{yyyy-MM-dd HH:mm:ss:SSS}] [%p] - %l - %m%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+                <SizeBasedTriggeringPolicy size="10MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="32"/>
+        </RollingFile>
+    </Appenders>
+    <Loggers>
+        <Root level="all">
+            <AppenderRef ref="Console"/>
+            <AppenderRef ref="RollingFileInfo"/>
+            <AppenderRef ref="RollingFileError"/>
+        </Root>
+    </Loggers>
+</Configuration>

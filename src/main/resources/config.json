@@ -1,0 +1,22 @@
+{
+    "vertx": {
+      "eventLoopPoolSize": 2,
+      "workerPoolSize": 20,
+      "blockedThreadCheckInterval": 999999999,
+      "maxEventLoopExecuteTime": 999999999,
+      "maxWorkerExecuteTime": 999999999,
+      "eventBusOptions": {
+        "connectTimeout": 1800000
+      }
+    },
+    
+    "http": {
+      "address": "0.0.0.0",
+      "port": 8088,
+      "contextPath": "/ebr"
+    },
+    
+    "server": {
+    	"fsDataCheckInterval" : 5
+    }
+}

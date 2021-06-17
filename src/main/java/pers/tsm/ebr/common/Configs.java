@@ -33,12 +33,12 @@ import io.vertx.core.json.JsonObject;
  * @author l.gong
  */
 public final class Configs {
-	private final static Logger logger = LoggerFactory.getLogger(Configs.class);
-	
+	private static final Logger logger = LoggerFactory.getLogger(Configs.class);
+	private static final String CONFIG_FILE = "/config.json";
 	private final JsonObject config = new JsonObject();
 
 	private static class InstanceHolder {
-        private final static Configs INSTANCE = new Configs();
+        private static final Configs INSTANCE = new Configs();
     }
 
     private Configs() {}
@@ -50,8 +50,17 @@ public final class Configs {
      */
     public static void load() throws IOException, URISyntaxException {
         InstanceHolder.INSTANCE.loadConfigFile();
-        logger.info("the config info -> {}", InstanceHolder.INSTANCE.config.encode());
-        System.out.println("Load Configuration ........... DONE");
+        if (InstanceHolder.INSTANCE.config.isEmpty()) {
+        	throw new AppException("config.json --> empty");
+        }
+        logger.debug("config info -> {}", InstanceHolder.INSTANCE.config.encodePrettily());
+        logger.info("Load Configuration ........... DONE");
+    }
+    
+    public static void release() {
+    	if (!InstanceHolder.INSTANCE.config.isEmpty()) {
+    		InstanceHolder.INSTANCE.config.clear();
+        }
     }
 
     /**
@@ -69,8 +78,8 @@ public final class Configs {
      * @throws URISyntaxException 获取配置文件URI资源失败时
      */
     private void loadConfigFile() throws IOException, URISyntaxException {
-        URI innerConfigFile = getClass().getResource("/config.json").toURI();
-        JsonObject tmp = new JsonObject(Files.readString(java.nio.file.Paths.get(innerConfigFile)));
-        tmp.mergeIn(config);
+        URI innerConfigFile = getClass().getResource(CONFIG_FILE).toURI();
+        JsonObject tmpConfig = new JsonObject(Files.readString(java.nio.file.Paths.get(innerConfigFile)));
+        config.mergeIn(tmpConfig);
     }
 }

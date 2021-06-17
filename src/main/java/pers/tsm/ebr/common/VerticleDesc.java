@@ -17,13 +17,38 @@
  */
 package pers.tsm.ebr.common;
 
+import java.util.function.Supplier;
+
+import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Verticle;
+
+import static java.util.Objects.requireNonNull;
+
 /**
  *
  *
  * @author l.gong
  */
-public interface Const {
-	
-	String ENV_EBR_ROOT = "EBR_ROOT";
+public class VerticleDesc {
+	private final Supplier<Verticle> verticle;
+    private DeploymentOptions options;
 
+    VerticleDesc(Supplier<Verticle> verticle, DeploymentOptions options) {
+        requireNonNull(verticle);
+        requireNonNull(options);
+        this.verticle = verticle;
+        this.options = options;
+    }
+
+    public Supplier<Verticle> getVerticle() {
+        return verticle;
+    }
+
+    public DeploymentOptions getOptions() {
+        return options;
+    }
+
+    public void setOptions(DeploymentOptions options) {
+        this.options = options;
+    }
 }

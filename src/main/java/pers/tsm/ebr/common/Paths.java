@@ -24,7 +24,8 @@ import java.nio.charset.StandardCharsets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static pers.tsm.ebr.common.Const.ENV_EBR_ROOT;
+import static java.util.Objects.isNull;
+import static pers.tsm.ebr.common.Symbols.ENV_EBR_ROOT;
 
 /**
  * <pre>
@@ -45,14 +46,14 @@ import static pers.tsm.ebr.common.Const.ENV_EBR_ROOT;
  * @author l.gong
  */
 public final class Paths {
-	private final static Logger logger = LoggerFactory.getLogger(Paths.class);
+	private static final Logger logger = LoggerFactory.getLogger(Paths.class);
 
     private final String rootPath;
     private final String logsPath;
     private final String dataPath;
 
     private static class PathHolder {
-        private final static Paths INSTANCE = new Paths();
+        private static final Paths INSTANCE = new Paths();
     }
 
     private Paths() {
@@ -62,17 +63,16 @@ public final class Paths {
     }
 
     private String initRootPath() {
-        String rawPath = "";
+        String rawPath = null;
         try {
             rawPath = System.getenv(ENV_EBR_ROOT);
         } catch (Exception ex) {
             logger.debug("Failed to get the environment parameter: {}", ENV_EBR_ROOT, ex);
         }
-        if (rawPath == null || rawPath.isBlank()) {
+        if (isNull(rawPath) || rawPath.isBlank()) {
             rawPath = URLDecoder.decode(Paths.class.getProtectionDomain()
                                 .getCodeSource().getLocation().getPath(), StandardCharsets.UTF_8);
-            File jarFile = new File(rawPath);
-            rawPath = URLDecoder.decode(jarFile.getParentFile()
+            rawPath = URLDecoder.decode(new File(rawPath).getParentFile()
                                 .getParentFile().getAbsolutePath(), StandardCharsets.UTF_8);
         }
         return rawPath;
