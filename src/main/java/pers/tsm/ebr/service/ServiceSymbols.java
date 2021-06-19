@@ -28,7 +28,12 @@ public final class ServiceSymbols {
 	
 	private ServiceSymbols() {}
 
-	public static final String URL_TASKS_INFO = BASE_URL + "/api/tasks";
-	public static final String SERVICE_TASKS_INFO = "service.tasks.info";
-
+	public static final String URL_INFO_FLOWS = BASE_URL + "/api/flows";
+	public static final String SERVICE_INFO_FLOWS = "service.info.flows";
+	
+	public static final String URL_INFO_FLOW = BASE_URL + "/api/flow";
+	public static final String SERVICE_INFO_FLOW = "service.info.flow";
+	
+	public static final String MSG_REFRESH_FS_TASK_DEFINE = "msg.refresh.fs.task.define";
+	
 }

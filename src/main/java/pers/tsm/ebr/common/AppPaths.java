@@ -45,18 +45,18 @@ import static pers.tsm.ebr.common.Symbols.ENV_EBR_ROOT;
  *
  * @author l.gong
  */
-public final class Paths {
-	private static final Logger logger = LoggerFactory.getLogger(Paths.class);
+public final class AppPaths {
+	private static final Logger logger = LoggerFactory.getLogger(AppPaths.class);
 
     private final String rootPath;
     private final String logsPath;
     private final String dataPath;
 
-    private static class PathHolder {
-        private static final Paths INSTANCE = new Paths();
+    private static class InstanceHolder {
+        private static final AppPaths INSTANCE = new AppPaths();
     }
 
-    private Paths() {
+    private AppPaths() {
         rootPath = initRootPath();
         logsPath = String.format("%s%s%s", rootPath, File.separator, "logs");
         dataPath = String.format("%s%s%s", rootPath, File.separator, "data");
@@ -70,7 +70,7 @@ public final class Paths {
             logger.debug("Failed to get the environment parameter: {}", ENV_EBR_ROOT, ex);
         }
         if (isNull(rawPath) || rawPath.isBlank()) {
-            rawPath = URLDecoder.decode(Paths.class.getProtectionDomain()
+            rawPath = URLDecoder.decode(AppPaths.class.getProtectionDomain()
                                 .getCodeSource().getLocation().getPath(), StandardCharsets.UTF_8);
             rawPath = URLDecoder.decode(new File(rawPath).getParentFile()
                                 .getParentFile().getAbsolutePath(), StandardCharsets.UTF_8);
@@ -86,7 +86,7 @@ public final class Paths {
      * @return String The path
      */
     public static String getDataPath() {
-        return PathHolder.INSTANCE.dataPath;
+        return InstanceHolder.INSTANCE.dataPath;
     }
 
     /**
@@ -97,7 +97,7 @@ public final class Paths {
      * @return String The path
      */
     public static String getLogsPath() {
-        return PathHolder.INSTANCE.logsPath;
+        return InstanceHolder.INSTANCE.logsPath;
     }
 
     /**
@@ -108,6 +108,6 @@ public final class Paths {
      * @return String The path
      */
     public static String getRootPath() {
-        return PathHolder.INSTANCE.rootPath;
+        return InstanceHolder.INSTANCE.rootPath;
     }
 }

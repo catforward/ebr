@@ -15,10 +15,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.tsm.ebr.common;
+package pers.tsm.ebr.service;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import pers.tsm.ebr.common.IResult;
 
 import static pers.tsm.ebr.common.Symbols.*;
 
@@ -28,11 +29,8 @@ import static pers.tsm.ebr.common.Symbols.*;
  * @author l.gong
  */
 public class ServiceResultMsg {
-	/** 返回码 */
     private String code;
-    /** 响应信息(请求ID) */
     private String message;
-    /** 响应结果数据 */
     private JsonObject data = new JsonObject();
 
     public ServiceResultMsg(IResult result) {

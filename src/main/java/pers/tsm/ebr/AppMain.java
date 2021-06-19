@@ -30,6 +30,7 @@ import pers.tsm.ebr.service.WebApiServer;
 import static java.util.Objects.isNull;
 
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -38,7 +39,14 @@ import java.util.concurrent.CountDownLatch;
  */
 public final class AppMain {
 	private static final Logger logger = LoggerFactory.getLogger(AppMain.class);
-    private Vertx vertx;
+	
+	private static final String MAJOR = "4";
+    private static final String MINOR = "0";
+    private static final String PATCH = "0";
+    private static final String PHASE = "alpha";
+    public static final String VERSION = MAJOR + "." + MINOR + "." + PATCH + "-" + PHASE;
+    
+	private Vertx vertx;
 
 	/**
 	 * @param args
@@ -46,50 +54,65 @@ public final class AppMain {
 	public static void main(String[] args) {
 		new AppMain().launch();
 	}
-	
+
 	void launch() {
 		try {
 			Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                try { onShutdown(); } catch (Exception ex) {
-                    logger.error("unknown error occurred!", ex);
-                }
-            }));
-			
+				try {
+					onShutdown();
+				} catch (Exception ex) {
+					logger.error("unknown error occurred!", ex);
+				}
+			}));
+
 			Configs.load();
 			JsonObject config = Configs.get();
 			vertx = Vertx.vertx(new VertxOptions(config.getJsonObject("vertx")));
-			Deployer.collect()
-			.compose(v -> Deployer.deploy(vertx, config.getJsonObject("server")))
+			Deployer.collect(config.getJsonObject("service"))
+			.compose(serviceConfig -> Deployer.deploy(vertx, serviceConfig))
 			.onSuccess(ar -> {
 				logger.info("All Vertical deploy done.");
-				vertx.deployVerticle(WebApiServer::new,
-						new DeploymentOptions().setConfig(config.getJsonObject("http")))
-				.onSuccess(ar2 -> logger.info(Logo.print()))
-				.onFailure(ex2 -> {
-					logger.error("WebApiServer deploy failed...", ex2);
-					System.exit(1);
-				});
+				vertx.deployVerticle(WebApiServer::new, new DeploymentOptions().setConfig(config.getJsonObject("http")))
+				.onSuccess(str -> logger.info(printLogo()))
+				.onFailure(ex -> System.exit(1));
 			}).onFailure(ex -> {
 				logger.error("Vertical deploy failed...", ex);
-                System.exit(1);
+				System.exit(1);
 			});
 		} catch (Exception ex) {
 			logger.error("application error occurred!", ex);
-            System.exit(1);
+			System.exit(1);
+		}
+	}
+
+	void onShutdown() throws InterruptedException {
+		Configs.release();
+		if (isNull(vertx)) {
+			return;
+		}
+		logger.info("start stop vertx");
+		CountDownLatch countDownLatch = new CountDownLatch(1);
+		vertx.close(ar -> countDownLatch.countDown());
+		if(countDownLatch.await(10, TimeUnit.SECONDS)) {
+			logger.info("stop vertx success");
 		}
 	}
 	
-	void onShutdown() {
-        Configs.release();
-        if (isNull(vertx)) return;
-        logger.info("start stop vertx");
-        CountDownLatch countDownLatch = new CountDownLatch(1);
-        vertx.close(res -> {
-        	countDownLatch.countDown();
-        	if (countDownLatch.getCount() == 0) {
-        		logger.info("stop vertx success");
-        	}
-        });
+	String printLogo() {
+        StringBuilder buf = new StringBuilder();
+        buf.append("\n");
+        buf.append("**********************************\n");
+        buf.append("*                                *\n");
+        buf.append("*    ███████╗██████╗ ██████╗     *\n");
+        buf.append("*    ██╔════╝██╔══██╗██╔══██╗    *\n");
+        buf.append("*    █████╗  ██████╔╝██████╔╝    *\n");
+        buf.append("*    ██╔══╝  ██╔══██╗██╔══██╗    *\n");
+        buf.append("*    ███████╗██████╔╝██║  ██║    *\n");
+        buf.append("*    ╚══════╝╚═════╝ ╚═╝  ╚═╝    *\n");
+        buf.append("*                                *\n");
+        buf.append("*        Ver:").append(AppMain.VERSION).append("         *\n");
+        buf.append("**********************************\n");
+        return buf.toString();
     }
 
 }

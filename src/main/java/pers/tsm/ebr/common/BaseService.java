@@ -25,9 +25,11 @@ import io.vertx.core.Future;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import pers.tsm.ebr.service.ServiceResultMsg;
 import pers.tsm.ebr.types.ServiceResultEnum;
 
 import static java.util.Objects.isNull;
+import static java.util.Objects.requireNonNull;
 import static pers.tsm.ebr.common.Symbols.*;
 
 /**
@@ -59,6 +61,7 @@ public abstract class BaseService extends AbstractVerticle {
      * @param serviceId 服务ID
      */
     protected void registerService(String serviceId) {
+		requireNonNull(serviceId);
         vertx.eventBus().consumer(serviceId, this::handleServiceEvent);
     }
 
@@ -67,7 +70,13 @@ public abstract class BaseService extends AbstractVerticle {
      * @param requestId 服务ID
      */
     protected void registerRequest(String requestId) {
+		requireNonNull(requestId);
         vertx.eventBus().consumer(requestId, this::handleRequestEvent);
+    }
+    
+    protected void registerMsg(String msgId) {
+		requireNonNull(msgId);
+    	vertx.eventBus().consumer(msgId, this::handleMsgEvent);
     }
 
     /**
@@ -142,9 +151,9 @@ public abstract class BaseService extends AbstractVerticle {
             .compose(ret -> doRequest())
             .onSuccess(ret -> makeReplyMsg(msg, ret))
             .onFailure(ex -> {
-               if (ex instanceof ServiceException) {
+               if (ex instanceof AppException) {
                    logger.debug("服务处理失败", ex.getCause());
-                   ServiceException se = (ServiceException) ex;
+                   AppException se = (AppException) ex;
                    msg.reply(new ServiceResultMsg(se.getReason()).toJsonObject());
                } else {
                    // 其他未知异常
@@ -182,9 +191,9 @@ public abstract class BaseService extends AbstractVerticle {
             .compose(ret -> doService())
             .onSuccess(ret -> makeReplyMsg(msg, ret))
             .onFailure(ex -> {
-                if (ex instanceof ServiceException) {
+                if (ex instanceof AppException) {
                     logger.debug("服务处理失败", ex.getCause());
-                    ServiceException se = (ServiceException) ex;
+                    AppException se = (AppException) ex;
                     msg.reply(new ServiceResultMsg(se.getReason()).toJsonObject());
                 } else {
                     // 其他未知异常
@@ -198,6 +207,34 @@ public abstract class BaseService extends AbstractVerticle {
             msg.reply(new ServiceResultMsg(ServiceResultEnum.HTTP_500).toJsonObject());
         }
     }
+    
+    protected Future<IResult> doMsg() {
+        return Future.future(promise -> promise.complete(ServiceResultEnum.NORMAL));
+    }
+    
+    protected void handleMsgEvent(Message<JsonObject> msg) {
+    	try {
+            // 获取请求体
+            inData = msg.body();
+            outData = new JsonObject();
+
+            doMsg().onFailure(ex -> {
+                if (ex instanceof AppException) {
+                    logger.debug("服务处理失败", ex.getCause());
+                    AppException se = (AppException) ex;
+                    msg.reply(new ServiceResultMsg(se.getReason()).toJsonObject());
+                } else {
+                    // 其他未知异常
+                    logger.error("服务处理，未知异常", ex);
+                    msg.reply(new ServiceResultMsg(ServiceResultEnum.ERROR).toJsonObject());
+                }
+            });
+        } catch (Exception ex) {
+            logger.error("未知异常", ex);
+            // 内部未处理的异常
+            msg.reply(new ServiceResultMsg(ServiceResultEnum.ERROR).toJsonObject());
+        }
+    }
 
     private Future<Void> makeReplyMsg(Message<JsonObject> msg, IResult ret) {
         return Future.future(promise -> {
@@ -207,7 +244,7 @@ public abstract class BaseService extends AbstractVerticle {
         });
     }
 
-    protected void pubMsg(String nsg, JsonObject param) {
-        vertx.eventBus().publish(nsg, param);
+    protected void pubMsg(String msg, JsonObject param) {
+        vertx.eventBus().publish(msg, param);
     }
 }

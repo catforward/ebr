@@ -15,8 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.tsm.ebr.common;
+package pers.tsm.ebr.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import io.vertx.core.Future;
+import pers.tsm.ebr.common.BaseService;
+import pers.tsm.ebr.common.IResult;
 import pers.tsm.ebr.types.ServiceResultEnum;
 
 /**
@@ -24,31 +30,27 @@ import pers.tsm.ebr.types.ServiceResultEnum;
  *
  * @author l.gong
  */
-public final class AppException extends RuntimeException {
-	private static final long serialVersionUID = -2319024343224680740L;
-	private final transient IResult reason;
+public class TaskFlowListService extends BaseService {
+    private static final Logger logger = LoggerFactory.getLogger(TaskFlowListService.class);
 	
-	public AppException(String msg) {
-		super(msg);
-		reason = ServiceResultEnum.ERROR;
+	@Override
+    public void start() throws Exception {
+        super.start();
+        registerService(ServiceSymbols.SERVICE_INFO_FLOWS);
+    }
+
+	@Override
+	protected String getServiceName() {
+		return TaskFlowListService.class.getName();
 	}
 	
-	public AppException(String msg, Throwable cause) {
-		super(msg, cause);
-		reason = ServiceResultEnum.ERROR;
+	@Override
+    protected Future<IResult> doService() {
+        logger.trace("doService -> {}", inData);
+        return Future.future(promise -> {
+        	// TODO
+        	promise.complete(ServiceResultEnum.NORMAL);
+        });
 	}
 
-    public AppException(IResult result) {
-        super(result.getMessage());
-        reason = result;
-    }
-
-    public AppException(IResult result, Throwable cause) {
-        super(cause);
-        reason = result;
-    }
-
-    public IResult getReason() {
-        return reason;
-    }
 }

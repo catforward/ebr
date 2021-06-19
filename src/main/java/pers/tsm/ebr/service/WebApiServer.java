@@ -26,13 +26,16 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.ErrorHandler;
+import io.vertx.ext.web.handler.FaviconHandler;
 import io.vertx.ext.web.handler.SessionHandler;
+import io.vertx.ext.web.handler.StaticHandler;
 import io.vertx.ext.web.sstore.LocalSessionStore;
-import pers.tsm.ebr.VerInfo;
+import pers.tsm.ebr.AppMain;
 import pers.tsm.ebr.common.AppContext;
 import pers.tsm.ebr.common.BaseHandler;
 
 import static java.util.Objects.isNull;
+import static pers.tsm.ebr.common.Symbols.*;
 
 import java.util.Map;
 
@@ -44,6 +47,11 @@ import java.util.Map;
 public class WebApiServer extends AbstractVerticle {
 	private static final Logger logger = LoggerFactory.getLogger(WebApiServer.class);
     private HttpServer server;
+    
+    private static final String WEB_ROOT = "static";
+    private static final String INDEX_HTML = "index.html";
+    private static final String FAVICON = "/favicon.ico";
+    private static final String HTTP_GET_ALL = BASE_URL + "/*";
 
     @Override
     public void start() throws Exception {
@@ -67,18 +75,26 @@ public class WebApiServer extends AbstractVerticle {
         // default handler
         router.route().handler(BodyHandler.create());
         router.route().failureHandler(ErrorHandler.create(vertx));
-        // root path
-        // 默认行为：返回版本号
-        router.route("/ebr/api").handler(context ->
-            context.response().end(new JsonObject().put("version", VerInfo.VERSION).encodePrettily())
+        router.route(FAVICON).handler(FaviconHandler.create(vertx));
+        router.get(HTTP_GET_ALL).handler(StaticHandler.create()
+        		.setWebRoot(WEB_ROOT)
+        		.setIndexPage(INDEX_HTML)
+                .setAlwaysAsyncFS(true)
+                .setFilesReadOnly(true)
+                .setCachingEnabled(true)
+                .setDirectoryListing(false)
+                .setIncludeHidden(false)
+                .setEnableFSTuning(true));
+        // api
+        router.route(BASE_URL + "/api").handler(context ->
+            context.response().end(new JsonObject().put("version", AppMain.VERSION).encodePrettily())
         );
+        Map<String, String> mapping = AppContext.getApiServiceMapping();
+        mapping.forEach((apiUrl, serviceId) -> router.post(apiUrl).handler(new BaseHandler(serviceId)));
 
-        initRouterEx(router);
-
+        // server
         String host = config().getString("address", "localhost");
         int port = config().getInteger("port", 8081);
-
-        // create http server
         return vertx.createHttpServer().requestHandler(router).listen(port, host, ar -> {
             if (ar.succeeded()) {
                 logger.info("EBR Web Api Server is running on port: {} ", port);
@@ -87,9 +103,5 @@ public class WebApiServer extends AbstractVerticle {
             }
         });
     }
-
-    private void initRouterEx(Router router) {
-        Map<String, String> mapping = AppContext.getApiServiceMapping();
-        mapping.forEach((apiUrl, serviceId) -> router.post(apiUrl).handler(new BaseHandler(serviceId)));
-    }
+    
 }

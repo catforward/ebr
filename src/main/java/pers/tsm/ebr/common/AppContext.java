@@ -35,7 +35,7 @@ import static java.util.Objects.requireNonNull;
  */
 public final class AppContext {
 	
-	private final List<VerticleDesc> verticleDescList = new CopyOnWriteArrayList<>();
+	private final List<VerticleProp> verticleDescList = new CopyOnWriteArrayList<>();
 	/**
      * key: api url
      * value: service id
@@ -57,14 +57,14 @@ public final class AppContext {
 	public static void addVerticle(Supplier<Verticle> verticle, DeploymentOptions options) {
 		requireNonNull(verticle);
 		requireNonNull(options);
-		InstanceHolder.INSTANCE.verticleDescList.add(new VerticleDesc(verticle, options));
+		InstanceHolder.INSTANCE.verticleDescList.add(new VerticleProp(verticle, options));
 	}
 	
 	public static Map<String, String> getApiServiceMapping() {
         return Map.copyOf(InstanceHolder.INSTANCE.apiServiceMap);
     }
 	
-	public static List<VerticleDesc> getVerticleDescList() {
+	public static List<VerticleProp> getVerticleDescList() {
 		return List.copyOf(InstanceHolder.INSTANCE.verticleDescList);
 	}
 

@@ -30,6 +30,7 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
+import pers.tsm.ebr.service.ServiceResultMsg;
 import pers.tsm.ebr.types.ServiceResultEnum;
 
 import static java.util.Objects.isNull;
@@ -73,7 +74,7 @@ public class BaseHandler implements Handler<RoutingContext> {
     protected Future<JsonObject> doHandle(RoutingContext routingContext, JsonObject inData) {
         return Future.future(promise -> {
             if (isNull(serviceName) || serviceName.isBlank()) {
-                promise.fail(new ServiceException(ServiceResultEnum.HTTP_500));
+                promise.fail(new AppException(ServiceResultEnum.HTTP_500));
                 return;
             }
             EventBus bus = routingContext.vertx().eventBus();
@@ -114,8 +115,8 @@ public class BaseHandler implements Handler<RoutingContext> {
                 response.end(ar.toString());
             }).onFailure(ex -> {
                 logger.debug("处理结果：失败...", ex);
-                if (ex instanceof ServiceException) {
-                    ServiceException se = (ServiceException) ex;
+                if (ex instanceof AppException) {
+                    AppException se = (AppException) ex;
                     String respStr = new ServiceResultMsg(se.getReason()).toJsonObject().toString();
                     logger.trace("response info: {}", respStr);
                     HttpServerResponse response = routingContext.response();

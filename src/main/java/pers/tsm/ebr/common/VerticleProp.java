@@ -29,11 +29,11 @@ import static java.util.Objects.requireNonNull;
  *
  * @author l.gong
  */
-public class VerticleDesc {
+public class VerticleProp {
 	private final Supplier<Verticle> verticle;
     private DeploymentOptions options;
 
-    VerticleDesc(Supplier<Verticle> verticle, DeploymentOptions options) {
+    VerticleProp(Supplier<Verticle> verticle, DeploymentOptions options) {
         requireNonNull(verticle);
         requireNonNull(options);
         this.verticle = verticle;
