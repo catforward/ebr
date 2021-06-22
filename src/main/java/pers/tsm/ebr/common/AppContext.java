@@ -21,10 +21,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.function.Supplier;
 
-import io.vertx.core.DeploymentOptions;
-import io.vertx.core.Verticle;
+import pers.tsm.ebr.data.VerticleProp;
 
 import static java.util.Objects.requireNonNull;
 
@@ -54,10 +52,9 @@ public final class AppContext {
 		InstanceHolder.INSTANCE.apiServiceMap.put(url, serviceId);
 	}
 	
-	public static void addVerticle(Supplier<Verticle> verticle, DeploymentOptions options) {
-		requireNonNull(verticle);
-		requireNonNull(options);
-		InstanceHolder.INSTANCE.verticleDescList.add(new VerticleProp(verticle, options));
+	public static void addVerticle(VerticleProp prop) {
+		requireNonNull(prop);
+		InstanceHolder.INSTANCE.verticleDescList.add(prop);
 	}
 	
 	public static Map<String, String> getApiServiceMapping() {

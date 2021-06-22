@@ -24,8 +24,8 @@ import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.json.JsonObject;
-import pers.tsm.ebr.common.Configs;
-import pers.tsm.ebr.service.WebApiServer;
+import pers.tsm.ebr.common.AppConfigs;
+import pers.tsm.ebr.service.HttpApiServer;
 
 import static java.util.Objects.isNull;
 
@@ -65,14 +65,14 @@ public final class AppMain {
 				}
 			}));
 
-			Configs.load();
-			JsonObject config = Configs.get();
+			AppConfigs.load();
+			JsonObject config = AppConfigs.get();
 			vertx = Vertx.vertx(new VertxOptions(config.getJsonObject("vertx")));
 			Deployer.collect(config.getJsonObject("service"))
 			.compose(serviceConfig -> Deployer.deploy(vertx, serviceConfig))
 			.onSuccess(ar -> {
 				logger.info("All Vertical deploy done.");
-				vertx.deployVerticle(WebApiServer::new, new DeploymentOptions().setConfig(config.getJsonObject("http")))
+				vertx.deployVerticle(HttpApiServer::new, new DeploymentOptions().setConfig(config.getJsonObject("http")))
 				.onSuccess(str -> logger.info(printLogo()))
 				.onFailure(ex -> System.exit(1));
 			}).onFailure(ex -> {
@@ -86,7 +86,7 @@ public final class AppMain {
 	}
 
 	void onShutdown() throws InterruptedException {
-		Configs.release();
+		AppConfigs.release();
 		if (isNull(vertx)) {
 			return;
 		}
@@ -99,20 +99,19 @@ public final class AppMain {
 	}
 	
 	String printLogo() {
-        StringBuilder buf = new StringBuilder();
-        buf.append("\n");
-        buf.append("**********************************\n");
-        buf.append("*                                *\n");
-        buf.append("*    ███████╗██████╗ ██████╗     *\n");
-        buf.append("*    ██╔════╝██╔══██╗██╔══██╗    *\n");
-        buf.append("*    █████╗  ██████╔╝██████╔╝    *\n");
-        buf.append("*    ██╔══╝  ██╔══██╗██╔══██╗    *\n");
-        buf.append("*    ███████╗██████╔╝██║  ██║    *\n");
-        buf.append("*    ╚══════╝╚═════╝ ╚═╝  ╚═╝    *\n");
-        buf.append("*                                *\n");
-        buf.append("*        Ver:").append(AppMain.VERSION).append("         *\n");
-        buf.append("**********************************\n");
-        return buf.toString();
+        String logo = "\n";
+        logo += "******************************************\n";
+        logo += "*                                        *\n";
+        logo += "*        ███████╗██████╗ ██████╗         *\n";
+        logo += "*        ██╔════╝██╔══██╗██╔══██╗        *\n";
+        logo += "*        █████╗  ██████╔╝██████╔╝        *\n";
+        logo += "*        ██╔══╝  ██╔══██╗██╔══██╗        *\n";
+        logo += "*        ███████╗██████╔╝██║  ██║        *\n";
+        logo += "*        ╚══════╝╚═════╝ ╚═╝  ╚═╝        *\n";
+        logo += "*                                        *\n";
+        logo += "*            Ver:" + AppMain.VERSION + "             *\n";
+        logo += "******************************************\n";
+        return logo;
     }
 
 }

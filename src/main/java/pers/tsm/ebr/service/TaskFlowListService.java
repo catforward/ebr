@@ -17,22 +17,37 @@
  */
 package pers.tsm.ebr.service;
 
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.vertx.core.Future;
-import pers.tsm.ebr.common.BaseService;
-import pers.tsm.ebr.common.IResult;
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+import pers.tsm.ebr.common.Symbols;
+import pers.tsm.ebr.data.TaskDefineFileProp;
+import pers.tsm.ebr.data.TaskDefineRepo;
 import pers.tsm.ebr.types.ServiceResultEnum;
 
+
 /**
- *
+ * <pre>
+ * response:
+ * {
+ * flows: [
+ * 	{
+ * 		"url": "xxx"
+ * 	}, {}, ...
+ * ]
+ * }
+ * </pre>
  *
  * @author l.gong
  */
 public class TaskFlowListService extends BaseService {
     private static final Logger logger = LoggerFactory.getLogger(TaskFlowListService.class);
-	
+    	
 	@Override
     public void start() throws Exception {
         super.start();
@@ -48,7 +63,14 @@ public class TaskFlowListService extends BaseService {
     protected Future<IResult> doService() {
         logger.trace("doService -> {}", inData);
         return Future.future(promise -> {
-        	// TODO
+        	JsonArray flows = new JsonArray();
+        	outData.put(Symbols.FLOWS, flows);
+        	Map<String, TaskDefineFileProp> info =  TaskDefineRepo.copyDefineFileInfo();
+        	info.forEach((k, v) -> {
+        		JsonObject flow = new JsonObject();
+        		flow.put(Symbols.URL, v.getFlowUrl());
+        		flows.add(flow);
+        	});
         	promise.complete(ServiceResultEnum.NORMAL);
         });
 	}

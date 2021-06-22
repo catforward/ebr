@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.tsm.ebr.common;
+package pers.tsm.ebr.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,12 +30,12 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
-import pers.tsm.ebr.service.ServiceResultMsg;
 import pers.tsm.ebr.types.ServiceResultEnum;
 
 import static java.util.Objects.isNull;
 import static pers.tsm.ebr.common.Symbols.*;
 
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -45,48 +45,11 @@ import java.util.Optional;
  */
 public class BaseHandler implements Handler<RoutingContext> {
 	private static final Logger logger = LoggerFactory.getLogger(BaseHandler.class);
-    /** 默认的服务名 */
-    private final String serviceName;
-    /** 空请求体 */
+    private final Map<String, String> apiServiceMap;
     protected final JsonObject emptyBody = new JsonObject();
 
-    public BaseHandler(String serviceName) {
-        this.serviceName = serviceName;
-    }
-
-    /**
-     * <p>前置准备处理</p>
-     * <p>使用场景：特殊的参数检查，或特别的参数取得</p>
-     * @param routingContext 路由上下文
-     * @param inData 请求数据
-     * @return 处理结果
-     */
-    protected Future<JsonObject> doPrepare(RoutingContext routingContext, JsonObject inData) {
-        return Future.future(promise -> promise.complete(inData));
-    }
-
-    /**
-     * <p>服务处理</p>
-     * @param routingContext 路由上下文
-     * @param inData 请求数据
-     * @return 处理结果
-     */
-    protected Future<JsonObject> doHandle(RoutingContext routingContext, JsonObject inData) {
-        return Future.future(promise -> {
-            if (isNull(serviceName) || serviceName.isBlank()) {
-                promise.fail(new AppException(ServiceResultEnum.HTTP_500));
-                return;
-            }
-            EventBus bus = routingContext.vertx().eventBus();
-            bus.request(serviceName, inData, (AsyncResult<Message<JsonObject>> res) -> {
-                if (res.failed()) {
-                    logger.error("calling service failed... ", res.cause());
-                    promise.fail(res.cause());
-                } else {
-                    promise.complete(res.result().body());
-                }
-            });
-        });
+    public BaseHandler(Map<String, String> apiServiceMap) {
+        this.apiServiceMap = apiServiceMap;
     }
 
     /**
@@ -101,13 +64,13 @@ public class BaseHandler implements Handler<RoutingContext> {
             JsonObject inData = new JsonObject()
                     .put(USER_AGENT, request.getHeader(HttpHeaders.USER_AGENT))
                     .put(METHOD, request.method().toString())
-                    .put(PATH, request.absoluteURI())
+                    .put(PATH, request.path())
                     .put(BODY, Optional.ofNullable(routingContext.getBodyAsJson()).orElse(emptyBody));
             logger.trace("request info: {}", inData);
 
             // 准备工作（验证，获取数据等）-> 服务处理 的处理顺序
-            doPrepare(routingContext, inData)
-            .compose(data -> doHandle(routingContext, data))
+            doPrepare(inData)
+            .compose(v -> doHandle(routingContext, inData))
             .onSuccess(ar -> {
                 logger.trace("response info: {}", ar);
                 HttpServerResponse response = routingContext.response();
@@ -115,8 +78,8 @@ public class BaseHandler implements Handler<RoutingContext> {
                 response.end(ar.toString());
             }).onFailure(ex -> {
                 logger.debug("处理结果：失败...", ex);
-                if (ex instanceof AppException) {
-                    AppException se = (AppException) ex;
+                if (ex instanceof ServiceException) {
+                    ServiceException se = (ServiceException) ex;
                     String respStr = new ServiceResultMsg(se.getReason()).toJsonObject().toString();
                     logger.trace("response info: {}", respStr);
                     HttpServerResponse response = routingContext.response();
@@ -133,5 +96,47 @@ public class BaseHandler implements Handler<RoutingContext> {
             logger.error("Exception: ", ex);
             routingContext.fail(Integer.parseInt(ServiceResultEnum.HTTP_500.getCode()));
         }
+    }
+
+    /**
+     * <p>前置准备处理</p>
+     * <p>使用场景：特殊的参数检查，或特别的参数取得</p>
+     * @param inData 请求数据
+     * @return 处理结果
+     */
+    private Future<Void> doPrepare(JsonObject inData) {
+        return Future.future(promise -> {
+        	String path = inData.getString(PATH);
+        	if (isNull(apiServiceMap.get(path))) {
+        		promise.fail(new ServiceException(ServiceResultEnum.HTTP_404));
+        	} else {
+        		promise.complete();
+        	}
+        });
+    }
+
+    /**
+     * <p>服务处理</p>
+     * @param routingContext 路由上下文
+     * @param inData 请求数据
+     * @return 处理结果
+     */
+    private Future<JsonObject> doHandle(RoutingContext routingContext, JsonObject inData) {
+        return Future.future(promise -> {
+        	String serviceName = apiServiceMap.get(inData.getString(PATH));
+            if (isNull(serviceName) || serviceName.isBlank()) {
+                promise.fail(new ServiceException(ServiceResultEnum.HTTP_500));
+                return;
+            }
+            EventBus bus = routingContext.vertx().eventBus();
+            bus.request(serviceName, inData, (AsyncResult<Message<JsonObject>> res) -> {
+                if (res.failed()) {
+                    logger.error("calling service failed... ", res.cause());
+                    promise.fail(res.cause());
+                } else {
+                    promise.complete(res.result().body());
+                }
+            });
+        });
     }
 }

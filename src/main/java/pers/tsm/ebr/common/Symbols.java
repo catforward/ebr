@@ -29,7 +29,8 @@ public final class Symbols {
 	public static final String ENV_EBR_ROOT = "EBR_ROOT";
     public static final String BASE_URL = "/ebr";
 	public static final String BLANK_STR = "";
-	
+
+	public static final String LOGS = "logs";
     public static final String CODE = "code";
     public static final String MSG = "msg";
     public static final String DATA = "data";
@@ -38,5 +39,14 @@ public final class Symbols {
     public static final String METHOD = "method";
     public static final String PATH = "path";
     public static final String BODY = "body";
+	public static final String ABS_PATH = "absPath";
+	public static final String CONTENT = "content";
+	public static final String LAST_MODIFIED_TIME = "lastModifiedTime";
+	public static final String SIZE = "size";
+	public static final String URL = "url";
+    
+    public static final String FLOW_FILE_SUFFIX = ".json";
+    public static final String FLOWS = "flows";
+    public static final String FLOW = "flow";
     
 }

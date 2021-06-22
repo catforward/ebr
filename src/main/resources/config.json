@@ -9,14 +9,15 @@
     },
     
     "http": {
-      "address": "0.0.0.0",
+      "address": "127.0.0.1",
       "port": 8088
     },
     
     "service": {
-    	"fsDataCheckIntervalSeconds" : 60,
-    	"fsDataCacheExpireSeconds": 1800,
-    	"fsDataCacheInitialCapacity": 5,
-        "fsDataCacheMaximumSize": 50
+      "timezone": "Asia/Tokyo",
+      "fsDataCheckIntervalSeconds" : 60,
+      "fsDataCacheExpireSeconds": 900,
+      "fsDataCacheInitialCapacity": 2,
+      "fsDataCacheMaximumSize": 50
     }
 }

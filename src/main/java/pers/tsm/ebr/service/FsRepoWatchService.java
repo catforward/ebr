@@ -32,9 +32,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.vertx.core.Future;
-import pers.tsm.ebr.common.BaseService;
-import pers.tsm.ebr.common.IResult;
 import pers.tsm.ebr.common.AppPaths;
+import pers.tsm.ebr.common.StringUtils;
+import pers.tsm.ebr.common.Symbols;
 import pers.tsm.ebr.data.TaskDefineFileProp;
 import pers.tsm.ebr.data.TaskDefineRepo;
 import pers.tsm.ebr.types.ServiceResultEnum;
@@ -45,8 +45,8 @@ import pers.tsm.ebr.types.ServiceResultEnum;
  *
  * @author l.gong
  */
-public class FsDataWatchService extends BaseService {
-	private static final Logger logger = LoggerFactory.getLogger(FsDataWatchService.class);
+public class FsRepoWatchService extends BaseService {
+	private static final Logger logger = LoggerFactory.getLogger(FsRepoWatchService.class);
 	
 	private long timerID = 0L;
 	private long scanInterval = 0;
@@ -67,7 +67,7 @@ public class FsDataWatchService extends BaseService {
 
 	@Override
 	protected String getServiceName() {
-		return FsDataWatchService.class.getName();
+		return FsRepoWatchService.class.getName();
 	}
 	
 	@Override
@@ -88,19 +88,21 @@ public class FsDataWatchService extends BaseService {
 	
 	private Future<Void> scanDataFolder(List<TaskDefineFileProp> files) {
 		return Future.future(promise -> {
+			Path dataStorePath = new File(AppPaths.getDataPath()).toPath();
 			try {
-				Files.walkFileTree(new File(AppPaths.getDataPath()).toPath(), new SimpleFileVisitor<Path>() {
+				Files.walkFileTree(dataStorePath, new SimpleFileVisitor<Path>() {
 					@Override
-					public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-						File scanFile = file.toFile();
-						if (scanFile.canRead() && scanFile.getName().endsWith(".json")) {
+					public FileVisitResult visitFile(Path filePath, BasicFileAttributes attrs) throws IOException {
+						File file = filePath.toFile();
+						if (file.canRead() && file.getName().endsWith(Symbols.FLOW_FILE_SUFFIX)) {
 							TaskDefineFileProp prop = new TaskDefineFileProp();
-							prop.setFullPath(scanFile.getAbsolutePath());
-							prop.setLastModifiedTime(scanFile.lastModified());
-							//logger.debug(prop.toString());
+							prop.setAbsolutePath(file.getAbsolutePath());
+							prop.setFlowUrl(StringUtils.toFlowUrl(dataStorePath, filePath));
+							prop.setFileSize(attrs.size());
+							prop.setLastModifiedTime(file.lastModified());
 							files.add(prop);
 						}
-						return super.visitFile(file, attrs);
+						return super.visitFile(filePath, attrs);
 					}
 
 					@Override
@@ -125,9 +127,9 @@ public class FsDataWatchService extends BaseService {
 				promise.complete();
 				return;
 			}
-			Map<String, TaskDefineFileProp> copyMap =  TaskDefineRepo.copyDefineFiles();
+			Map<String, TaskDefineFileProp> copyMap =  TaskDefineRepo.copyDefineFileInfo();
 			files.forEach(prop -> {
-				if (prop.isNewerThan(copyMap.remove(prop.getFullPath()))) {
+				if (prop.isNewerThan(copyMap.remove(prop.getFlowUrl()))) {
 					TaskDefineRepo.addDefineFile(prop);
 				}
 			});

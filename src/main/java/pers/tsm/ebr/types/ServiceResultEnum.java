@@ -17,7 +17,7 @@
  */
 package pers.tsm.ebr.types;
 
-import pers.tsm.ebr.common.IResult;
+import pers.tsm.ebr.service.IResult;
 
 /**
  *
@@ -42,6 +42,7 @@ public enum ServiceResultEnum implements IResult {
     HTTP_502("502", "网关错误"),
     HTTP_503("503", "服务不可用，服务器暂时过载或维护"),
     HTTP_504("504", "网关超时"),
+    RC_11001("11001", "invalid parameter"),
     ;
     /** 返回码 */
     private final String code;

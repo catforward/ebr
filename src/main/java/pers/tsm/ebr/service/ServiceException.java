@@ -15,24 +15,40 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.tsm.ebr.common;
+package pers.tsm.ebr.service;
 
-import java.io.Serializable;
+import pers.tsm.ebr.types.ServiceResultEnum;
 
 /**
  *
  *
  * @author l.gong
  */
-public interface IResult extends Serializable {
-	/**
-     * <p>获取处理结果码</p>
-     * @return 处理结果码
-     */
-	String getCode();
-    /**
-     * <p>获取处理结果描述</p>
-     * @return 处理结果描述
-     */
-    String getMessage();
+public final class ServiceException extends RuntimeException {
+	private static final long serialVersionUID = -2319024343224680740L;
+	private final transient IResult reason;
+	
+	public ServiceException(String msg) {
+		super(msg);
+		reason = ServiceResultEnum.ERROR;
+	}
+	
+	public ServiceException(String msg, Throwable cause) {
+		super(msg, cause);
+		reason = ServiceResultEnum.ERROR;
+	}
+
+    public ServiceException(IResult result) {
+        super(result.getMessage());
+        reason = result;
+    }
+
+    public ServiceException(IResult result, Throwable cause) {
+        super(cause);
+        reason = result;
+    }
+
+    public IResult getReason() {
+        return reason;
+    }
 }

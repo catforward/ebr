@@ -24,10 +24,11 @@ import static java.util.Objects.isNull;
  *
  * @author l.gong
  */
-public class TaskDefineFileProp {
+public class TaskDefineFileProp {	
 	
-	private String fullPath;
-	private String fullName;
+	private String absolutePath;
+	private String flowUrl;
+	private long fileSize;
 	private long lastModifiedTime;
 	
 	public TaskDefineFileProp() {
@@ -36,7 +37,7 @@ public class TaskDefineFileProp {
 	
 	@Override
 	public String toString() {
-		return String.format("%s[%d]", fullPath, lastModifiedTime);
+		return String.format("flowUrl: %s, path: %s, lastModifiedTime: %d", flowUrl, absolutePath, lastModifiedTime);
 	}
 	
 	public boolean isNewerThan(TaskDefineFileProp other) {
@@ -44,31 +45,45 @@ public class TaskDefineFileProp {
 	}
 
 	/**
-	 * @return the fullPath
+	 * @return the absPath
 	 */
-	public String getFullPath() {
-		return fullPath;
+	public String getAbsolutePath() {
+		return absolutePath;
 	}
 
 	/**
-	 * @param fullPath the fullPath to set
+	 * @param absPath the absPath to set
 	 */
-	public void setFullPath(String fullPath) {
-		this.fullPath = fullPath;
+	public void setAbsolutePath(String absPath) {
+		this.absolutePath = absPath;
 	}
 
 	/**
-	 * @return the fullName
+	 * @return the flowUrl
 	 */
-	public String getFullName() {
-		return fullName;
+	public String getFlowUrl() {
+		return flowUrl;
 	}
 
 	/**
-	 * @param fullName the fullName to set
+	 * @param flowUrl the fileUrl to set
 	 */
-	public void setFullName(String fullName) {
-		this.fullName = fullName;
+	public void setFlowUrl(String flowUrl) {
+		this.flowUrl = flowUrl;
+	}
+
+	/**
+	 * @return the fileSize
+	 */
+	public long getFileSize() {
+		return fileSize;
+	}
+
+	/**
+	 * @param fileSize the fileSize to set
+	 */
+	public void setFileSize(long fileSize) {
+		this.fileSize = fileSize;
 	}
 
 	/**

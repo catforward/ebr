@@ -18,7 +18,9 @@
 package pers.tsm.ebr.data;
 
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +29,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.RemovalListener;
 
 import io.vertx.core.json.JsonObject;
-
+import pers.tsm.ebr.common.AppException;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.requireNonNull;
@@ -46,13 +48,13 @@ import java.util.HashMap;
 public class TaskDefineRepo {
 	private static final Logger logger = LoggerFactory.getLogger(TaskDefineRepo.class);
 	
-	/** key: full path, value: prop class*/
-	private final Map<String, TaskDefineFileProp> defineFiles;
-	/** key: full path, value: file content(JsonObject)*/
+	/** key: flow_url, value: prop class*/
+	private final Map<String, TaskDefineFileProp> defineFileInfo;
+	/** key: flow_url, value: file content(JsonObject)*/
 	private Cache<String, JsonObject> defineFileContent;
 	
 	public static final RemovalListener<String, JsonObject> removalListener = notification -> {
-		logger.info("define file content cache: Key {} was removed ({})",
+		logger.debug("define file content cache: Key {} was removed ({})",
     			notification.getKey(), notification.getCause());
 	};
 	
@@ -62,17 +64,17 @@ public class TaskDefineRepo {
     }
 	
 	private TaskDefineRepo() {
-		defineFiles = new ConcurrentHashMap<>();
+		defineFileInfo = new ConcurrentHashMap<>();
 	}
 	
 	public static void removeAll() {
 		InstanceHolder.INSTANCE.defineFileContent.invalidateAll();
-		InstanceHolder.INSTANCE.defineFiles.clear();
+		InstanceHolder.INSTANCE.defineFileInfo.clear();
 	}
 	
 	public static void dumpAll() {
 		logger.info("############ define file ############");
-		InstanceHolder.INSTANCE.defineFiles.forEach((k, v) -> logger.info(v.toString()));
+		InstanceHolder.INSTANCE.defineFileInfo.forEach((k, v) -> logger.info(v.toString()));
 		logger.info("############ define file's content ############");
 		InstanceHolder.INSTANCE.defineFileContent.asMap().forEach((k, v) -> logger.info("{} = {}", k, v));
 	}
@@ -87,26 +89,48 @@ public class TaskDefineRepo {
 		}
 	}
 	
-	public static Map<String, TaskDefineFileProp> copyDefineFiles() {
+	public static Map<String, TaskDefineFileProp> copyDefineFileInfo() {
 		HashMap<String, TaskDefineFileProp> copyMap = new HashMap<>();
-		copyMap.putAll(InstanceHolder.INSTANCE.defineFiles);
+		copyMap.putAll(InstanceHolder.INSTANCE.defineFileInfo);
 		return copyMap;
 	}
 	
 	public static void addDefineFile(TaskDefineFileProp prop) {
-		InstanceHolder.INSTANCE.defineFiles.put(prop.getFullPath(), prop);
+		requireNonNull(prop);
+		InstanceHolder.INSTANCE.defineFileInfo.put(prop.getFlowUrl(), prop);
 		try {
-			JsonObject obj = new JsonObject(Files.readString(Paths.get(prop.getFullPath())));
-			InstanceHolder.INSTANCE.defineFileContent.invalidate(prop.getFullPath());
-			InstanceHolder.INSTANCE.defineFileContent.put(prop.getFullPath(), obj);
+			JsonObject obj = new JsonObject(Files.readString(Paths.get(prop.getAbsolutePath())));
+			InstanceHolder.INSTANCE.defineFileContent.invalidate(prop.getFlowUrl());
+			InstanceHolder.INSTANCE.defineFileContent.put(prop.getFlowUrl(), obj);
 		} catch (IOException ex) {
-			logger.error("can not read from [{}], caching skipped...", prop.getFullPath(), ex);
+			logger.error("can not read from [{}], caching skipped...", prop.getAbsolutePath(), ex);
 		}
 	}
 	
 	public static void deleteDefineFile(TaskDefineFileProp prop) {
-		InstanceHolder.INSTANCE.defineFiles.remove(prop.getFullPath());
-		InstanceHolder.INSTANCE.defineFileContent.invalidate(prop.getFullPath());
+		requireNonNull(prop);
+		InstanceHolder.INSTANCE.defineFileInfo.remove(prop.getFlowUrl());
+		InstanceHolder.INSTANCE.defineFileContent.invalidate(prop.getFlowUrl());
+	}
+	
+	public static TaskDefineFileProp getDefineFileInfo(String fileUrl) {
+		return InstanceHolder.INSTANCE.defineFileInfo.get(fileUrl);
+	}
+	
+	public static JsonObject getDefineFileContent(String fileUrl) throws ExecutionException {
+		TaskDefineFileProp prop = getDefineFileInfo(fileUrl);
+		if (isNull(prop)) {
+			throw new AppException(String.format("task[%s] is not exist.", fileUrl));
+		}
+		JsonObject content = InstanceHolder.INSTANCE.defineFileContent.get(fileUrl, new Callable<JsonObject>() {
+            public JsonObject call() throws Exception {
+                return new JsonObject(Files.readString(Paths.get(prop.getAbsolutePath())));
+            }
+        });
+		if (isNull(content)) {
+			throw new AppException(String.format("task[%s] is not exist.(path:[%s])", fileUrl, prop.getAbsolutePath()));
+		}
+		return content;
 	}
 	
 }

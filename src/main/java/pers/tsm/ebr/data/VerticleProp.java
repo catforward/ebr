@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.tsm.ebr.common;
+package pers.tsm.ebr.data;
 
 import java.util.function.Supplier;
 
@@ -33,7 +33,7 @@ public class VerticleProp {
 	private final Supplier<Verticle> verticle;
     private DeploymentOptions options;
 
-    VerticleProp(Supplier<Verticle> verticle, DeploymentOptions options) {
+    public VerticleProp(Supplier<Verticle> verticle, DeploymentOptions options) {
         requireNonNull(verticle);
         requireNonNull(options);
         this.verticle = verticle;

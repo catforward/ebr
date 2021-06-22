@@ -26,13 +26,8 @@ import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.ErrorHandler;
-import io.vertx.ext.web.handler.FaviconHandler;
-import io.vertx.ext.web.handler.SessionHandler;
-import io.vertx.ext.web.handler.StaticHandler;
-import io.vertx.ext.web.sstore.LocalSessionStore;
 import pers.tsm.ebr.AppMain;
 import pers.tsm.ebr.common.AppContext;
-import pers.tsm.ebr.common.BaseHandler;
 
 import static java.util.Objects.isNull;
 import static pers.tsm.ebr.common.Symbols.*;
@@ -44,14 +39,14 @@ import java.util.Map;
  *
  * @author l.gong
  */
-public class WebApiServer extends AbstractVerticle {
-	private static final Logger logger = LoggerFactory.getLogger(WebApiServer.class);
+public class HttpApiServer extends AbstractVerticle {
+	private static final Logger logger = LoggerFactory.getLogger(HttpApiServer.class);
     private HttpServer server;
     
-    private static final String WEB_ROOT = "static";
-    private static final String INDEX_HTML = "index.html";
-    private static final String FAVICON = "/favicon.ico";
-    private static final String HTTP_GET_ALL = BASE_URL + "/*";
+    //private static final String WEB_ROOT = "static";
+    //private static final String INDEX_HTML = "index.html";
+    //private static final String FAVICON = "/favicon.ico";
+    //private static final String HTTP_GET_ALL = BASE_URL + "/*";
 
     @Override
     public void start() throws Exception {
@@ -70,27 +65,28 @@ public class WebApiServer extends AbstractVerticle {
     private HttpServer createHttpServer() {
         Router router = Router.router(vertx);
         // session
-        LocalSessionStore store = LocalSessionStore.create(vertx);
-        router.route().handler(SessionHandler.create(store));
+//        LocalSessionStore store = LocalSessionStore.create(vertx);
+//        router.route().handler(SessionHandler.create(store));
         // default handler
         router.route().handler(BodyHandler.create());
         router.route().failureHandler(ErrorHandler.create(vertx));
-        router.route(FAVICON).handler(FaviconHandler.create(vertx));
-        router.get(HTTP_GET_ALL).handler(StaticHandler.create()
-        		.setWebRoot(WEB_ROOT)
-        		.setIndexPage(INDEX_HTML)
-                .setAlwaysAsyncFS(true)
-                .setFilesReadOnly(true)
-                .setCachingEnabled(true)
-                .setDirectoryListing(false)
-                .setIncludeHidden(false)
-                .setEnableFSTuning(true));
-        // api
+//        router.route(FAVICON).handler(FaviconHandler.create(vertx));
+//        router.get(HTTP_GET_ALL).handler(StaticHandler.create()
+//        		.setWebRoot(WEB_ROOT)
+//        		.setIndexPage(INDEX_HTML)
+//                .setAlwaysAsyncFS(true)
+//                .setFilesReadOnly(true)
+//                .setCachingEnabled(true)
+//                .setDirectoryListing(false)
+//                .setIncludeHidden(false)
+//                .setEnableFSTuning(true));
+        // API
         router.route(BASE_URL + "/api").handler(context ->
             context.response().end(new JsonObject().put("version", AppMain.VERSION).encodePrettily())
         );
         Map<String, String> mapping = AppContext.getApiServiceMapping();
-        mapping.forEach((apiUrl, serviceId) -> router.post(apiUrl).handler(new BaseHandler(serviceId)));
+        BaseHandler handler = new BaseHandler(mapping);
+        mapping.forEach((apiUrl, serviceId) -> router.post(apiUrl).handler(handler));
 
         // server
         String host = config().getString("address", "localhost");

@@ -25,7 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static java.util.Objects.isNull;
-import static pers.tsm.ebr.common.Symbols.ENV_EBR_ROOT;
+import static pers.tsm.ebr.common.Symbols.*;
 
 /**
  * <pre>
@@ -58,8 +58,8 @@ public final class AppPaths {
 
     private AppPaths() {
         rootPath = initRootPath();
-        logsPath = String.format("%s%s%s", rootPath, File.separator, "logs");
-        dataPath = String.format("%s%s%s", rootPath, File.separator, "data");
+        logsPath = String.format("%s%s%s", rootPath, File.separator, LOGS);
+        dataPath = String.format("%s%s%s", rootPath, File.separator, DATA);
     }
 
     private String initRootPath() {

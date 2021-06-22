@@ -19,7 +19,6 @@ package pers.tsm.ebr.service;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import pers.tsm.ebr.common.IResult;
 
 import static pers.tsm.ebr.common.Symbols.*;
 

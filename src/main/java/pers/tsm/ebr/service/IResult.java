@@ -17,23 +17,22 @@
  */
 package pers.tsm.ebr.service;
 
-import static pers.tsm.ebr.common.Symbols.*;
+import java.io.Serializable;
 
 /**
  *
  *
  * @author l.gong
  */
-public final class ServiceSymbols {
-	
-	private ServiceSymbols() {}    
-
-	public static final String URL_INFO_FLOWS = BASE_URL + "/api/info/flows";
-	public static final String SERVICE_INFO_FLOWS = "service.info.flows";
-	
-	public static final String URL_INFO_FLOW = BASE_URL + "/api/info/flow";
-	public static final String SERVICE_INFO_FLOW = "service.info.flow";
-	
-	public static final String MSG_REFRESH_FS_TASK_DEFINE = "msg.refresh.fs.task.define";
-	
+public interface IResult extends Serializable {
+	/**
+     * <p>获取处理结果码</p>
+     * @return 处理结果码
+     */
+	String getCode();
+    /**
+     * <p>获取处理结果描述</p>
+     * @return 处理结果描述
+     */
+    String getMessage();
 }

@@ -32,16 +32,16 @@ import io.vertx.core.json.JsonObject;
  *
  * @author l.gong
  */
-public final class Configs {
-	private static final Logger logger = LoggerFactory.getLogger(Configs.class);
+public final class AppConfigs {
+	private static final Logger logger = LoggerFactory.getLogger(AppConfigs.class);
 	private static final String CONFIG_FILE = "/config.json";
 	private final JsonObject config = new JsonObject();
 
 	private static class InstanceHolder {
-        private static final Configs INSTANCE = new Configs();
+        private static final AppConfigs INSTANCE = new AppConfigs();
     }
 
-    private Configs() {}
+    private AppConfigs() {}
 
     /**
      * 读取配置文件

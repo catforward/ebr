@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.tsm.ebr.common;
+package pers.tsm.ebr.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,12 +25,13 @@ import io.vertx.core.Future;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import pers.tsm.ebr.service.ServiceResultMsg;
 import pers.tsm.ebr.types.ServiceResultEnum;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.requireNonNull;
 import static pers.tsm.ebr.common.Symbols.*;
+
+import java.time.ZoneId;
 
 /**
  *
@@ -43,10 +44,12 @@ public abstract class BaseService extends AbstractVerticle {
     protected JsonObject outData;
     protected final JsonObject emptyJsonObject = new JsonObject();
     protected final JsonArray emptyJsonArray = new JsonArray();
+    protected ZoneId zone;
 
     @Override
     public void start() throws Exception {
         super.start();
+        zone = ZoneId.of(config().getString("Asia/Tokyo", "Asia/Tokyo"));
         logger.info("Service: {} started. [{}]", getServiceName(), deploymentID());
     }
 
@@ -143,27 +146,23 @@ public abstract class BaseService extends AbstractVerticle {
      */
     protected void handleRequestEvent(Message<JsonObject> msg) {
         try {
-            // 获取请求体
             inData = msg.body();
             outData = new JsonObject();
-            // 准备工作（验证，获取数据等）-> 服务处理 的处理顺序
             doPrepare()
             .compose(ret -> doRequest())
             .onSuccess(ret -> makeReplyMsg(msg, ret))
             .onFailure(ex -> {
-               if (ex instanceof AppException) {
-                   logger.debug("服务处理失败", ex.getCause());
-                   AppException se = (AppException) ex;
+               if (ex instanceof ServiceException) {
+                   logger.debug("Service Fail...", ex.getCause());
+                   ServiceException se = (ServiceException) ex;
                    msg.reply(new ServiceResultMsg(se.getReason()).toJsonObject());
                } else {
-                   // 其他未知异常
-                   logger.error("服务处理，未知异常", ex);
+                   logger.error("Unknown Error...", ex);
                    msg.reply(new ServiceResultMsg(ServiceResultEnum.HTTP_500).toJsonObject());
                }
             });
         } catch (Exception ex) {
-            logger.error("未知异常", ex);
-            // 内部未处理的异常
+            logger.error("Unknown Error...", ex);
             msg.reply(new ServiceResultMsg(ServiceResultEnum.HTTP_500).toJsonObject());
         }
     }
@@ -183,27 +182,23 @@ public abstract class BaseService extends AbstractVerticle {
      */
     protected void handleServiceEvent(Message<JsonObject> msg) {
         try {
-            // 获取请求体
             inData = msg.body();
             outData = new JsonObject();
-            // 准备工作（验证，获取数据等）-> 服务处理 的处理顺序
             doPrepare()
             .compose(ret -> doService())
             .onSuccess(ret -> makeReplyMsg(msg, ret))
             .onFailure(ex -> {
-                if (ex instanceof AppException) {
-                    logger.debug("服务处理失败", ex.getCause());
-                    AppException se = (AppException) ex;
+                if (ex instanceof ServiceException) {
+                    logger.debug("Service Fail...", ex.getCause());
+                    ServiceException se = (ServiceException) ex;
                     msg.reply(new ServiceResultMsg(se.getReason()).toJsonObject());
                 } else {
-                    // 其他未知异常
-                    logger.error("服务处理，未知异常", ex);
+                    logger.error("Unknown Error...", ex);
                     msg.reply(new ServiceResultMsg(ServiceResultEnum.HTTP_500).toJsonObject());
                 }
             });
         } catch (Exception ex) {
-            logger.error("未知异常", ex);
-            // 内部未处理的异常
+            logger.error("Unknown Error...", ex);
             msg.reply(new ServiceResultMsg(ServiceResultEnum.HTTP_500).toJsonObject());
         }
     }
@@ -214,24 +209,21 @@ public abstract class BaseService extends AbstractVerticle {
     
     protected void handleMsgEvent(Message<JsonObject> msg) {
     	try {
-            // 获取请求体
             inData = msg.body();
             outData = new JsonObject();
 
             doMsg().onFailure(ex -> {
-                if (ex instanceof AppException) {
-                    logger.debug("服务处理失败", ex.getCause());
-                    AppException se = (AppException) ex;
+                if (ex instanceof ServiceException) {
+                    logger.debug("Service Fail...", ex.getCause());
+                    ServiceException se = (ServiceException) ex;
                     msg.reply(new ServiceResultMsg(se.getReason()).toJsonObject());
                 } else {
-                    // 其他未知异常
-                    logger.error("服务处理，未知异常", ex);
+                    logger.error("Unknown Error...", ex);
                     msg.reply(new ServiceResultMsg(ServiceResultEnum.ERROR).toJsonObject());
                 }
             });
         } catch (Exception ex) {
-            logger.error("未知异常", ex);
-            // 内部未处理的异常
+            logger.error("Unknown Error...", ex);
             msg.reply(new ServiceResultMsg(ServiceResultEnum.ERROR).toJsonObject());
         }
     }
