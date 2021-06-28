@@ -22,11 +22,15 @@ import org.slf4j.LoggerFactory;
 
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonObject;
+import pers.tsm.ebr.base.BaseService;
+import pers.tsm.ebr.base.IResult;
+import pers.tsm.ebr.common.AppException;
+import pers.tsm.ebr.common.ServiceSymbols;
 import pers.tsm.ebr.common.StringUtils;
 import pers.tsm.ebr.common.Symbols;
 import pers.tsm.ebr.data.TaskDefineFileProp;
 import pers.tsm.ebr.data.TaskDefineRepo;
-import pers.tsm.ebr.types.ServiceResultEnum;
+import pers.tsm.ebr.types.ResultEnum;
 
 import static java.util.Objects.isNull;
 
@@ -35,23 +39,23 @@ import static java.util.Objects.isNull;
  * <pre>
  * request:
  * {
- * 	"flow":"xxx"
+ *     "flow":"xxx"
  * } * 
  * response: {
- * 	"flow": {
- * 		"url": "xxx",
- * 		"size": xxx,
- * 		"lastModifiedTime": "xxxx",
- * 		"content" : {...}
- * 	}
+ *     "flow": {
+ *         "url": "xxx",
+ *         "size": xxx,
+ *         "lastModifiedTime": "xxxx",
+ *         "content" : {...}
+ *     }
  * }
  * 
  * </pre>
  *
  * @author l.gong
  */
-public class TaskFlowDetailService extends BaseService {
-    private static final Logger logger = LoggerFactory.getLogger(TaskFlowDetailService.class);
+public class TaskInfoDetailService extends BaseService {
+    private static final Logger logger = LoggerFactory.getLogger(TaskInfoDetailService.class);
     
     @Override
     public void start() throws Exception {
@@ -59,12 +63,12 @@ public class TaskFlowDetailService extends BaseService {
         registerService(ServiceSymbols.SERVICE_INFO_FLOW);
     }
 
-	@Override
-	protected String getServiceName() {
-		return TaskFlowDetailService.class.getName();
-	}
-	
-	@Override
+    @Override
+    protected String getServiceName() {
+        return TaskInfoDetailService.class.getName();
+    }
+    
+    @Override
     public Future<IResult> doPrepare() {
         logger.trace("doPrepare -> {}", inData);
         return Future.future(promise -> {
@@ -72,33 +76,33 @@ public class TaskFlowDetailService extends BaseService {
             String taskUrl = postBody.getString(Symbols.FLOW);
             if (isNull(taskUrl) || taskUrl.isBlank()) {
                 logger.debug("flow's url is empty.");
-                promise.fail(new ServiceException(ServiceResultEnum.RC_11001));
+                promise.fail(new AppException(ResultEnum.ERR_11001));
             } else {
-                promise.complete(ServiceResultEnum.NORMAL);
+                promise.complete(ResultEnum.SUCCESS);
             }
         });
     }
-	
-	@Override
+    
+    @Override
     protected Future<IResult> doService() {
         logger.trace("doService -> {}", inData);
         return Future.future(promise -> {
-        	JsonObject postBody = getPostBody();
+            JsonObject postBody = getPostBody();
             String flowUrl = postBody.getString(Symbols.FLOW);
-        	JsonObject flowData = new JsonObject();
+            JsonObject flowData = new JsonObject();
             outData.put(Symbols.FLOW, flowData);
             try {
-            	TaskDefineFileProp prop = TaskDefineRepo.getDefineFileInfo(flowUrl);
-            	flowData.put(Symbols.URL, prop.getFlowUrl());
-            	flowData.put(Symbols.SIZE, prop.getFileSize());
-            	flowData.put(Symbols.LAST_MODIFIED_TIME, StringUtils.toDatetimeStr(prop.getLastModifiedTime(), zone));
-            	flowData.put(Symbols.CONTENT, TaskDefineRepo.getDefineFileContent(flowUrl));
+                TaskDefineFileProp prop = TaskDefineRepo.getDefineFileInfo(flowUrl);
+                flowData.put(Symbols.URL, prop.getFlowUrl());
+                flowData.put(Symbols.SIZE, prop.getFileSize());
+                flowData.put(Symbols.LAST_MODIFIED_TIME, StringUtils.toDatetimeStr(prop.getLastModifiedTime(), zone));
+                flowData.put(Symbols.CONTENT, TaskDefineRepo.getDefineFileContent(flowUrl));
             } catch (Exception ex) {
-            	promise.fail(ex);
-            	return;
+                promise.fail(ex);
+                return;
             }
-        	promise.complete(ServiceResultEnum.NORMAL);
+            promise.complete(ResultEnum.SUCCESS);
         });
-	}
+    }
 
 }

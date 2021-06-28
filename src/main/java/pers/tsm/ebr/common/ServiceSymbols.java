@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.tsm.ebr.service;
+package pers.tsm.ebr.common;
 
 import static pers.tsm.ebr.common.Symbols.*;
 
@@ -25,15 +25,19 @@ import static pers.tsm.ebr.common.Symbols.*;
  * @author l.gong
  */
 public final class ServiceSymbols {
-	
-	private ServiceSymbols() {}    
+
+	private ServiceSymbols() {}
 
 	public static final String URL_INFO_FLOWS = BASE_URL + "/api/info/flows";
 	public static final String SERVICE_INFO_FLOWS = "service.info.flows";
-	
+
 	public static final String URL_INFO_FLOW = BASE_URL + "/api/info/flow";
 	public static final String SERVICE_INFO_FLOW = "service.info.flow";
-	
+
+	public static final String URL_SCHD_ACTION = BASE_URL + "/api/schd/action";
+	public static final String SERVICE_SCHD_ACTION = "service.schd.action";
+
 	public static final String MSG_REFRESH_FS_TASK_DEFINE = "msg.refresh.fs.task.define";
-	
+	public static final String MSG_ACTION_TASK_PERFORM = "msg.action.task.perform";
+
 }

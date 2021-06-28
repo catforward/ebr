@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.tsm.ebr.service;
+package pers.tsm.ebr.base;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,7 +30,8 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
-import pers.tsm.ebr.types.ServiceResultEnum;
+import pers.tsm.ebr.common.AppException;
+import pers.tsm.ebr.types.ResultEnum;
 
 import static java.util.Objects.isNull;
 import static pers.tsm.ebr.common.Symbols.*;
@@ -78,8 +79,8 @@ public class BaseHandler implements Handler<RoutingContext> {
                 response.end(ar.toString());
             }).onFailure(ex -> {
                 logger.debug("处理结果：失败...", ex);
-                if (ex instanceof ServiceException) {
-                    ServiceException se = (ServiceException) ex;
+                if (ex instanceof AppException) {
+                    AppException se = (AppException) ex;
                     String respStr = new ServiceResultMsg(se.getReason()).toJsonObject().toString();
                     logger.trace("response info: {}", respStr);
                     HttpServerResponse response = routingContext.response();
@@ -87,14 +88,14 @@ public class BaseHandler implements Handler<RoutingContext> {
                     response.end(respStr);
                 } else {
                     // 其他未知异常
-                    routingContext.fail(Integer.parseInt(ServiceResultEnum.HTTP_400.getCode()));
+                    routingContext.fail(Integer.parseInt(ResultEnum.HTTP_400.getCode()));
                 }
             });
 
         } catch (Exception ex) {
             // 出现异常时，vertx会向客户端返回HTTP 500错误，但是服务器端没有任何日志
             logger.error("Exception: ", ex);
-            routingContext.fail(Integer.parseInt(ServiceResultEnum.HTTP_500.getCode()));
+            routingContext.fail(Integer.parseInt(ResultEnum.HTTP_500.getCode()));
         }
     }
 
@@ -108,7 +109,7 @@ public class BaseHandler implements Handler<RoutingContext> {
         return Future.future(promise -> {
         	String path = inData.getString(PATH);
         	if (isNull(apiServiceMap.get(path))) {
-        		promise.fail(new ServiceException(ServiceResultEnum.HTTP_404));
+        		promise.fail(new AppException(ResultEnum.HTTP_404));
         	} else {
         		promise.complete();
         	}
@@ -125,7 +126,7 @@ public class BaseHandler implements Handler<RoutingContext> {
         return Future.future(promise -> {
         	String serviceName = apiServiceMap.get(inData.getString(PATH));
             if (isNull(serviceName) || serviceName.isBlank()) {
-                promise.fail(new ServiceException(ServiceResultEnum.HTTP_500));
+                promise.fail(new AppException(ResultEnum.HTTP_500));
                 return;
             }
             EventBus bus = routingContext.vertx().eventBus();

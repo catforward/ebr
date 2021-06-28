@@ -15,41 +15,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.tsm.ebr.common;
-
-import pers.tsm.ebr.base.IResult;
-import pers.tsm.ebr.types.ResultEnum;
+package pers.tsm.ebr.data;
 
 /**
  *
  *
  * @author l.gong
  */
-public final class AppException extends RuntimeException {
-	private static final long serialVersionUID = -2319024343224680740L;
-	private final transient IResult reason;
-	
-	public AppException(String msg) {
-		super(msg);
-		reason = ResultEnum.ERROR;
-	}
-	
-	public AppException(String msg, Throwable cause) {
-		super(msg, cause);
-		reason = ResultEnum.ERROR;
-	}
-
-    public AppException(IResult result) {
-        super(result.getMessage());
-        reason = result;
-    }
-
-    public AppException(IResult result, Throwable cause) {
-        super(cause);
-        reason = result;
-    }
-
-    public IResult getReason() {
-        return reason;
-    }
+public interface IValidator {
+	void validate(Task task);
 }

@@ -35,6 +35,8 @@ import static pers.tsm.ebr.common.Symbols.*;
  * ${EBR_ROOT}/
  *     |-- bin/
  *     |     |-- ebr.sh
+ *     |-- conf/
+ *     |     |-- config.json
  *     |-- lib/
  *     |     |-- ebr.jar
  *     |-- logs/
@@ -46,9 +48,11 @@ import static pers.tsm.ebr.common.Symbols.*;
  * @author l.gong
  */
 public final class AppPaths {
-	private static final Logger logger = LoggerFactory.getLogger(AppPaths.class);
+    private static final Logger logger = LoggerFactory.getLogger(AppPaths.class);
+    private static final String PATH_FROMAT = "%s%s%s";
 
     private final String rootPath;
+    private final String confPath;
     private final String logsPath;
     private final String dataPath;
 
@@ -58,8 +62,9 @@ public final class AppPaths {
 
     private AppPaths() {
         rootPath = initRootPath();
-        logsPath = String.format("%s%s%s", rootPath, File.separator, LOGS);
-        dataPath = String.format("%s%s%s", rootPath, File.separator, DATA);
+        confPath = String.format(PATH_FROMAT, rootPath, File.separator, CONF);
+        logsPath = String.format(PATH_FROMAT, rootPath, File.separator, LOGS);
+        dataPath = String.format(PATH_FROMAT, rootPath, File.separator, DATA);
     }
 
     private String initRootPath() {
@@ -76,6 +81,17 @@ public final class AppPaths {
                                 .getParentFile().getAbsolutePath(), StandardCharsets.UTF_8);
         }
         return rawPath;
+    }
+
+    /**
+     * <pre>
+     * get the absolute path of "conf" folder
+     * </pre>
+     *
+     * @return String The path
+     */
+    public static String getConfPath() {
+        return InstanceHolder.INSTANCE.confPath;
     }
 
     /**

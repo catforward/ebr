@@ -15,24 +15,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.tsm.ebr.service;
-
-import java.io.Serializable;
+package pers.tsm.ebr.types;
 
 /**
  *
  *
  * @author l.gong
  */
-public interface IResult extends Serializable {
-	/**
-     * <p>获取处理结果码</p>
-     * @return 处理结果码
-     */
-	String getCode();
-    /**
-     * <p>获取处理结果描述</p>
-     * @return 处理结果描述
-     */
-    String getMessage();
+public enum TaskAttrEnum {
+    ID("id"),
+    GROUP("group"),
+    DESC("desc"),
+    COMMAND("cmd"),
+    DEPENDS("depends"),
+    ;
+
+    private final String name;
+
+    TaskAttrEnum(String name) {
+        this.name = name;
+    }
+
+    public String getName() {
+        return name;
+    }
+
 }

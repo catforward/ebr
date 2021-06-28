@@ -24,8 +24,8 @@ import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.json.JsonObject;
+import pers.tsm.ebr.base.HttpApiServer;
 import pers.tsm.ebr.common.AppConfigs;
-import pers.tsm.ebr.service.HttpApiServer;
 
 import static java.util.Objects.isNull;
 
@@ -38,67 +38,67 @@ import java.util.concurrent.TimeUnit;
  * @author l.gong
  */
 public final class AppMain {
-	private static final Logger logger = LoggerFactory.getLogger(AppMain.class);
-	
-	private static final String MAJOR = "4";
+    private static final Logger logger = LoggerFactory.getLogger(AppMain.class);
+    
+    private static final String MAJOR = "4";
     private static final String MINOR = "0";
     private static final String PATCH = "0";
     private static final String PHASE = "alpha";
     public static final String VERSION = MAJOR + "." + MINOR + "." + PATCH + "-" + PHASE;
     
-	private Vertx vertx;
+    private Vertx vertx;
 
-	/**
-	 * @param args
-	 */
-	public static void main(String[] args) {
-		new AppMain().launch();
-	}
+    /**
+     * @param args
+     */
+    public static void main(String[] args) {
+        new AppMain().launch();
+    }
 
-	void launch() {
-		try {
-			Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-				try {
-					onShutdown();
-				} catch (Exception ex) {
-					logger.error("unknown error occurred!", ex);
-				}
-			}));
+    void launch() {
+        try {
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                try {
+                    onShutdown();
+                } catch (Exception ex) {
+                    logger.error("unknown error occurred!", ex);
+                }
+            }));
 
-			AppConfigs.load();
-			JsonObject config = AppConfigs.get();
-			vertx = Vertx.vertx(new VertxOptions(config.getJsonObject("vertx")));
-			Deployer.collect(config.getJsonObject("service"))
-			.compose(serviceConfig -> Deployer.deploy(vertx, serviceConfig))
-			.onSuccess(ar -> {
-				logger.info("All Vertical deploy done.");
-				vertx.deployVerticle(HttpApiServer::new, new DeploymentOptions().setConfig(config.getJsonObject("http")))
-				.onSuccess(str -> logger.info(printLogo()))
-				.onFailure(ex -> System.exit(1));
-			}).onFailure(ex -> {
-				logger.error("Vertical deploy failed...", ex);
-				System.exit(1);
-			});
-		} catch (Exception ex) {
-			logger.error("application error occurred!", ex);
-			System.exit(1);
-		}
-	}
+            AppConfigs.load();
+            JsonObject config = AppConfigs.get();
+            vertx = Vertx.vertx(new VertxOptions(config.getJsonObject("vertx")));
+            Deployer.collect(config.getJsonObject("service"))
+            .compose(serviceConfig -> Deployer.deploy(vertx, serviceConfig))
+            .onSuccess(ar -> {
+                logger.info("All Vertical deploy done.");
+                vertx.deployVerticle(HttpApiServer::new, new DeploymentOptions().setConfig(config.getJsonObject("http")))
+                .onSuccess(str -> logger.info(printLogo()))
+                .onFailure(ex -> System.exit(1));
+            }).onFailure(ex -> {
+                logger.error("Vertical deploy failed...", ex);
+                System.exit(1);
+            });
+        } catch (Exception ex) {
+            logger.error("application error occurred!", ex);
+            System.exit(1);
+        }
+    }
 
-	void onShutdown() throws InterruptedException {
-		AppConfigs.release();
-		if (isNull(vertx)) {
-			return;
-		}
-		logger.info("start stop vertx");
-		CountDownLatch countDownLatch = new CountDownLatch(1);
-		vertx.close(ar -> countDownLatch.countDown());
-		if(countDownLatch.await(10, TimeUnit.SECONDS)) {
-			logger.info("stop vertx success");
-		}
-	}
-	
-	String printLogo() {
+    void onShutdown() throws InterruptedException {
+        AppConfigs.release();
+        if (isNull(vertx)) {
+            return;
+        }
+        logger.info("start stop vertx");
+        CountDownLatch countDownLatch = new CountDownLatch(1);
+        vertx.close(ar -> countDownLatch.countDown());
+        if(countDownLatch.await(10, TimeUnit.SECONDS)) {
+            logger.info("stop vertx success");
+        }
+    }
+
+    String printLogo() {
         String logo = "\n";
         logo += "******************************************\n";
         logo += "*                                        *\n";

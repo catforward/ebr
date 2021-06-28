@@ -15,41 +15,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.tsm.ebr.common;
+package pers.tsm.ebr.base;
 
-import pers.tsm.ebr.base.IResult;
-import pers.tsm.ebr.types.ResultEnum;
+import java.io.Serializable;
 
 /**
  *
  *
  * @author l.gong
  */
-public final class AppException extends RuntimeException {
-	private static final long serialVersionUID = -2319024343224680740L;
-	private final transient IResult reason;
-	
-	public AppException(String msg) {
-		super(msg);
-		reason = ResultEnum.ERROR;
-	}
-	
-	public AppException(String msg, Throwable cause) {
-		super(msg, cause);
-		reason = ResultEnum.ERROR;
-	}
-
-    public AppException(IResult result) {
-        super(result.getMessage());
-        reason = result;
-    }
-
-    public AppException(IResult result, Throwable cause) {
-        super(cause);
-        reason = result;
-    }
-
-    public IResult getReason() {
-        return reason;
-    }
+public interface IResult extends Serializable {
+	/**
+     * <p>获取处理结果码</p>
+     * @return 处理结果码
+     */
+	String getCode();
+    /**
+     * <p>获取处理结果描述</p>
+     * @return 处理结果描述
+     */
+    String getMessage();
 }

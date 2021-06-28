@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.tsm.ebr.service;
+package pers.tsm.ebr.base;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +25,8 @@ import io.vertx.core.Future;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import pers.tsm.ebr.types.ServiceResultEnum;
+import pers.tsm.ebr.common.AppException;
+import pers.tsm.ebr.types.ResultEnum;
 
 import static java.util.Objects.isNull;
 import static java.util.Objects.requireNonNull;
@@ -123,7 +124,7 @@ public abstract class BaseService extends AbstractVerticle {
      * @return 结果返回码
      */
     protected Future<IResult> doPrepare() {
-        return Future.future(promise -> promise.complete(ServiceResultEnum.NORMAL));
+        return Future.future(promise -> promise.complete(ResultEnum.SUCCESS));
     }
 
     /**
@@ -137,7 +138,7 @@ public abstract class BaseService extends AbstractVerticle {
      * @return 结果返回码
      */
     protected Future<IResult> doRequest() {
-        return Future.future(promise -> promise.complete(ServiceResultEnum.NORMAL));
+        return Future.future(promise -> promise.complete(ResultEnum.SUCCESS));
     }
 
     /**
@@ -152,18 +153,18 @@ public abstract class BaseService extends AbstractVerticle {
             .compose(ret -> doRequest())
             .onSuccess(ret -> makeReplyMsg(msg, ret))
             .onFailure(ex -> {
-               if (ex instanceof ServiceException) {
+               if (ex instanceof AppException) {
                    logger.debug("Service Fail...", ex.getCause());
-                   ServiceException se = (ServiceException) ex;
+                   AppException se = (AppException) ex;
                    msg.reply(new ServiceResultMsg(se.getReason()).toJsonObject());
                } else {
                    logger.error("Unknown Error...", ex);
-                   msg.reply(new ServiceResultMsg(ServiceResultEnum.HTTP_500).toJsonObject());
+                   msg.reply(new ServiceResultMsg(ResultEnum.HTTP_500).toJsonObject());
                }
             });
         } catch (Exception ex) {
             logger.error("Unknown Error...", ex);
-            msg.reply(new ServiceResultMsg(ServiceResultEnum.HTTP_500).toJsonObject());
+            msg.reply(new ServiceResultMsg(ResultEnum.HTTP_500).toJsonObject());
         }
     }
 
@@ -172,7 +173,7 @@ public abstract class BaseService extends AbstractVerticle {
      * @return 结果返回码
      */
     protected Future<IResult> doService() {
-        return Future.future(promise -> promise.complete(ServiceResultEnum.NORMAL));
+        return Future.future(promise -> promise.complete(ResultEnum.SUCCESS));
     }
 
     /**
@@ -188,23 +189,23 @@ public abstract class BaseService extends AbstractVerticle {
             .compose(ret -> doService())
             .onSuccess(ret -> makeReplyMsg(msg, ret))
             .onFailure(ex -> {
-                if (ex instanceof ServiceException) {
+                if (ex instanceof AppException) {
                     logger.debug("Service Fail...", ex.getCause());
-                    ServiceException se = (ServiceException) ex;
+                    AppException se = (AppException) ex;
                     msg.reply(new ServiceResultMsg(se.getReason()).toJsonObject());
                 } else {
                     logger.error("Unknown Error...", ex);
-                    msg.reply(new ServiceResultMsg(ServiceResultEnum.HTTP_500).toJsonObject());
+                    msg.reply(new ServiceResultMsg(ResultEnum.HTTP_500).toJsonObject());
                 }
             });
         } catch (Exception ex) {
             logger.error("Unknown Error...", ex);
-            msg.reply(new ServiceResultMsg(ServiceResultEnum.HTTP_500).toJsonObject());
+            msg.reply(new ServiceResultMsg(ResultEnum.HTTP_500).toJsonObject());
         }
     }
     
     protected Future<IResult> doMsg() {
-        return Future.future(promise -> promise.complete(ServiceResultEnum.NORMAL));
+        return Future.future(promise -> promise.complete(ResultEnum.SUCCESS));
     }
     
     protected void handleMsgEvent(Message<JsonObject> msg) {
@@ -213,18 +214,18 @@ public abstract class BaseService extends AbstractVerticle {
             outData = new JsonObject();
 
             doMsg().onFailure(ex -> {
-                if (ex instanceof ServiceException) {
+                if (ex instanceof AppException) {
                     logger.debug("Service Fail...", ex.getCause());
-                    ServiceException se = (ServiceException) ex;
+                    AppException se = (AppException) ex;
                     msg.reply(new ServiceResultMsg(se.getReason()).toJsonObject());
                 } else {
                     logger.error("Unknown Error...", ex);
-                    msg.reply(new ServiceResultMsg(ServiceResultEnum.ERROR).toJsonObject());
+                    msg.reply(new ServiceResultMsg(ResultEnum.ERROR).toJsonObject());
                 }
             });
         } catch (Exception ex) {
             logger.error("Unknown Error...", ex);
-            msg.reply(new ServiceResultMsg(ServiceResultEnum.ERROR).toJsonObject());
+            msg.reply(new ServiceResultMsg(ResultEnum.ERROR).toJsonObject());
         }
     }
 
@@ -236,7 +237,7 @@ public abstract class BaseService extends AbstractVerticle {
         });
     }
 
-    protected void pubMsg(String msg, JsonObject param) {
+    protected void emitMsg(String msg, JsonObject param) {
         vertx.eventBus().publish(msg, param);
     }
 }

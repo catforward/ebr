@@ -32,12 +32,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import io.vertx.core.Future;
+import pers.tsm.ebr.base.BaseService;
+import pers.tsm.ebr.base.IResult;
 import pers.tsm.ebr.common.AppPaths;
+import pers.tsm.ebr.common.ServiceSymbols;
 import pers.tsm.ebr.common.StringUtils;
 import pers.tsm.ebr.common.Symbols;
 import pers.tsm.ebr.data.TaskDefineFileProp;
 import pers.tsm.ebr.data.TaskDefineRepo;
-import pers.tsm.ebr.types.ServiceResultEnum;
+import pers.tsm.ebr.types.ResultEnum;
 
 
 /**
@@ -46,99 +49,99 @@ import pers.tsm.ebr.types.ServiceResultEnum;
  * @author l.gong
  */
 public class FsRepoWatchService extends BaseService {
-	private static final Logger logger = LoggerFactory.getLogger(FsRepoWatchService.class);
-	
-	private long timerID = 0L;
-	private long scanInterval = 0;
-	
-	@Override
+    private static final Logger logger = LoggerFactory.getLogger(FsRepoWatchService.class);
+    
+    private long timerID = 0L;
+    private long scanInterval = 0;
+    
+    @Override
     public void start() throws Exception {
         super.start();
         registerMsg(ServiceSymbols.MSG_REFRESH_FS_TASK_DEFINE);
         scanInterval = config().getLong("fsDataCheckIntervalSeconds", 60L) * 1000;
         // the first time
-        vertx.setTimer(5000, id -> pubMsg(ServiceSymbols.MSG_REFRESH_FS_TASK_DEFINE, emptyJsonObject));
+        vertx.setTimer(2000, id -> emitMsg(ServiceSymbols.MSG_REFRESH_FS_TASK_DEFINE, emptyJsonObject));
     }
-	@Override
+    @Override
     public void stop() throws Exception {
         super.start();
         vertx.cancelTimer(timerID);
     }
 
-	@Override
-	protected String getServiceName() {
-		return FsRepoWatchService.class.getName();
-	}
-	
-	@Override
-	protected Future<IResult> doMsg() {
-		return Future.future(promise -> {
-			List<TaskDefineFileProp> files = new ArrayList<>();
-			scanDataFolder(files)
-			.compose(v -> loadFileContent(files))
-			.onSuccess(ar -> {
-				// for next time
-				timerID = vertx.setTimer(scanInterval,
-						id -> pubMsg(ServiceSymbols.MSG_REFRESH_FS_TASK_DEFINE, emptyJsonObject));
-				promise.complete(ServiceResultEnum.NORMAL);
-			})
-			.onFailure(promise::fail);
-		});
-	}
-	
-	private Future<Void> scanDataFolder(List<TaskDefineFileProp> files) {
-		return Future.future(promise -> {
-			Path dataStorePath = new File(AppPaths.getDataPath()).toPath();
-			try {
-				Files.walkFileTree(dataStorePath, new SimpleFileVisitor<Path>() {
-					@Override
-					public FileVisitResult visitFile(Path filePath, BasicFileAttributes attrs) throws IOException {
-						File file = filePath.toFile();
-						if (file.canRead() && file.getName().endsWith(Symbols.FLOW_FILE_SUFFIX)) {
-							TaskDefineFileProp prop = new TaskDefineFileProp();
-							prop.setAbsolutePath(file.getAbsolutePath());
-							prop.setFlowUrl(StringUtils.toFlowUrl(dataStorePath, filePath));
-							prop.setFileSize(attrs.size());
-							prop.setLastModifiedTime(file.lastModified());
-							files.add(prop);
-						}
-						return super.visitFile(filePath, attrs);
-					}
+    @Override
+    protected String getServiceName() {
+        return FsRepoWatchService.class.getName();
+    }
 
-					@Override
-					public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
-						logger.error("visit file failed.", exc);
-						return FileVisitResult.CONTINUE;
-					}
+    @Override
+    protected Future<IResult> doMsg() {
+        return Future.future(promise -> {
+            List<TaskDefineFileProp> files = new ArrayList<>();
+            scanDataFolder(files)
+            .compose(v -> loadFileContent(files))
+            .onSuccess(ar -> {
+                // for next time
+                timerID = vertx.setTimer(scanInterval,
+                        id -> emitMsg(ServiceSymbols.MSG_REFRESH_FS_TASK_DEFINE, emptyJsonObject));
+                promise.complete(ResultEnum.SUCCESS);
+            })
+            .onFailure(promise::fail);
+        });
+    }
+    
+    private Future<Void> scanDataFolder(List<TaskDefineFileProp> files) {
+        return Future.future(promise -> {
+            Path dataStorePath = new File(AppPaths.getDataPath()).toPath();
+            try {
+                Files.walkFileTree(dataStorePath, new SimpleFileVisitor<Path>() {
+                    @Override
+                    public FileVisitResult visitFile(Path filePath, BasicFileAttributes attrs) throws IOException {
+                        File file = filePath.toFile();
+                        if (file.canRead() && file.getName().endsWith(Symbols.FLOW_FILE_SUFFIX)) {
+                            TaskDefineFileProp prop = new TaskDefineFileProp();
+                            prop.setAbsolutePath(file.getAbsolutePath());
+                            prop.setFlowUrl(StringUtils.toFlowUrl(dataStorePath, filePath));
+                            prop.setFileSize(attrs.size());
+                            prop.setLastModifiedTime(file.lastModified());
+                            files.add(prop);
+                        }
+                        return super.visitFile(filePath, attrs);
+                    }
 
-				});
-			} catch (IOException e) {
-				promise.fail(e);
-				return;
-			}
-			promise.complete();
-		});
-	}
-	
-	private Future<Void> loadFileContent(List<TaskDefineFileProp> files) {
-		return Future.future(promise -> {
-			if (files.isEmpty()) {
-				TaskDefineRepo.removeAll();
-				promise.complete();
-				return;
-			}
-			Map<String, TaskDefineFileProp> copyMap =  TaskDefineRepo.copyDefineFileInfo();
-			files.forEach(prop -> {
-				if (prop.isNewerThan(copyMap.remove(prop.getFlowUrl()))) {
-					TaskDefineRepo.addDefineFile(prop);
-				}
-			});
-			copyMap.forEach((k, v) -> {
-				TaskDefineRepo.deleteDefineFile(v);
-			});
-			copyMap.clear();
-			promise.complete();
-		});
-	}
+                    @Override
+                    public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+                        logger.error("visit file failed.", exc);
+                        return FileVisitResult.CONTINUE;
+                    }
+
+                });
+            } catch (IOException e) {
+                promise.fail(e);
+                return;
+            }
+            promise.complete();
+        });
+    }
+    
+    private Future<Void> loadFileContent(List<TaskDefineFileProp> files) {
+        return Future.future(promise -> {
+            if (files.isEmpty()) {
+                TaskDefineRepo.removeAll();
+                promise.complete();
+                return;
+            }
+            Map<String, TaskDefineFileProp> copyMap =  TaskDefineRepo.copyDefineFileInfo();
+            files.forEach(prop -> {
+                if (prop.isNewerThan(copyMap.remove(prop.getFlowUrl()))) {
+                    TaskDefineRepo.addDefineFile(prop);
+                }
+            });
+            copyMap.forEach((k, v) -> {
+                TaskDefineRepo.deleteDefineFile(v);
+            });
+            copyMap.clear();
+            promise.complete();
+        });
+    }
 
 }

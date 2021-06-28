@@ -24,80 +24,80 @@ import static java.util.Objects.isNull;
  *
  * @author l.gong
  */
-public class TaskDefineFileProp {	
-	
-	private String absolutePath;
-	private String flowUrl;
-	private long fileSize;
-	private long lastModifiedTime;
-	
-	public TaskDefineFileProp() {
-		// do nothing
-	}
-	
-	@Override
-	public String toString() {
-		return String.format("flowUrl: %s, path: %s, lastModifiedTime: %d", flowUrl, absolutePath, lastModifiedTime);
-	}
-	
-	public boolean isNewerThan(TaskDefineFileProp other) {
-		return isNull(other) || this.lastModifiedTime > other.lastModifiedTime;
-	}
+public class TaskDefineFileProp {
 
-	/**
-	 * @return the absPath
-	 */
-	public String getAbsolutePath() {
-		return absolutePath;
-	}
+    private String absolutePath;
+    private String flowUrl;
+    private long fileSize;
+    private long lastModifiedTime;
 
-	/**
-	 * @param absPath the absPath to set
-	 */
-	public void setAbsolutePath(String absPath) {
-		this.absolutePath = absPath;
-	}
+    public TaskDefineFileProp() {
+        // do nothing
+    }
 
-	/**
-	 * @return the flowUrl
-	 */
-	public String getFlowUrl() {
-		return flowUrl;
-	}
+    @Override
+    public String toString() {
+        return String.format("flowUrl: %s, path: %s, lastModifiedTime: %d", flowUrl, absolutePath, lastModifiedTime);
+    }
 
-	/**
-	 * @param flowUrl the fileUrl to set
-	 */
-	public void setFlowUrl(String flowUrl) {
-		this.flowUrl = flowUrl;
-	}
+    public boolean isNewerThan(TaskDefineFileProp other) {
+        return isNull(other) || this.lastModifiedTime > other.lastModifiedTime;
+    }
 
-	/**
-	 * @return the fileSize
-	 */
-	public long getFileSize() {
-		return fileSize;
-	}
+    /**
+     * @return the absPath
+     */
+    public String getAbsolutePath() {
+        return absolutePath;
+    }
 
-	/**
-	 * @param fileSize the fileSize to set
-	 */
-	public void setFileSize(long fileSize) {
-		this.fileSize = fileSize;
-	}
+    /**
+     * @param absPath the absPath to set
+     */
+    public void setAbsolutePath(String absPath) {
+        this.absolutePath = absPath;
+    }
 
-	/**
-	 * @return the lastModifiedTime
-	 */
-	public long getLastModifiedTime() {
-		return lastModifiedTime;
-	}
+    /**
+     * @return the flowUrl
+     */
+    public String getFlowUrl() {
+        return flowUrl;
+    }
 
-	/**
-	 * @param lastModifiedTime the lastModifiedTime to set
-	 */
-	public void setLastModifiedTime(long lastModifiedTime) {
-		this.lastModifiedTime = lastModifiedTime;
-	}
+    /**
+     * @param flowUrl the fileUrl to set
+     */
+    public void setFlowUrl(String flowUrl) {
+        this.flowUrl = flowUrl;
+    }
+
+    /**
+     * @return the fileSize
+     */
+    public long getFileSize() {
+        return fileSize;
+    }
+
+    /**
+     * @param fileSize the fileSize to set
+     */
+    public void setFileSize(long fileSize) {
+        this.fileSize = fileSize;
+    }
+
+    /**
+     * @return the lastModifiedTime
+     */
+    public long getLastModifiedTime() {
+        return lastModifiedTime;
+    }
+
+    /**
+     * @param lastModifiedTime the lastModifiedTime to set
+     */
+    public void setLastModifiedTime(long lastModifiedTime) {
+        this.lastModifiedTime = lastModifiedTime;
+    }
 
 }

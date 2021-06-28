@@ -17,10 +17,13 @@
  */
 package pers.tsm.ebr.common;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +37,7 @@ import io.vertx.core.json.JsonObject;
  */
 public final class AppConfigs {
 	private static final Logger logger = LoggerFactory.getLogger(AppConfigs.class);
-	private static final String CONFIG_FILE = "/config.json";
+	private static final String CONFIG_FILE = "config.json";
 	private final JsonObject config = new JsonObject();
 
 	private static class InstanceHolder {
@@ -50,6 +53,7 @@ public final class AppConfigs {
      */
     public static void load() throws IOException, URISyntaxException {
         InstanceHolder.INSTANCE.loadConfigFile();
+        InstanceHolder.INSTANCE.loadExternalConfigFile();
         if (InstanceHolder.INSTANCE.config.isEmpty()) {
         	throw new AppException("config.json --> empty");
         }
@@ -78,8 +82,22 @@ public final class AppConfigs {
      * @throws URISyntaxException 获取配置文件URI资源失败时
      */
     private void loadConfigFile() throws IOException, URISyntaxException {
-        URI innerConfigFile = getClass().getResource(CONFIG_FILE).toURI();
-        JsonObject tmpConfig = new JsonObject(Files.readString(java.nio.file.Paths.get(innerConfigFile)));
+        URI innerConfigFile = getClass().getResource("/" + CONFIG_FILE).toURI();
+        JsonObject tmpConfig = new JsonObject(Files.readString(Paths.get(innerConfigFile)));
         config.mergeIn(tmpConfig);
     }
+
+    /**
+     * 读取配置文件
+     * @param holder 保存内部配置文件的集合
+     * @throws IOException 读取配置文件失败时
+     * @throws URISyntaxException 获取配置文件URI资源失败时
+     */
+    private void loadExternalConfigFile() throws IOException, URISyntaxException {
+    	String extConfFile = String.format("%s%s%s", AppPaths.getConfPath(), File.separator, CONFIG_FILE);
+    	URI confStorePath = new File(extConfFile).toURI();
+        JsonObject tmpConfig = new JsonObject(Files.readString(Paths.get(confStorePath)));
+        config.mergeIn(tmpConfig);
+    }
+
 }

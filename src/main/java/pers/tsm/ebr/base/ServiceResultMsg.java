@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.tsm.ebr.service;
+package pers.tsm.ebr.base;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;

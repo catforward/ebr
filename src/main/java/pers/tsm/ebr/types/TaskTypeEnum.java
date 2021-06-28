@@ -15,41 +15,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package pers.tsm.ebr.common;
-
-import pers.tsm.ebr.base.IResult;
-import pers.tsm.ebr.types.ResultEnum;
+package pers.tsm.ebr.types;
 
 /**
  *
  *
  * @author l.gong
  */
-public final class AppException extends RuntimeException {
-	private static final long serialVersionUID = -2319024343224680740L;
-	private final transient IResult reason;
-	
-	public AppException(String msg) {
-		super(msg);
-		reason = ResultEnum.ERROR;
-	}
-	
-	public AppException(String msg, Throwable cause) {
-		super(msg, cause);
-		reason = ResultEnum.ERROR;
-	}
+public enum TaskTypeEnum {
+    FLOW(1, "flow"),
+    GROUP(2, "group"),
+    TASK(3, "task"),
+    ;
 
-    public AppException(IResult result) {
-        super(result.getMessage());
-        reason = result;
+    private final int type;
+    private final String name;
+
+    TaskTypeEnum(int type, String name) {
+        this.type = type;
+        this.name = name;
     }
 
-    public AppException(IResult result, Throwable cause) {
-        super(cause);
-        reason = result;
+    public int getType() {
+        return this.type;
     }
 
-    public IResult getReason() {
-        return reason;
+    public String getName() {
+        return this.name;
     }
+
 }
