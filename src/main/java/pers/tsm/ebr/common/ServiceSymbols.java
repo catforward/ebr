@@ -26,18 +26,25 @@ import static pers.tsm.ebr.common.Symbols.*;
  */
 public final class ServiceSymbols {
 
-	private ServiceSymbols() {}
+    private ServiceSymbols() {}
 
-	public static final String URL_INFO_FLOWS = BASE_URL + "/api/info/flows";
-	public static final String SERVICE_INFO_FLOWS = "service.info.flows";
+    public static final String URL_INFO_FLOWS = BASE_URL + "/api/info/flows";
+    public static final String SERVICE_INFO_FLOWS = "service.info.flows";
 
-	public static final String URL_INFO_FLOW = BASE_URL + "/api/info/flow";
-	public static final String SERVICE_INFO_FLOW = "service.info.flow";
+    public static final String URL_INFO_FLOW = BASE_URL + "/api/info/flow";
+    public static final String SERVICE_INFO_FLOW = "service.info.flow";
 
-	public static final String URL_SCHD_ACTION = BASE_URL + "/api/schd/action";
-	public static final String SERVICE_SCHD_ACTION = "service.schd.action";
+    public static final String URL_SCHD_ACTION = BASE_URL + "/api/schd/action";
+    public static final String SERVICE_SCHD_ACTION = "service.schd.action";
 
-	public static final String MSG_REFRESH_FS_TASK_DEFINE = "msg.refresh.fs.task.define";
-	public static final String MSG_ACTION_TASK_PERFORM = "msg.action.task.perform";
+    public static final String MSG_ACTION_REFRESH_FS_DEFINE = "msg.action.refresh.fs.define";
+    public static final String MSG_ACTION_TASK_START = "msg.action.task.start";
+    public static final String MSG_ACTION_TASK_STOP = "msg.action.task.stop";
+    public static final String MSG_ACTION_TASK_PAUSE = "msg.action.task.pause";
+    public static final String MSG_ACTION_TASK_SKIP = "msg.action.task.skip";
+
+    public static final String MSG_STATE_TASK_COMPLETE = "msg.state.task.complete";
+    public static final String MSG_STATE_TASK_RUNNING = "msg.state.task.running";
+    public static final String MSG_STATE_TASK_FAILED = "msg.state.task.failed";
 
 }

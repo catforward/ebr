@@ -17,12 +17,12 @@
  */
 package pers.tsm.ebr.data;
 
+import static java.util.Objects.requireNonNull;
+
 import java.util.function.Supplier;
 
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Verticle;
-
-import static java.util.Objects.requireNonNull;
 
 /**
  *
@@ -30,7 +30,7 @@ import static java.util.Objects.requireNonNull;
  * @author l.gong
  */
 public class VerticleProp {
-	private final Supplier<Verticle> verticle;
+    private final Supplier<Verticle> verticle;
     private DeploymentOptions options;
 
     public VerticleProp(Supplier<Verticle> verticle, DeploymentOptions options) {
@@ -51,4 +51,5 @@ public class VerticleProp {
     public void setOptions(DeploymentOptions options) {
         this.options = options;
     }
+
 }

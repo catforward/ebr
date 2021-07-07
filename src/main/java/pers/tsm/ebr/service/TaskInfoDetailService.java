@@ -17,6 +17,8 @@
  */
 package pers.tsm.ebr.service;
 
+import static java.util.Objects.isNull;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,8 +33,6 @@ import pers.tsm.ebr.common.Symbols;
 import pers.tsm.ebr.data.TaskDefineFileProp;
 import pers.tsm.ebr.data.TaskDefineRepo;
 import pers.tsm.ebr.types.ResultEnum;
-
-import static java.util.Objects.isNull;
 
 
 /**
@@ -56,7 +56,7 @@ import static java.util.Objects.isNull;
  */
 public class TaskInfoDetailService extends BaseService {
     private static final Logger logger = LoggerFactory.getLogger(TaskInfoDetailService.class);
-    
+
     @Override
     public void start() throws Exception {
         super.start();
@@ -67,7 +67,7 @@ public class TaskInfoDetailService extends BaseService {
     protected String getServiceName() {
         return TaskInfoDetailService.class.getName();
     }
-    
+
     @Override
     public Future<IResult> doPrepare() {
         logger.trace("doPrepare -> {}", inData);
@@ -82,7 +82,7 @@ public class TaskInfoDetailService extends BaseService {
             }
         });
     }
-    
+
     @Override
     protected Future<IResult> doService() {
         logger.trace("doService -> {}", inData);

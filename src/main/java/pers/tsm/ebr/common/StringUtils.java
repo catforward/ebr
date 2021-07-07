@@ -30,18 +30,18 @@ import java.time.format.DateTimeFormatter;
  */
 public class StringUtils {
     private static final DateTimeFormatter yyyyMMddHHmmssFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-	
-	private StringUtils() {}
-	
-	public static String toDatetimeStr(long time, ZoneId zone) {
-		LocalDateTime datetime = LocalDateTime.ofInstant(Instant.ofEpochMilli(time), zone);
-		return yyyyMMddHHmmssFormatter.format(datetime);
-	}
-	
-	public static String toFlowUrl(Path dataStorePath, Path filePath) {
-		String flowUrl = filePath.toUri().toString().replaceAll(dataStorePath.toUri().toString(), "");
-		flowUrl = flowUrl.replaceAll(Symbols.FLOW_FILE_SUFFIX, "");
-		return (flowUrl.startsWith("/")) ? flowUrl : "/" + flowUrl;
-	}
+
+    private StringUtils() {}
+
+    public static String toDatetimeStr(long time, ZoneId zone) {
+        LocalDateTime datetime = LocalDateTime.ofInstant(Instant.ofEpochMilli(time), zone);
+        return yyyyMMddHHmmssFormatter.format(datetime);
+    }
+
+    public static String toFlowUrl(Path dataStorePath, Path filePath) {
+        String flowUrl = filePath.toUri().toString().replaceAll(dataStorePath.toUri().toString(), "");
+        flowUrl = flowUrl.replaceAll(Symbols.FLOW_FILE_SUFFIX, "");
+        return (flowUrl.startsWith("/")) ? flowUrl : "/" + flowUrl;
+    }
 
 }

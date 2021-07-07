@@ -1,14 +1,20 @@
 {
+    "app": {
+      "devMode": true,
+      "allowCommandPath": [
+        "/opt/one/batch/"
+      ]
+    },
     "vertx": {
       "eventLoopPoolSize": 2,
-      "workerPoolSize": 20,
+      "workerPoolSize": 10,
       "maxWorkerExecuteTime": 3600000,
       "eventBusOptions": {
         "connectTimeout": 6000
       }
     },
     "http": {
-      "address": "127.0.0.1",
+      "address": "0.0.0.0",
       "port": 8088
     },
     "service": {
@@ -19,11 +25,9 @@
       "fsDataCacheMaximumSize": 50,
       "taskCacheExpireSeconds": 300,
       "taskCacheInitialCapacity": 2,
-      "taskCacheMaximumSize": 20
-    },
-    "cmd": {
-      "allowPath": [
-        "/opt/one/batch/"
-      ]
+      "taskCacheMaximumSize": 20,
+      "taskExecutorMaximumSize": 4,
+      "taskExecutorMinimumSize": 2,
+      "taskExecutorCheckIntervalSeconds": 3
     }
 }

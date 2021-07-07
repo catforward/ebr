@@ -25,14 +25,15 @@ import java.io.Serializable;
  * @author l.gong
  */
 public interface IResult extends Serializable {
-	/**
-     * <p>获取处理结果码</p>
-     * @return 处理结果码
-     */
-	String getCode();
     /**
-     * <p>获取处理结果描述</p>
-     * @return 处理结果描述
+     * <p>get the code of result</p>
+     * @return String
+     */
+    String getCode();
+
+    /**
+     * <p>get the message of result</p>
+     * @return String
      */
     String getMessage();
 }

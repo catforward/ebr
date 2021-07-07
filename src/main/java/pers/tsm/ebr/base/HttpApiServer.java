@@ -17,6 +17,11 @@
  */
 package pers.tsm.ebr.base;
 
+import static java.util.Objects.isNull;
+import static pers.tsm.ebr.common.Symbols.BASE_URL;
+
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,12 +32,8 @@ import io.vertx.ext.web.Router;
 import io.vertx.ext.web.handler.BodyHandler;
 import io.vertx.ext.web.handler.ErrorHandler;
 import pers.tsm.ebr.AppMain;
+import pers.tsm.ebr.common.AppConfigs;
 import pers.tsm.ebr.common.AppContext;
-
-import static java.util.Objects.isNull;
-import static pers.tsm.ebr.common.Symbols.*;
-
-import java.util.Map;
 
 /**
  *
@@ -40,7 +41,7 @@ import java.util.Map;
  * @author l.gong
  */
 public class HttpApiServer extends AbstractVerticle {
-	private static final Logger logger = LoggerFactory.getLogger(HttpApiServer.class);
+    private static final Logger logger = LoggerFactory.getLogger(HttpApiServer.class);
     private HttpServer server;
     
     //private static final String WEB_ROOT = "static";
@@ -72,8 +73,8 @@ public class HttpApiServer extends AbstractVerticle {
         router.route().failureHandler(ErrorHandler.create(vertx));
 //        router.route(FAVICON).handler(FaviconHandler.create(vertx));
 //        router.get(HTTP_GET_ALL).handler(StaticHandler.create()
-//        		.setWebRoot(WEB_ROOT)
-//        		.setIndexPage(INDEX_HTML)
+//                .setWebRoot(WEB_ROOT)
+//                .setIndexPage(INDEX_HTML)
 //                .setAlwaysAsyncFS(true)
 //                .setFilesReadOnly(true)
 //                .setCachingEnabled(true)
@@ -89,8 +90,8 @@ public class HttpApiServer extends AbstractVerticle {
         mapping.forEach((apiUrl, serviceId) -> router.post(apiUrl).handler(handler));
 
         // server
-        String host = config().getString("address", "localhost");
-        int port = config().getInteger("port", 8081);
+        String host = config().getString(AppConfigs.HTTP_ADDRESS, "localhost");
+        int port = config().getInteger(AppConfigs.HTTP_PORT, 8081);
         return vertx.createHttpServer().requestHandler(router).listen(port, host, ar -> {
             if (ar.succeeded()) {
                 logger.info("EBR Web Api Server is running on port: {} ", port);
@@ -99,5 +100,5 @@ public class HttpApiServer extends AbstractVerticle {
             }
         });
     }
-    
+
 }

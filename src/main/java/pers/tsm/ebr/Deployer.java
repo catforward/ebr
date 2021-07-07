@@ -17,23 +17,12 @@
  */
 package pers.tsm.ebr;
 
-import io.vertx.core.CompositeFuture;
-import io.vertx.core.DeploymentOptions;
-import io.vertx.core.Future;
-import io.vertx.core.Verticle;
-import io.vertx.core.Vertx;
-import io.vertx.core.json.JsonObject;
-import pers.tsm.ebr.common.AppContext;
-import pers.tsm.ebr.data.Flow;
-import pers.tsm.ebr.data.TaskDefineRepo;
-import pers.tsm.ebr.data.TaskRepo;
-import pers.tsm.ebr.data.VerticleProp;
-import pers.tsm.ebr.service.FsRepoWatchService;
-import pers.tsm.ebr.service.TaskSchdActionService;
-import pers.tsm.ebr.service.TaskInfoDetailService;
-import pers.tsm.ebr.service.TaskInfoListService;
-
-import static pers.tsm.ebr.common.ServiceSymbols.*;
+import static pers.tsm.ebr.common.ServiceSymbols.SERVICE_INFO_FLOW;
+import static pers.tsm.ebr.common.ServiceSymbols.SERVICE_INFO_FLOWS;
+import static pers.tsm.ebr.common.ServiceSymbols.SERVICE_SCHD_ACTION;
+import static pers.tsm.ebr.common.ServiceSymbols.URL_INFO_FLOW;
+import static pers.tsm.ebr.common.ServiceSymbols.URL_INFO_FLOWS;
+import static pers.tsm.ebr.common.ServiceSymbols.URL_SCHD_ACTION;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,6 +31,25 @@ import java.util.function.Supplier;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+
+import io.vertx.core.CompositeFuture;
+import io.vertx.core.DeploymentOptions;
+import io.vertx.core.Future;
+import io.vertx.core.Verticle;
+import io.vertx.core.Vertx;
+import io.vertx.core.json.JsonObject;
+import pers.tsm.ebr.common.AppConfigs;
+import pers.tsm.ebr.common.AppContext;
+import pers.tsm.ebr.data.Flow;
+import pers.tsm.ebr.data.TaskDefineRepo;
+import pers.tsm.ebr.data.TaskRepo;
+import pers.tsm.ebr.data.VerticleProp;
+import pers.tsm.ebr.schd.TaskExecVerticle;
+import pers.tsm.ebr.schd.TaskSchdVerticle;
+import pers.tsm.ebr.service.FsRepoWatchService;
+import pers.tsm.ebr.service.TaskInfoDetailService;
+import pers.tsm.ebr.service.TaskInfoListService;
+import pers.tsm.ebr.service.TaskSchdActionService;
 
 /**
  *
@@ -57,17 +65,17 @@ public class Deployer {
             // Cache
             Cache<String, JsonObject> fileContentCache = CacheBuilder.newBuilder()
                     .concurrencyLevel(Runtime.getRuntime().availableProcessors())
-                    .initialCapacity(config.getInteger("fsDataCacheInitialCapacity", 1))
-                    .maximumSize(config.getInteger("fsDataCacheMaximumSize", 10))
-                    .expireAfterWrite(config.getInteger("fsDataCacheExpireSeconds", 300), TimeUnit.SECONDS)
+                    .initialCapacity(config.getInteger(AppConfigs.SERVICE_FS_DATA_CACHE_INITIAL_CAPACITY, 1))
+                    .maximumSize(config.getInteger(AppConfigs.SERVICE_FS_DATA_CACHE_MAXIMUM_SIZE, 10))
+                    .expireAfterWrite(config.getInteger(AppConfigs.SERVICE_FS_DATA_CACHE_EXPIRE_SECONDS, 300), TimeUnit.SECONDS)
                     .removalListener(TaskDefineRepo.removalListener)
                     .build();
             TaskDefineRepo.setFileContentCache(fileContentCache);
             Cache<String, Flow> taskCache = CacheBuilder.newBuilder()
                     .concurrencyLevel(Runtime.getRuntime().availableProcessors())
-                    .initialCapacity(config.getInteger("taskCacheInitialCapacity", 1))
-                    .maximumSize(config.getInteger("taskCacheMaximumSize", 20))
-                    .expireAfterWrite(config.getInteger("taskCacheExpireSeconds", 600), TimeUnit.SECONDS)
+                    .initialCapacity(config.getInteger(AppConfigs.SERVICE_TASK_CACHE_INITIAL_CAPACITY, 1))
+                    .maximumSize(config.getInteger(AppConfigs.SERVICE_TASK_CACHE_MAXIMUM_SIZE, 20))
+                    .expireAfterWrite(config.getInteger(AppConfigs.SERVICE_TASK_CACHE_EXPIRE_SECONDS, 600), TimeUnit.SECONDS)
                     .build();
             TaskRepo.setIdleFlowPoolCache(taskCache);
             // API
@@ -75,10 +83,12 @@ public class Deployer {
             AppContext.addApiServiceMapping(URL_INFO_FLOW, SERVICE_INFO_FLOW);
             AppContext.addApiServiceMapping(URL_SCHD_ACTION, SERVICE_SCHD_ACTION);
             // Vertical
-            AppContext.addVerticle(new VerticleProp(FsRepoWatchService::new, makeDefaultWorkerOptions(1)));
-            AppContext.addVerticle(new VerticleProp(TaskInfoListService::new, makeDefaultWorkerOptions(1)));
-            AppContext.addVerticle(new VerticleProp(TaskInfoDetailService::new, makeDefaultWorkerOptions(1)));
-            AppContext.addVerticle(new VerticleProp(TaskSchdActionService::new, makeDefaultWorkerOptions(1)));
+            AppContext.addVerticle(new VerticleProp(FsRepoWatchService::new, makeDefaultWorkerOptions(1, config)));
+            AppContext.addVerticle(new VerticleProp(TaskInfoListService::new, makeDefaultWorkerOptions(1, config)));
+            AppContext.addVerticle(new VerticleProp(TaskInfoDetailService::new, makeDefaultWorkerOptions(1, config)));
+            AppContext.addVerticle(new VerticleProp(TaskSchdActionService::new, makeDefaultWorkerOptions(1, config)));
+            AppContext.addVerticle(new VerticleProp(TaskSchdVerticle::new, makeDefaultWorkerOptions(1, config)));
+            AppContext.addVerticle(new VerticleProp(TaskExecVerticle::new, makeDefaultWorkerOptions(1, config)));
 
             promise.complete(config);
         });
@@ -106,7 +116,7 @@ public class Deployer {
         );
     }
 
-    private static DeploymentOptions makeDefaultWorkerOptions(int instances) {
-        return new DeploymentOptions().setInstances(instances).setWorker(true);
+    private static DeploymentOptions makeDefaultWorkerOptions(int instances, JsonObject config) {
+        return new DeploymentOptions().setInstances(instances).setWorker(true).setConfig(config);
     }
 }

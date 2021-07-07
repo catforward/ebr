@@ -17,15 +17,18 @@
  */
 package pers.tsm.ebr.common;
 
+import static java.util.Objects.isNull;
+import static pers.tsm.ebr.common.Symbols.CONF;
+import static pers.tsm.ebr.common.Symbols.DATA;
+import static pers.tsm.ebr.common.Symbols.ENV_EBR_ROOT;
+import static pers.tsm.ebr.common.Symbols.LOGS;
+
 import java.io.File;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static java.util.Objects.isNull;
-import static pers.tsm.ebr.common.Symbols.*;
 
 /**
  * <pre>
@@ -126,4 +129,5 @@ public final class AppPaths {
     public static String getRootPath() {
         return InstanceHolder.INSTANCE.rootPath;
     }
+
 }

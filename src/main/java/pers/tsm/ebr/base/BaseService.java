@@ -17,6 +17,16 @@
  */
 package pers.tsm.ebr.base;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.requireNonNull;
+import static pers.tsm.ebr.common.Symbols.BLANK_STR;
+import static pers.tsm.ebr.common.Symbols.BODY;
+import static pers.tsm.ebr.common.Symbols.METHOD;
+import static pers.tsm.ebr.common.Symbols.PATH;
+import static pers.tsm.ebr.common.Symbols.USER_AGENT;
+
+import java.time.ZoneId;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,14 +35,9 @@ import io.vertx.core.Future;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import pers.tsm.ebr.common.AppConfigs;
 import pers.tsm.ebr.common.AppException;
 import pers.tsm.ebr.types.ResultEnum;
-
-import static java.util.Objects.isNull;
-import static java.util.Objects.requireNonNull;
-import static pers.tsm.ebr.common.Symbols.*;
-
-import java.time.ZoneId;
 
 /**
  *
@@ -40,7 +45,7 @@ import java.time.ZoneId;
  * @author l.gong
  */
 public abstract class BaseService extends AbstractVerticle {
-	private static final Logger logger = LoggerFactory.getLogger(BaseService.class);
+    private static final Logger logger = LoggerFactory.getLogger(BaseService.class);
     protected JsonObject inData;
     protected JsonObject outData;
     protected final JsonObject emptyJsonObject = new JsonObject();
@@ -50,13 +55,13 @@ public abstract class BaseService extends AbstractVerticle {
     @Override
     public void start() throws Exception {
         super.start();
-        zone = ZoneId.of(config().getString("Asia/Tokyo", "Asia/Tokyo"));
+        zone = ZoneId.of(config().getString(AppConfigs.SERVICE_TIMEZONE, "Asia/Tokyo"));
         logger.info("Service: {} started. [{}]", getServiceName(), deploymentID());
     }
 
     @Override
     public void stop() throws Exception {
-        super.start();
+        super.stop();
         logger.info("Service: {} stopped. [{}]", getServiceName(), deploymentID());
     }
 
@@ -65,7 +70,7 @@ public abstract class BaseService extends AbstractVerticle {
      * @param serviceId 服务ID
      */
     protected void registerService(String serviceId) {
-		requireNonNull(serviceId);
+        requireNonNull(serviceId);
         vertx.eventBus().consumer(serviceId, this::handleServiceEvent);
     }
 
@@ -74,13 +79,13 @@ public abstract class BaseService extends AbstractVerticle {
      * @param requestId 服务ID
      */
     protected void registerRequest(String requestId) {
-		requireNonNull(requestId);
+        requireNonNull(requestId);
         vertx.eventBus().consumer(requestId, this::handleRequestEvent);
     }
     
     protected void registerMsg(String msgId) {
-		requireNonNull(msgId);
-    	vertx.eventBus().consumer(msgId, this::handleMsgEvent);
+        requireNonNull(msgId);
+        vertx.eventBus().consumer(msgId, this::handleMsgEvent);
     }
 
     /**
@@ -110,6 +115,7 @@ public abstract class BaseService extends AbstractVerticle {
         }
         return isNull(value) ? def : value;
     }
+
     /**
      * <p>获取字符串型的请求参数值</p>
      * @param name 参数名
@@ -159,12 +165,12 @@ public abstract class BaseService extends AbstractVerticle {
                    msg.reply(new ServiceResultMsg(se.getReason()).toJsonObject());
                } else {
                    logger.error("Unknown Error...", ex);
-                   msg.reply(new ServiceResultMsg(ResultEnum.HTTP_500).toJsonObject());
+                   msg.reply(new ServiceResultMsg(ResultEnum.ERR_500).toJsonObject());
                }
             });
         } catch (Exception ex) {
             logger.error("Unknown Error...", ex);
-            msg.reply(new ServiceResultMsg(ResultEnum.HTTP_500).toJsonObject());
+            msg.reply(new ServiceResultMsg(ResultEnum.ERR_500).toJsonObject());
         }
     }
 
@@ -195,21 +201,21 @@ public abstract class BaseService extends AbstractVerticle {
                     msg.reply(new ServiceResultMsg(se.getReason()).toJsonObject());
                 } else {
                     logger.error("Unknown Error...", ex);
-                    msg.reply(new ServiceResultMsg(ResultEnum.HTTP_500).toJsonObject());
+                    msg.reply(new ServiceResultMsg(ResultEnum.ERR_500).toJsonObject());
                 }
             });
         } catch (Exception ex) {
             logger.error("Unknown Error...", ex);
-            msg.reply(new ServiceResultMsg(ResultEnum.HTTP_500).toJsonObject());
+            msg.reply(new ServiceResultMsg(ResultEnum.ERR_500).toJsonObject());
         }
     }
-    
+
     protected Future<IResult> doMsg() {
         return Future.future(promise -> promise.complete(ResultEnum.SUCCESS));
     }
-    
+
     protected void handleMsgEvent(Message<JsonObject> msg) {
-    	try {
+        try {
             inData = msg.body();
             outData = new JsonObject();
 
@@ -232,7 +238,7 @@ public abstract class BaseService extends AbstractVerticle {
     private Future<Void> makeReplyMsg(Message<JsonObject> msg, IResult ret) {
         return Future.future(promise -> {
             logger.trace("makeReplyMsg: {}", outData);
-            msg.reply(new ServiceResultMsg(ret).setData(outData).toJsonObject());
+            msg.reply(new ServiceResultMsg(ret).toJsonObject());
             promise.complete();
         });
     }
@@ -240,4 +246,5 @@ public abstract class BaseService extends AbstractVerticle {
     protected void emitMsg(String msg, JsonObject param) {
         vertx.eventBus().publish(msg, param);
     }
+
 }

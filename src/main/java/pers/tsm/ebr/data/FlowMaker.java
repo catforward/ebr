@@ -58,12 +58,11 @@ class FlowMaker {
         this.flowValidators.add(new DAGFlowValidator());
     }
 
-    Flow makeWithValidate() {
+    Flow makeAndValidate() {
         makeBasicFlowInfo();
         updateTaskPropInfo();
-        updateTaskPathInfo(flow.root);
+        updateTaskUrlInfo(flow.root);
         validateAllTask();
-        validateFlow();
         return flow;
     }
 
@@ -97,22 +96,25 @@ class FlowMaker {
                 groupTask.children.add(task);
                 task.meta.depends.forEach(depId -> {
                     Task depTask = Optional.ofNullable(idTaskMapping.get(depId)).orElseThrow();
-                    task.depends.add(depTask);
+                    task.predecessor.add(depTask);
+                    depTask.successor.add(task);
                 });
+                task.root = flow.root;
                 task.parent = groupTask;
-                task.depends.add(groupTask);
+                //task.predecessor.add(groupTask);
+                //groupTask.successor.add(task);
             }
         });
     }
 
-    private void updateTaskPathInfo(Task task) {
+    private void updateTaskUrlInfo(Task task) {
         if (TaskTypeEnum.FLOW != task.type) {
             task.url = String.format("%s/%s", task.parent.url, task.meta.id);
             flow.urlTaskMapping.put(task.url, task);
         }
         for (var subTask : task.children) {
             if (TaskTypeEnum.GROUP == subTask.type) {
-                updateTaskPathInfo(subTask);
+                updateTaskUrlInfo(subTask);
             } else {
                 subTask.url = String.format("%s/%s", task.url, subTask.meta.id);
                 flow.urlTaskMapping.put(subTask.url, subTask);
@@ -121,15 +123,12 @@ class FlowMaker {
     }
 
     private void validateAllTask() {
-    	idTaskMapping.forEach((id, task) -> validateTask(task));
-    }
-    
-    private void validateTask(Task task) {
-        taskValidators.forEach(validator -> validator.validate(task));
-    }
-
-    private void validateFlow() {
-        flowValidators.forEach(validator -> validator.validate(flow.root));
+        idTaskMapping.forEach((id, task) -> {
+            taskValidators.forEach(validator -> validator.validate(task));
+            if (TaskTypeEnum.FLOW == task.type) {
+                flowValidators.forEach(validator -> validator.validate(task));
+            }
+        });
     }
 
 }

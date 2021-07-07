@@ -17,6 +17,15 @@
  */
 package pers.tsm.ebr.base;
 
+import static java.util.Objects.isNull;
+import static pers.tsm.ebr.common.Symbols.BODY;
+import static pers.tsm.ebr.common.Symbols.METHOD;
+import static pers.tsm.ebr.common.Symbols.PATH;
+import static pers.tsm.ebr.common.Symbols.USER_AGENT;
+
+import java.util.Map;
+import java.util.Optional;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,19 +42,13 @@ import io.vertx.ext.web.RoutingContext;
 import pers.tsm.ebr.common.AppException;
 import pers.tsm.ebr.types.ResultEnum;
 
-import static java.util.Objects.isNull;
-import static pers.tsm.ebr.common.Symbols.*;
-
-import java.util.Map;
-import java.util.Optional;
-
 /**
  *
  *
  * @author l.gong
  */
 public class BaseHandler implements Handler<RoutingContext> {
-	private static final Logger logger = LoggerFactory.getLogger(BaseHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(BaseHandler.class);
     private final Map<String, String> apiServiceMap;
     protected final JsonObject emptyBody = new JsonObject();
 
@@ -88,14 +91,14 @@ public class BaseHandler implements Handler<RoutingContext> {
                     response.end(respStr);
                 } else {
                     // 其他未知异常
-                    routingContext.fail(Integer.parseInt(ResultEnum.HTTP_400.getCode()));
+                    routingContext.fail(Integer.parseInt(ResultEnum.ERR_400.getCode()));
                 }
             });
 
         } catch (Exception ex) {
             // 出现异常时，vertx会向客户端返回HTTP 500错误，但是服务器端没有任何日志
             logger.error("Exception: ", ex);
-            routingContext.fail(Integer.parseInt(ResultEnum.HTTP_500.getCode()));
+            routingContext.fail(Integer.parseInt(ResultEnum.ERR_500.getCode()));
         }
     }
 
@@ -107,12 +110,12 @@ public class BaseHandler implements Handler<RoutingContext> {
      */
     private Future<Void> doPrepare(JsonObject inData) {
         return Future.future(promise -> {
-        	String path = inData.getString(PATH);
-        	if (isNull(apiServiceMap.get(path))) {
-        		promise.fail(new AppException(ResultEnum.HTTP_404));
-        	} else {
-        		promise.complete();
-        	}
+            String path = inData.getString(PATH);
+            if (isNull(apiServiceMap.get(path))) {
+                promise.fail(new AppException(ResultEnum.ERR_404));
+            } else {
+                promise.complete();
+            }
         });
     }
 
@@ -124,9 +127,9 @@ public class BaseHandler implements Handler<RoutingContext> {
      */
     private Future<JsonObject> doHandle(RoutingContext routingContext, JsonObject inData) {
         return Future.future(promise -> {
-        	String serviceName = apiServiceMap.get(inData.getString(PATH));
+            String serviceName = apiServiceMap.get(inData.getString(PATH));
             if (isNull(serviceName) || serviceName.isBlank()) {
-                promise.fail(new AppException(ResultEnum.HTTP_500));
+                promise.fail(new AppException(ResultEnum.ERR_500));
                 return;
             }
             EventBus bus = routingContext.vertx().eventBus();
@@ -140,4 +143,5 @@ public class BaseHandler implements Handler<RoutingContext> {
             });
         });
     }
+
 }

@@ -17,6 +17,11 @@
  */
 package pers.tsm.ebr;
 
+import static java.util.Objects.isNull;
+
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,11 +31,8 @@ import io.vertx.core.VertxOptions;
 import io.vertx.core.json.JsonObject;
 import pers.tsm.ebr.base.HttpApiServer;
 import pers.tsm.ebr.common.AppConfigs;
-
-import static java.util.Objects.isNull;
-
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
+import pers.tsm.ebr.data.TaskDefineRepo;
+import pers.tsm.ebr.data.TaskRepo;
 
 /**
  *
@@ -67,12 +69,13 @@ public final class AppMain {
 
             AppConfigs.load();
             JsonObject config = AppConfigs.get();
-            vertx = Vertx.vertx(new VertxOptions(config.getJsonObject("vertx")));
-            Deployer.collect(config.getJsonObject("service"))
+            vertx = Vertx.vertx(new VertxOptions(config.getJsonObject(AppConfigs.SECTION_VERTX)));
+            Deployer.collect(config.getJsonObject(AppConfigs.SECTION_SERVICE))
             .compose(serviceConfig -> Deployer.deploy(vertx, serviceConfig))
             .onSuccess(ar -> {
                 logger.info("All Vertical deploy done.");
-                vertx.deployVerticle(HttpApiServer::new, new DeploymentOptions().setConfig(config.getJsonObject("http")))
+                vertx.deployVerticle(HttpApiServer::new, new DeploymentOptions()
+                        .setConfig(config.getJsonObject(AppConfigs.SECTION_HTTP)))
                 .onSuccess(str -> logger.info(printLogo()))
                 .onFailure(ex -> System.exit(1));
             }).onFailure(ex -> {
@@ -86,6 +89,8 @@ public final class AppMain {
     }
 
     void onShutdown() throws InterruptedException {
+        TaskDefineRepo.release();
+        TaskRepo.release();
         AppConfigs.release();
         if (isNull(vertx)) {
             return;

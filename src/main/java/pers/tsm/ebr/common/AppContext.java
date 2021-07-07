@@ -17,6 +17,8 @@
  */
 package pers.tsm.ebr.common;
 
+import static java.util.Objects.requireNonNull;
+
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -24,45 +26,43 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import pers.tsm.ebr.data.VerticleProp;
 
-import static java.util.Objects.requireNonNull;
-
 /**
  *
  *
  * @author l.gong
  */
 public final class AppContext {
-	
-	private final List<VerticleProp> verticleDescList = new CopyOnWriteArrayList<>();
-	/**
+
+    private final List<VerticleProp> verticleDescList = new CopyOnWriteArrayList<>();
+    /**
      * key: api url
      * value: service id
      */
-	private final Map<String, String> apiServiceMap = new ConcurrentHashMap<>();
-	
-	private static class InstanceHolder {
+    private final Map<String, String> apiServiceMap = new ConcurrentHashMap<>();
+
+    private static class InstanceHolder {
         private static final AppContext INSTANCE = new AppContext();
     }
-	
-	private AppContext() {}
-	
-	public static void addApiServiceMapping(String url, String serviceId) {
-		requireNonNull(url);
-		requireNonNull(serviceId);
-		InstanceHolder.INSTANCE.apiServiceMap.put(url, serviceId);
-	}
-	
-	public static void addVerticle(VerticleProp prop) {
-		requireNonNull(prop);
-		InstanceHolder.INSTANCE.verticleDescList.add(prop);
-	}
-	
-	public static Map<String, String> getApiServiceMapping() {
+
+    private AppContext() {}
+
+    public static void addApiServiceMapping(String url, String serviceId) {
+        requireNonNull(url);
+        requireNonNull(serviceId);
+        InstanceHolder.INSTANCE.apiServiceMap.put(url, serviceId);
+    }
+
+    public static void addVerticle(VerticleProp prop) {
+        requireNonNull(prop);
+        InstanceHolder.INSTANCE.verticleDescList.add(prop);
+    }
+
+    public static Map<String, String> getApiServiceMapping() {
         return Map.copyOf(InstanceHolder.INSTANCE.apiServiceMap);
     }
-	
-	public static List<VerticleProp> getVerticleDescList() {
-		return List.copyOf(InstanceHolder.INSTANCE.verticleDescList);
-	}
+
+    public static List<VerticleProp> getVerticleDescList() {
+        return List.copyOf(InstanceHolder.INSTANCE.verticleDescList);
+    }
 
 }

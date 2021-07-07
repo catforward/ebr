@@ -17,6 +17,13 @@
  */
 package pers.tsm.ebr.data;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.requireNonNull;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -31,14 +38,6 @@ import com.google.common.cache.RemovalListener;
 
 import io.vertx.core.json.JsonObject;
 import pers.tsm.ebr.common.AppException;
-
-import static java.util.Objects.isNull;
-import static java.util.Objects.requireNonNull;
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.HashMap;
 
 
 /**
@@ -68,7 +67,7 @@ public class TaskDefineRepo {
         defineFileInfo = new ConcurrentHashMap<>();
     }
 
-    public static void removeAll() {
+    public static void release() {
         InstanceHolder.INSTANCE.defineFileContent.invalidateAll();
         InstanceHolder.INSTANCE.defineFileInfo.clear();
     }

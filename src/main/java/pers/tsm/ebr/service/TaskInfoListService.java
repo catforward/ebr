@@ -52,7 +52,7 @@ import pers.tsm.ebr.types.ResultEnum;
  */
 public class TaskInfoListService extends BaseService {
     private static final Logger logger = LoggerFactory.getLogger(TaskInfoListService.class);
-        
+
     @Override
     public void start() throws Exception {
         super.start();

@@ -17,13 +17,15 @@
  */
 package pers.tsm.ebr.data;
 
-import pers.tsm.ebr.types.TaskStateEnum;
-
 import static java.util.Objects.isNull;
 import static java.util.Objects.requireNonNull;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import pers.tsm.ebr.common.AppException;
+import pers.tsm.ebr.types.ResultEnum;
+import pers.tsm.ebr.types.TaskStateEnum;
 
 /**
  *
@@ -51,6 +53,10 @@ public class Flow {
         this.urlTaskMapping.put(url, task);
     }
 
+    public Task getRootTask() {
+        return this.root;
+    }
+
     public String getUrl() {
         requireNonNull(this.root);
         return this.root.getUrl();
@@ -58,13 +64,30 @@ public class Flow {
 
     public TaskStateEnum getState() {
         if (isNull(this.root)) {
-            return TaskStateEnum.UNKNOWN;
+            throw new AppException(ResultEnum.ERROR);
         }
         return this.root.state;
     }
 
     public Task getTask(String url) {
         return this.urlTaskMapping.get(url);
+    }
+
+    public void reset() {
+    	this.root.reset();
+        this.urlTaskMapping.forEach((url, task) -> task.reset());
+    }
+
+    public void standby() {
+    	this.root.standby();
+        this.urlTaskMapping.forEach((url, task) -> task.standby());
+    }
+
+    public void updateState(TaskStateEnum newState) {
+        if (TaskStateEnum.STANDBY == newState) {
+            this.root.updateState(newState);
+            urlTaskMapping.forEach((url, task) -> task.updateState(newState));
+        }
     }
 
 }

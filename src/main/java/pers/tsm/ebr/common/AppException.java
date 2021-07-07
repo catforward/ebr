@@ -26,18 +26,18 @@ import pers.tsm.ebr.types.ResultEnum;
  * @author l.gong
  */
 public final class AppException extends RuntimeException {
-	private static final long serialVersionUID = -2319024343224680740L;
-	private final transient IResult reason;
-	
-	public AppException(String msg) {
-		super(msg);
-		reason = ResultEnum.ERROR;
-	}
-	
-	public AppException(String msg, Throwable cause) {
-		super(msg, cause);
-		reason = ResultEnum.ERROR;
-	}
+    private static final long serialVersionUID = -2319024343224680740L;
+    private final transient IResult reason;
+
+    public AppException(String msg) {
+        super(msg);
+        reason = ResultEnum.ERROR;
+    }
+
+    public AppException(String msg, Throwable cause) {
+        super(msg, cause);
+        reason = ResultEnum.ERROR;
+    }
 
     public AppException(IResult result) {
         super(result.getMessage());
@@ -52,4 +52,5 @@ public final class AppException extends RuntimeException {
     public IResult getReason() {
         return reason;
     }
+
 }

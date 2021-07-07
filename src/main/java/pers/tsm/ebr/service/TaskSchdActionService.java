@@ -19,21 +19,22 @@ package pers.tsm.ebr.service;
 
 import static java.util.Objects.isNull;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
+import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import pers.tsm.ebr.base.BaseService;
 import pers.tsm.ebr.base.IResult;
 import pers.tsm.ebr.common.AppException;
 import pers.tsm.ebr.common.ServiceSymbols;
 import pers.tsm.ebr.common.Symbols;
-import pers.tsm.ebr.data.Flow;
-import pers.tsm.ebr.data.Task;
-import pers.tsm.ebr.data.TaskRepo;
 import pers.tsm.ebr.types.ResultEnum;
-import pers.tsm.ebr.types.TaskStateEnum;
 
 /**
  *<pre>
@@ -53,10 +54,15 @@ import pers.tsm.ebr.types.TaskStateEnum;
  */
 public class TaskSchdActionService extends BaseService {
     private static final Logger logger = LoggerFactory.getLogger(TaskSchdActionService.class);
+    private final Map<String, String> actionMapping = new HashMap<>();
 
     @Override
     public void start() throws Exception {
         super.start();
+        actionMapping.put(Symbols.START, ServiceSymbols.MSG_ACTION_TASK_START);
+        actionMapping.put(Symbols.STOP, ServiceSymbols.MSG_ACTION_TASK_STOP);
+        actionMapping.put(Symbols.PAUSE, ServiceSymbols.MSG_ACTION_TASK_PAUSE);
+        actionMapping.put(Symbols.SKIP, ServiceSymbols.MSG_ACTION_TASK_SKIP);
         registerService(ServiceSymbols.SERVICE_SCHD_ACTION);
     }
 
@@ -99,57 +105,27 @@ public class TaskSchdActionService extends BaseService {
             JsonObject postBody = getPostBody();
             String action = postBody.getString(Symbols.ACTION);
             JsonObject target = postBody.getJsonObject(Symbols.TARGET);
-            getActionHandler(action, target)
+            handleAction(action, target)
             .onSuccess(ar -> promise.complete(ResultEnum.SUCCESS))
             .onFailure(promise::fail);
         });
     }
 
-    private Future<Void> getActionHandler(String action, JsonObject target) {
-        switch (action) {
-        case Symbols.START: return handlePerformAction(target);
-        case Symbols.STOP:
-        case Symbols.PAUSE:
-        case Symbols.SKIP:
-        default: throw new AppException(ResultEnum.ERR_11007);
+    private Future<Void> handleAction(String action, JsonObject target) {
+        String actionId = actionMapping.get(action);
+        if (isNull(actionId) || actionId.isBlank()) {
+            throw new AppException(ResultEnum.ERR_11007);
         }
-    }
-
-    private Future<Void> handlePerformAction(JsonObject target) {
         return Future.future(promise -> {
-            String flowUrl = target.getString(Symbols.FLOW);
-            String taskUrl = target.getString(Symbols.TASK);
-            if (isNull(taskUrl) || taskUrl.isBlank()) {
-                doPerformFlow(TaskRepo.getFlow(flowUrl), target);
-            } else {
-                doPerformTask(TaskRepo.getTaskFrom(flowUrl, taskUrl), target);
-            }
-            promise.complete();
+            vertx.eventBus().request(actionId, target, (AsyncResult<Message<JsonObject>> res) -> {
+                if (res.failed()) {
+                    promise.fail(res.cause());
+                } else {
+                    //JsonObject retData = new JsonObject().mergeIn(res.result().body());
+                    promise.complete();
+                }
+            });
         });
-    }
-
-    private void doPerformFlow(Flow flow, JsonObject target) {
-        if (isNull(flow)) {
-            throw new AppException(ResultEnum.ERR_11003);
-        }
-        System.out.println(flow.toString());
-        TaskStateEnum state = flow.getState();
-        if (TaskStateEnum.RUNNING == state || TaskStateEnum.SKIPPED == state) {
-            throw new AppException(ResultEnum.ERR_11005);
-        }
-        TaskRepo.pushRunningPool(flow);
-        emitMsg(ServiceSymbols.MSG_ACTION_TASK_PERFORM, target);
-    }
-
-    private void doPerformTask(Task task, JsonObject target) {
-        if (isNull(task)) {
-            throw new AppException(ResultEnum.ERR_11004);
-        }
-        TaskStateEnum state = task.getState();
-        if (TaskStateEnum.RUNNING == state || TaskStateEnum.SKIPPED == state) {
-            throw new AppException(ResultEnum.ERR_11006);
-        }
-        emitMsg(ServiceSymbols.MSG_ACTION_TASK_PERFORM, target);
     }
 
 }

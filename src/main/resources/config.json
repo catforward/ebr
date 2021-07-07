@@ -1,7 +1,7 @@
 {
     "vertx": {
-      "eventLoopPoolSize": 2,
-      "workerPoolSize": 20,
+      "eventLoopPoolSize": 1,
+      "workerPoolSize": 10,
       "maxWorkerExecuteTime": 3600000,
       "eventBusOptions": {
         "connectTimeout": 6000
@@ -21,6 +21,9 @@
       "fsDataCacheMaximumSize": 50,
       "taskCacheExpireSeconds": 300,
       "taskCacheInitialCapacity": 2,
-      "taskCacheMaximumSize": 20
+      "taskCacheMaximumSize": 20,
+      "taskExecutorMaximumSize": 4,
+      "taskExecutorMinimumSize": 2,
+      "taskExecutorCheckIntervalSeconds": 1
     }
 }

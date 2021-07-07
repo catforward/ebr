@@ -27,6 +27,10 @@ import pers.tsm.ebr.base.IResult;
 public enum ResultEnum implements IResult {
     SUCCESS("0", "success"),
     ERROR("1", "internal error"),
+    ERR_400("400", "bad request"),
+    ERR_401("401", "unauthorized"),
+    ERR_404("404", "not found"),
+    ERR_500("500", "internal server error"),
     ERR_10101("10101", "make flow failed"),
     ERR_10102("10102", "only one root task in a flow"),
     ERR_10103("10103", "DAG flow validate failed"),
@@ -38,10 +42,6 @@ public enum ResultEnum implements IResult {
     ERR_11005("11005", "specified flow is already running or skipped"),
     ERR_11006("11006", "specified task is already running or skipped"),
     ERR_11007("11007", "unsupported action"),
-    HTTP_400("400", "bad request"),
-    HTTP_401("401", "unauthorized"),
-    HTTP_404("404", "not found"),
-    HTTP_500("500", "internal server error"),
     ;
 
     private final String code;

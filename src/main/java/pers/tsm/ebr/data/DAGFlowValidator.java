@@ -69,7 +69,7 @@ class DAGFlowValidator implements IValidator {
             graph = createEmptyGraph();
             urlGraphMapping.put(graphUrl, graph);
         }
-        for (Task predecessor : task.depends) {
+        for (Task predecessor : task.predecessor) {
             if (!isNull(task.parent) && task.parent.url.equals(predecessor.url)) {
                 continue;
             }

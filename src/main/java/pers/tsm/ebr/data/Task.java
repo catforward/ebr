@@ -25,13 +25,24 @@ import java.util.List;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import pers.tsm.ebr.common.AppException;
 import pers.tsm.ebr.common.Symbols;
 import pers.tsm.ebr.types.TaskAttrEnum;
 import pers.tsm.ebr.types.TaskStateEnum;
 import pers.tsm.ebr.types.TaskTypeEnum;
 
 /**
- *
+ * <pre>
+ * UNKNOWN --> STANDBY
+ * STANDBY --> RUNNING
+ *         --> PAUSED
+ *         --> SKIPPED
+ * RUNNING --> ERROR
+ * PAUSED  --> STANDBY
+ * SKIPPED
+ * ERROR   --> STANDBY
+ * 
+ * </pre>
  *
  * @author l.gong
  */
@@ -64,18 +75,23 @@ public class Task {
         }
     }
 
+    // meta data
     final Meta meta;
+    // runtime prop
     String url;
+    Task root;
     Task parent;
     List<Task> children;
-    List<Task> depends;
+    List<Task> predecessor;
+    List<Task> successor;
     TaskTypeEnum type;
     volatile TaskStateEnum state;
-    
+
     public Task(Meta meta) {
         this.meta = meta;
         this.children = new ArrayList<>();
-        this.depends = new ArrayList<>();
+        this.predecessor = new ArrayList<>();
+        this.successor = new ArrayList<>();
         this.state = TaskStateEnum.UNKNOWN;
         this.type = TaskTypeEnum.TASK;
     }
@@ -92,8 +108,97 @@ public class Task {
         return this.url;
     }
 
+    public Task getRoot() {
+        return this.root;
+    }
+
+    public Task getParent() {
+        return this.parent;
+    }
+
     public TaskStateEnum getState() {
         return state;
+    }
+
+    public List<Task> getChildren() {
+        return children;
+    }
+
+    public List<Task> getPredecessor() {
+        return predecessor;
+    }
+
+    public List<Task> getSuccessor() {
+        return successor;
+    }
+
+    public String getCommandLine() {
+        return meta.cmd;
+    }
+
+    public TaskTypeEnum getType() {
+        return type;
+    }
+
+    public void reset() {
+        synchronized(this) {
+            state = TaskStateEnum.UNKNOWN;
+        }
+    }
+
+    public void standby() {
+    	synchronized(this) {
+            state = TaskStateEnum.STANDBY;
+        }
+    }
+
+    public void updateState(TaskStateEnum newState) {
+        switch (state) {
+            case UNKNOWN: {
+                if (TaskStateEnum.STANDBY == newState) {
+                    state = newState;
+                } else {
+                    raiseStateException(newState);
+                }
+                break;
+            }
+            case STANDBY: {
+                if (TaskStateEnum.RUNNING == newState
+                        || TaskStateEnum.PAUSED == newState
+                        || TaskStateEnum.SKIPPED == newState) {
+                    state = newState;
+                } else {
+                    raiseStateException(newState);
+                }
+                break;
+            }
+            case RUNNING: {
+                if (TaskStateEnum.FINISHED == newState
+                        || TaskStateEnum.ERROR == newState) {
+                    state = newState;
+                } else {
+                    raiseStateException(newState);
+                }
+                break;
+            }
+            case PAUSED:
+            case SKIPPED:
+            case FINISHED:
+            case ERROR: {
+                if (TaskStateEnum.STANDBY == newState) {
+                    state = newState;
+                } else {
+                    raiseStateException(newState);
+                }
+                break;
+            }
+            default: raiseStateException(newState);
+        }
+    }
+
+    private void raiseStateException(TaskStateEnum newState) {
+        throw new AppException(String.format("invalidate state :[%s] state:[%s]->[%s]",
+                url, state.getName(), newState.getName()));
     }
 
 }

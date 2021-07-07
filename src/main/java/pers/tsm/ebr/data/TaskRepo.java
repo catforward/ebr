@@ -21,7 +21,9 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.requireNonNull;
 
 import java.util.Map;
+import java.util.Queue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -45,6 +47,7 @@ public class TaskRepo {
     private final Map<String, Flow> runningFlowPool;
     /** key: flow_url, value: task class*/
     private Cache<String, Flow> idleFlowPool;
+    private final Queue<Task> taskQueue;
 
     public static final RemovalListener<String, JsonObject> removalListener = notification -> {
         logger.debug("define file content cache: Key {} was removed ({})",
@@ -54,10 +57,16 @@ public class TaskRepo {
     private static class InstanceHolder {
         private static final TaskRepo INSTANCE = new TaskRepo();
     }
-    
+
     private TaskRepo() {
         poolLock = new ReentrantLock();
         runningFlowPool = new ConcurrentHashMap<>();
+        taskQueue = new ConcurrentLinkedQueue<>();
+    }
+
+    public static void release() {
+        InstanceHolder.INSTANCE.taskQueue.clear();
+        InstanceHolder.INSTANCE.runningFlowPool.clear();
     }
 
     public static void setIdleFlowPoolCache(Cache<String, Flow> cache) {
@@ -82,7 +91,7 @@ public class TaskRepo {
         return flow;
     }
 
-    public static Task getTaskFrom(String flowUrl, String taskUrl) {
+    public static Task getTask(String flowUrl, String taskUrl) {
         requireNonNull(flowUrl);
         requireNonNull(taskUrl);
         Flow flow = getFlow(flowUrl);
@@ -93,22 +102,43 @@ public class TaskRepo {
         }
     }
 
-    public static void pushRunningPool(Flow flow) {
+    public static void pushRunnableFlow(Flow flow) {
         requireNonNull(flow);
         InstanceHolder.INSTANCE.poolLock.lock();
         try {
             InstanceHolder.INSTANCE.idleFlowPool.invalidate(flow.getUrl());
+            InstanceHolder.INSTANCE.runningFlowPool.remove(flow.getUrl());
             InstanceHolder.INSTANCE.runningFlowPool.put(flow.getUrl(), flow);
         } finally {
             InstanceHolder.INSTANCE.poolLock.unlock();
         }
     }
 
+    public static void removeRunnableFlow(Flow flow) {
+        requireNonNull(flow);
+        InstanceHolder.INSTANCE.poolLock.lock();
+        try {
+            InstanceHolder.INSTANCE.runningFlowPool.remove(flow.getUrl());
+            InstanceHolder.INSTANCE.idleFlowPool.put(flow.getUrl(), flow);
+        } finally {
+            InstanceHolder.INSTANCE.poolLock.unlock();
+        }
+    }
+
+    public static void pushRunnableTask(Task task) {
+        requireNonNull(task);
+        InstanceHolder.INSTANCE.taskQueue.add(task);
+    }
+
+    public static Task pollRunnableTask() {
+        return InstanceHolder.INSTANCE.taskQueue.poll();
+    }
+
     private Flow createFlowFromDefine(String flowUrl) {
         try {
             JsonObject content = TaskDefineRepo.getDefineFileContent(flowUrl);
             FlowMaker maker = new FlowMaker(flowUrl, content);
-            return maker.makeWithValidate();
+            return maker.makeAndValidate();
         } catch (ExecutionException e) {
             logger.error("", e);
             return null;

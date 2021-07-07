@@ -19,8 +19,8 @@ package pers.tsm.ebr.service;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import io.vertx.core.Future;
 import pers.tsm.ebr.base.BaseService;
 import pers.tsm.ebr.base.IResult;
+import pers.tsm.ebr.common.AppConfigs;
 import pers.tsm.ebr.common.AppPaths;
 import pers.tsm.ebr.common.ServiceSymbols;
 import pers.tsm.ebr.common.StringUtils;
@@ -50,21 +51,22 @@ import pers.tsm.ebr.types.ResultEnum;
  */
 public class FsRepoWatchService extends BaseService {
     private static final Logger logger = LoggerFactory.getLogger(FsRepoWatchService.class);
-    
+
     private long timerID = 0L;
-    private long scanInterval = 0;
-    
+    private long scanInterval = 0L;
+
     @Override
     public void start() throws Exception {
         super.start();
-        registerMsg(ServiceSymbols.MSG_REFRESH_FS_TASK_DEFINE);
-        scanInterval = config().getLong("fsDataCheckIntervalSeconds", 60L) * 1000;
+        registerMsg(ServiceSymbols.MSG_ACTION_REFRESH_FS_DEFINE);
+        scanInterval = config().getLong(AppConfigs.SERVICE_FS_DATA_CHECK_INTERVAL_SECONDS, 60L) * 1000;
         // the first time
-        vertx.setTimer(2000, id -> emitMsg(ServiceSymbols.MSG_REFRESH_FS_TASK_DEFINE, emptyJsonObject));
+        vertx.setTimer(2000, id -> emitMsg(ServiceSymbols.MSG_ACTION_REFRESH_FS_DEFINE, emptyJsonObject));
     }
+
     @Override
     public void stop() throws Exception {
-        super.start();
+        super.stop();
         vertx.cancelTimer(timerID);
     }
 
@@ -82,13 +84,13 @@ public class FsRepoWatchService extends BaseService {
             .onSuccess(ar -> {
                 // for next time
                 timerID = vertx.setTimer(scanInterval,
-                        id -> emitMsg(ServiceSymbols.MSG_REFRESH_FS_TASK_DEFINE, emptyJsonObject));
+                        id -> emitMsg(ServiceSymbols.MSG_ACTION_REFRESH_FS_DEFINE, emptyJsonObject));
                 promise.complete(ResultEnum.SUCCESS);
             })
             .onFailure(promise::fail);
         });
     }
-    
+
     private Future<Void> scanDataFolder(List<TaskDefineFileProp> files) {
         return Future.future(promise -> {
             Path dataStorePath = new File(AppPaths.getDataPath()).toPath();
@@ -122,11 +124,11 @@ public class FsRepoWatchService extends BaseService {
             promise.complete();
         });
     }
-    
+
     private Future<Void> loadFileContent(List<TaskDefineFileProp> files) {
         return Future.future(promise -> {
             if (files.isEmpty()) {
-                TaskDefineRepo.removeAll();
+                TaskDefineRepo.release();
                 promise.complete();
                 return;
             }
