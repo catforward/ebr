@@ -71,7 +71,7 @@ public class TaskMetaValidator implements IValidator {
             logger.debug("flow[{}]'s parameter[depends] existed.", task.meta.id);
             throw new AppException(ResultEnum.ERR_10104);
         }
-        if (!isNull(task.meta.cmd) && !task.meta.cmd.isBlank()) {
+        if (!isNull(task.meta.script) && !task.meta.script.isBlank()) {
             logger.debug("flow[{}]'s parameter[cmd] existed.", task.meta.id);
             throw new AppException(ResultEnum.ERR_10104);
         }
@@ -82,7 +82,7 @@ public class TaskMetaValidator implements IValidator {
             logger.debug("group[{}]'s parameter[desc]'s length is too long.", task.meta.id);
             throw new AppException(ResultEnum.ERR_10104);
         }
-        if (!isNull(task.meta.cmd) && !task.meta.cmd.isBlank()) {
+        if (!isNull(task.meta.script) && !task.meta.script.isBlank()) {
             logger.debug("group[{}]'s parameter[cmd] existed.", task.meta.id);
             throw new AppException(ResultEnum.ERR_10104);
         }
@@ -97,7 +97,7 @@ public class TaskMetaValidator implements IValidator {
             logger.debug("task[{}]'s parameter[desc]'s length is too long.", task.meta.id);
             throw new AppException(ResultEnum.ERR_10104);
         }
-        if (isNull(task.meta.cmd) || task.meta.cmd.isBlank()) {
+        if (isNull(task.meta.script) || task.meta.script.isBlank()) {
             logger.debug("task[{}]'s parameter[cmd] should be set.", task.meta.id);
             throw new AppException(ResultEnum.ERR_10104);
         }

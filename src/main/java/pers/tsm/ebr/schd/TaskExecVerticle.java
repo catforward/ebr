@@ -78,8 +78,9 @@ public class TaskExecVerticle extends AbstractVerticle {
     }
 
     private void notice(String msg, Task task) {
+        String flowUrl = isNull(task.getRoot()) ? task.getUrl() : task.getRoot().getUrl();
         JsonObject param = new JsonObject();
-        param.put(Symbols.FLOW, task.getRoot().getUrl());
+        param.put(Symbols.FLOW, flowUrl);
         param.put(Symbols.TASK, task.getUrl());
         vertx.eventBus().publish(msg, param);
     }

@@ -81,9 +81,7 @@ class DAGFlowValidator implements IValidator {
     }
 
     private void dumpFlowInfo() {
-        urlGraphMapping.forEach((url, graph) -> {
-            logger.debug("url:{} -> {}", url, graph.toString());
-        });
+        urlGraphMapping.forEach((url, graph) -> logger.debug("url:{} -> {}", url, graph));
     }
 
 }

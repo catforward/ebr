@@ -160,16 +160,16 @@ public abstract class BaseService extends AbstractVerticle {
             .onSuccess(ret -> makeReplyMsg(msg, ret))
             .onFailure(ex -> {
                if (ex instanceof AppException) {
-                   logger.debug("Service Fail...", ex.getCause());
+                   logger.debug(BLANK_STR, ex.getCause());
                    AppException se = (AppException) ex;
                    msg.reply(new ServiceResultMsg(se.getReason()).toJsonObject());
                } else {
-                   logger.error("Unknown Error...", ex);
+                   logger.error(BLANK_STR, ex);
                    msg.reply(new ServiceResultMsg(ResultEnum.ERR_500).toJsonObject());
                }
             });
         } catch (Exception ex) {
-            logger.error("Unknown Error...", ex);
+            logger.error(BLANK_STR, ex);
             msg.reply(new ServiceResultMsg(ResultEnum.ERR_500).toJsonObject());
         }
     }
@@ -196,16 +196,16 @@ public abstract class BaseService extends AbstractVerticle {
             .onSuccess(ret -> makeReplyMsg(msg, ret))
             .onFailure(ex -> {
                 if (ex instanceof AppException) {
-                    logger.debug("Service Fail...", ex.getCause());
+                    logger.debug(BLANK_STR, ex.getCause());
                     AppException se = (AppException) ex;
                     msg.reply(new ServiceResultMsg(se.getReason()).toJsonObject());
                 } else {
-                    logger.error("Unknown Error...", ex);
+                    logger.error(BLANK_STR, ex);
                     msg.reply(new ServiceResultMsg(ResultEnum.ERR_500).toJsonObject());
                 }
             });
         } catch (Exception ex) {
-            logger.error("Unknown Error...", ex);
+            logger.error(BLANK_STR, ex);
             msg.reply(new ServiceResultMsg(ResultEnum.ERR_500).toJsonObject());
         }
     }
@@ -238,7 +238,7 @@ public abstract class BaseService extends AbstractVerticle {
     private Future<Void> makeReplyMsg(Message<JsonObject> msg, IResult ret) {
         return Future.future(promise -> {
             logger.trace("makeReplyMsg: {}", outData);
-            msg.reply(new ServiceResultMsg(ret).toJsonObject());
+            msg.reply(new ServiceResultMsg(ret).setData(outData).toJsonObject());
             promise.complete();
         });
     }

@@ -94,7 +94,7 @@
 							<goal>shade</goal>
 						</goals>
 						<configuration>
-							<outputFile>${project.basedir}/dist/lib/${project.artifactId}.jar</outputFile>
+							<outputFile>${project.basedir}/dist/libs/${project.artifactId}.jar</outputFile>
 							<minimizeJar>false</minimizeJar>
 							<transformers>
 								<transformer

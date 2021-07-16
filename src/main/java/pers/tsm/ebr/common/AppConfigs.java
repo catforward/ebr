@@ -19,6 +19,7 @@ package pers.tsm.ebr.common;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.nio.file.Files;
@@ -74,7 +75,7 @@ public final class AppConfigs {
      * @throws IOException
      * @throws URISyntaxException
      */
-    public static void load() throws IOException, URISyntaxException {
+    public static void load() throws IOException {
         InstanceHolder.INSTANCE.loadConfigFile();
         InstanceHolder.INSTANCE.loadExternalConfigFile();
         if (InstanceHolder.INSTANCE.config.isEmpty()) {
@@ -112,10 +113,18 @@ public final class AppConfigs {
      * @throws IOException
      * @throws URISyntaxException
      */
-    private void loadConfigFile() throws IOException, URISyntaxException {
-        URI innerConfigFile = getClass().getResource("/" + CONFIG_FILE).toURI();
-        JsonObject tmpConfig = new JsonObject(Files.readString(Paths.get(innerConfigFile)));
-        config.mergeIn(tmpConfig);
+    private void loadConfigFile() throws IOException {
+        try (InputStream stream = getClass().getResourceAsStream("/" + CONFIG_FILE)) {
+            byte[] b = new byte[1024];
+            int len = 0;
+            int temp = 0;
+            while ((temp = stream.read()) != -1) {
+                b[len] = (byte) temp;
+                len++;
+            }
+            JsonObject tmpConfig = new JsonObject(new String(b, 0, len));
+            config.mergeIn(tmpConfig);
+        }
     }
 
     /**

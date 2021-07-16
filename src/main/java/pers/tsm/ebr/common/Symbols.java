@@ -29,9 +29,11 @@ public final class Symbols {
     public static final String ENV_EBR_ROOT = "EBR_ROOT";
     public static final String BASE_URL = "/ebr";
     public static final String BLANK_STR = "";
+    public static final String SPACE = " ";
 
     public static final String CONF = "conf";
     public static final String LOGS = "logs";
+    public static final String BIN = "bin";
     public static final String CODE = "code";
     public static final String MSG = "msg";
     public static final String DATA = "data";

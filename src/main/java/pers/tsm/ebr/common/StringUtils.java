@@ -17,6 +17,9 @@
  */
 package pers.tsm.ebr.common;
 
+import static java.util.Objects.isNull;
+
+import java.io.File;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.time.LocalDateTime;
@@ -42,6 +45,20 @@ public class StringUtils {
         String flowUrl = filePath.toUri().toString().replaceAll(dataStorePath.toUri().toString(), "");
         flowUrl = flowUrl.replaceAll(Symbols.FLOW_FILE_SUFFIX, "");
         return (flowUrl.startsWith("/")) ? flowUrl : "/" + flowUrl;
+    }
+
+    public static boolean isNullOrBlank(String str) {
+    	return isNull(str) || str.isBlank();
+    }
+
+    public static String warpIfEmbedScriptPath(String defineScript) {
+        if (isNullOrBlank(defineScript)) {
+            return Symbols.BLANK_STR;
+        }
+        if (!new File(defineScript).isAbsolute()) {
+            return String.format("%s%s%s", AppPaths.getBinPath(), File.separator, defineScript);
+        }
+        return defineScript;
     }
 
 }

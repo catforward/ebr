@@ -1,0 +1,15 @@
+[2021-07-16 14:43:10:273] [ERROR] - pers.tsm.ebr.AppMain.launch(AppMain.java:86) - application error occurred!
+java.nio.file.NoSuchFileException: D:\Workspace\eclipse\ebr\conf\config.json
+	at sun.nio.fs.WindowsException.translateToIOException(WindowsException.java:85) ~[?:?]
+	at sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:103) ~[?:?]
+	at sun.nio.fs.WindowsException.rethrowAsIOException(WindowsException.java:108) ~[?:?]
+	at sun.nio.fs.WindowsFileSystemProvider.newByteChannel(WindowsFileSystemProvider.java:235) ~[?:?]
+	at java.nio.file.Files.newByteChannel(Files.java:371) ~[?:?]
+	at java.nio.file.Files.newByteChannel(Files.java:422) ~[?:?]
+	at java.nio.file.Files.readAllBytes(Files.java:3206) ~[?:?]
+	at java.nio.file.Files.readString(Files.java:3284) ~[?:?]
+	at java.nio.file.Files.readString(Files.java:3243) ~[?:?]
+	at pers.tsm.ebr.common.AppConfigs.loadExternalConfigFile(AppConfigs.java:128) ~[classes/:?]
+	at pers.tsm.ebr.common.AppConfigs.load(AppConfigs.java:79) ~[classes/:?]
+	at pers.tsm.ebr.AppMain.launch(AppMain.java:70) [classes/:?]
+	at pers.tsm.ebr.AppMain.main(AppMain.java:57) [classes/:?]

@@ -53,11 +53,13 @@ public class ServiceResultMsg {
         JsonObject jsonObject = new JsonObject();
         jsonObject.put(CODE, this.code);
         jsonObject.put(MSG, this.message);
-        jsonObject.put(DATA, this.data);
+        if (!this.data.isEmpty()) {
+            jsonObject.put(DATA, this.data);
+        }
         return jsonObject;
     }
 
-    public JsonObject rawJsonObject() {
+    public JsonObject rawData() {
         return data;
     }
 

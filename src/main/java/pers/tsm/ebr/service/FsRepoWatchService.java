@@ -138,9 +138,7 @@ public class FsRepoWatchService extends BaseService {
                     TaskDefineRepo.addDefineFile(prop);
                 }
             });
-            copyMap.forEach((k, v) -> {
-                TaskDefineRepo.deleteDefineFile(v);
-            });
+            copyMap.forEach((k, v) -> TaskDefineRepo.deleteDefineFile(v));
             copyMap.clear();
             promise.complete();
         });

@@ -17,7 +17,7 @@
  */
 package pers.tsm.ebr.common;
 
-import static pers.tsm.ebr.common.Symbols.*;
+import static pers.tsm.ebr.common.Symbols.BASE_URL;
 
 /**
  *

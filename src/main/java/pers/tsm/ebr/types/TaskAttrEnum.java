@@ -26,7 +26,7 @@ public enum TaskAttrEnum {
     ID("id"),
     GROUP("group"),
     DESC("desc"),
-    COMMAND("cmd"),
+    SCRIPT("script"),
     DEPENDS("depends"),
     ;
 

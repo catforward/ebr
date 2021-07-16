@@ -26,6 +26,7 @@ import java.util.List;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 import pers.tsm.ebr.common.AppException;
+import pers.tsm.ebr.common.StringUtils;
 import pers.tsm.ebr.common.Symbols;
 import pers.tsm.ebr.types.TaskAttrEnum;
 import pers.tsm.ebr.types.TaskStateEnum;
@@ -33,14 +34,17 @@ import pers.tsm.ebr.types.TaskTypeEnum;
 
 /**
  * <pre>
+ * Flow启动后
  * UNKNOWN --> STANDBY
  * STANDBY --> RUNNING
  *         --> PAUSED
  *         --> SKIPPED
- * RUNNING --> ERROR
- * PAUSED  --> STANDBY
- * SKIPPED
- * ERROR   --> STANDBY
+ * RUNNING --> FINISHED
+ *         --> ERROR
+ * PAUSED  --> STANDBY(RESTART)
+ * ERROR   --> STANDBY(RERUN)
+ * FINISHED--> (X)
+ * SKIPPED --> (X)
  * 
  * </pre>
  *
@@ -53,21 +57,22 @@ public class Task {
         String group;
         String desc;
         List<String> depends;
-        String cmd;
+        String script;
 
         private Meta() {
             depends = new ArrayList<>();
         }
 
-        public static Meta buildFrom(String id, JsonObject obj) {
+        public static Meta buildFrom(String id, JsonObject taskBody) {
             requireNonNull(id);
-            requireNonNull(obj);
+            requireNonNull(taskBody);
             Meta meta = new Meta();
             meta.id = id;
-            meta.group = obj.getString(TaskAttrEnum.GROUP.getName(), Symbols.BLANK_STR);
-            meta.desc = obj.getString(TaskAttrEnum.DESC.getName(), Symbols.BLANK_STR);
-            meta.cmd = obj.getString(TaskAttrEnum.COMMAND.getName(), Symbols.BLANK_STR);
-            JsonArray array = obj.getJsonArray(TaskAttrEnum.DEPENDS.getName());
+            meta.group = taskBody.getString(TaskAttrEnum.GROUP.getName(), Symbols.BLANK_STR);
+            meta.desc = taskBody.getString(TaskAttrEnum.DESC.getName(), Symbols.BLANK_STR);
+            meta.script = taskBody.getString(TaskAttrEnum.SCRIPT.getName(), Symbols.BLANK_STR);
+            meta.script = StringUtils.warpIfEmbedScriptPath(meta.script);
+            JsonArray array = taskBody.getJsonArray(TaskAttrEnum.DEPENDS.getName());
             if (!isNull(array) && !array.isEmpty()) {
                 array.forEach(ids -> meta.depends.add((String) ids));
             }
@@ -89,11 +94,14 @@ public class Task {
 
     public Task(Meta meta) {
         this.meta = meta;
+        this.url = Symbols.BLANK_STR;
+        this.root = null;
+        this.parent = null;
         this.children = new ArrayList<>();
         this.predecessor = new ArrayList<>();
         this.successor = new ArrayList<>();
-        this.state = TaskStateEnum.UNKNOWN;
         this.type = TaskTypeEnum.TASK;
+        this.state = TaskStateEnum.UNKNOWN;
     }
 
     @Override
@@ -133,7 +141,7 @@ public class Task {
     }
 
     public String getCommandLine() {
-        return meta.cmd;
+        return meta.script;
     }
 
     public TaskTypeEnum getType() {
@@ -182,8 +190,6 @@ public class Task {
                 break;
             }
             case PAUSED:
-            case SKIPPED:
-            case FINISHED:
             case ERROR: {
                 if (TaskStateEnum.STANDBY == newState) {
                     state = newState;
@@ -192,6 +198,8 @@ public class Task {
                 }
                 break;
             }
+            case SKIPPED:
+            case FINISHED:
             default: raiseStateException(newState);
         }
     }

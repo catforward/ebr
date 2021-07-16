@@ -27,14 +27,20 @@ import pers.tsm.ebr.base.IResult;
 public enum ResultEnum implements IResult {
     SUCCESS("0", "success"),
     ERROR("1", "internal error"),
+    // http
     ERR_400("400", "bad request"),
     ERR_401("401", "unauthorized"),
     ERR_404("404", "not found"),
     ERR_500("500", "internal server error"),
+    // task execute
     ERR_10101("10101", "make flow failed"),
     ERR_10102("10102", "only one root task in a flow"),
     ERR_10103("10103", "DAG flow validate failed"),
     ERR_10104("10104", "task's define error"),
+    ERR_10105("10105", "specified script is not exist"),
+    ERR_10106("10106", "specified script is not executables"),
+    ERR_10107("10107", "only one parent task can be defined"),
+    // http service
     ERR_11001("11001", "invalid parameter"),
     ERR_11002("11002", "invalid request"),
     ERR_11003("11003", "specified flow is not exist"),

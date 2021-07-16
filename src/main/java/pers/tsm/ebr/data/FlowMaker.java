@@ -54,7 +54,7 @@ class FlowMaker {
         this.taskValidators = new ArrayList<>();
         this.flowValidators = new ArrayList<>();
         this.taskValidators.add(new TaskMetaValidator());
-        this.taskValidators.add(new ExternalCommandValidator());
+        this.taskValidators.add(new ExternalScriptAttrValidator());
         this.flowValidators.add(new DAGFlowValidator());
     }
 
@@ -100,6 +100,9 @@ class FlowMaker {
                     depTask.successor.add(task);
                 });
                 task.root = flow.root;
+                if (!isNull(task.parent)) {
+                    throw new AppException(ResultEnum.ERR_10107);
+                }
                 task.parent = groupTask;
                 //task.predecessor.add(groupTask);
                 //groupTask.successor.add(task);

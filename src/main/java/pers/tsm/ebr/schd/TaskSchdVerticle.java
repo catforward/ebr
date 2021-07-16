@@ -84,8 +84,9 @@ public class TaskSchdVerticle extends AbstractVerticle {
     }
 
     private void notice(String msg, Task task) {
+        String flowUrl = isNull(task.getRoot()) ? task.getUrl() : task.getRoot().getUrl();
         JsonObject param = new JsonObject();
-        param.put(Symbols.FLOW, task.getRoot().getUrl());
+        param.put(Symbols.FLOW, flowUrl);
         param.put(Symbols.TASK, task.getUrl());
         vertx.eventBus().publish(msg, param);
     }
@@ -118,7 +119,7 @@ public class TaskSchdVerticle extends AbstractVerticle {
             }
             TaskRepo.pushRunnableTask(task);
         }
-        msg.reply(new ServiceResultMsg(ResultEnum.SUCCESS).rawJsonObject());
+        msg.reply(new ServiceResultMsg(ResultEnum.SUCCESS).rawData());
     }
 
     private void handleTaskRunningMsg(Message<JsonObject> msg) {
@@ -148,10 +149,12 @@ public class TaskSchdVerticle extends AbstractVerticle {
         Flow flow = getSpecifiedFlow(target);
         String taskUrl = target.getString(Symbols.TASK);
         if (isNull(taskUrl) || taskUrl.isBlank()) {
+            logger.debug("specified task: {}", taskUrl);
             throw new AppException(ResultEnum.ERR_11004);
         }
         Task task = flow.getTask(taskUrl);
         if (isNull(task)) {
+            logger.debug("specified task: {}", taskUrl);
             throw new AppException(ResultEnum.ERR_11004);
         }
         return task;
@@ -160,10 +163,12 @@ public class TaskSchdVerticle extends AbstractVerticle {
     private Flow getSpecifiedFlow(JsonObject target) {
         String flowUrl = target.getString(Symbols.FLOW);
         if (isNull(flowUrl) || flowUrl.isBlank()) {
+            logger.debug("specified flow: {}", flowUrl);
             throw new AppException(ResultEnum.ERR_11003);
         }
         Flow flow = TaskRepo.getFlow(flowUrl);
         if (isNull(flow)) {
+            logger.debug("specified flow: {}", flowUrl);
             throw new AppException(ResultEnum.ERR_11003);
         }
         return flow;

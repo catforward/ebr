@@ -121,7 +121,6 @@ public class TaskSchdActionService extends BaseService {
                 if (res.failed()) {
                     promise.fail(res.cause());
                 } else {
-                    //JsonObject retData = new JsonObject().mergeIn(res.result().body());
                     promise.complete();
                 }
             });

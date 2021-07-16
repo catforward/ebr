@@ -18,6 +18,7 @@
 package pers.tsm.ebr.common;
 
 import static java.util.Objects.isNull;
+import static pers.tsm.ebr.common.Symbols.BIN;
 import static pers.tsm.ebr.common.Symbols.CONF;
 import static pers.tsm.ebr.common.Symbols.DATA;
 import static pers.tsm.ebr.common.Symbols.ENV_EBR_ROOT;
@@ -58,6 +59,7 @@ public final class AppPaths {
     private final String confPath;
     private final String logsPath;
     private final String dataPath;
+    private final String binPath;
 
     private static class InstanceHolder {
         private static final AppPaths INSTANCE = new AppPaths();
@@ -68,6 +70,7 @@ public final class AppPaths {
         confPath = String.format(PATH_FROMAT, rootPath, File.separator, CONF);
         logsPath = String.format(PATH_FROMAT, rootPath, File.separator, LOGS);
         dataPath = String.format(PATH_FROMAT, rootPath, File.separator, DATA);
+        binPath = String.format(PATH_FROMAT, rootPath, File.separator, BIN);
     }
 
     private String initRootPath() {
@@ -121,13 +124,24 @@ public final class AppPaths {
 
     /**
      * <pre>
-     * get the root deploy path of EBR-Server
+     * get the root deploy path
      * </pre>
      *
      * @return String The path
      */
     public static String getRootPath() {
         return InstanceHolder.INSTANCE.rootPath;
+    }
+
+    /**
+     * <pre>
+     * get the absolute path of "bin" folder
+     * </pre>
+     *
+     * @return String The path
+     */
+    public static String getBinPath() {
+        return InstanceHolder.INSTANCE.binPath;
     }
 
 }

@@ -70,16 +70,20 @@ public class Flow {
     }
 
     public Task getTask(String url) {
-        return this.urlTaskMapping.get(url);
+        if (this.root.getUrl().equals(url)) {
+            return this.root;
+        } else {
+            return this.urlTaskMapping.get(url);
+        }
     }
 
     public void reset() {
-    	this.root.reset();
+        this.root.reset();
         this.urlTaskMapping.forEach((url, task) -> task.reset());
     }
 
     public void standby() {
-    	this.root.standby();
+        this.root.standby();
         this.urlTaskMapping.forEach((url, task) -> task.standby());
     }
 

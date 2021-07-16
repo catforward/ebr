@@ -62,8 +62,8 @@ public final class AppMain {
             Runtime.getRuntime().addShutdownHook(new Thread(() -> {
                 try {
                     onShutdown();
-                } catch (Exception ex) {
-                    logger.error("unknown error occurred!", ex);
+                } catch (InterruptedException ex) {
+                    logger.error("error occurred!", ex);
                 }
             }));
 
@@ -76,7 +76,7 @@ public final class AppMain {
                 logger.info("All Vertical deploy done.");
                 vertx.deployVerticle(HttpApiServer::new, new DeploymentOptions()
                         .setConfig(config.getJsonObject(AppConfigs.SECTION_HTTP)))
-                .onSuccess(str -> logger.info(printLogo()))
+                .onSuccess(str -> logger.info(printBanner()))
                 .onFailure(ex -> System.exit(1));
             }).onFailure(ex -> {
                 logger.error("Vertical deploy failed...", ex);
@@ -103,7 +103,7 @@ public final class AppMain {
         }
     }
 
-    String printLogo() {
+    String printBanner() {
         String logo = "\n";
         logo += "******************************************\n";
         logo += "*                                        *\n";
