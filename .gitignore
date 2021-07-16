@@ -1,18 +1,4 @@
-ebr-dist/lib/
-ebr-dist/logs/
-ebr-dist/data/flows.edat
-ebr-cli/target/
-ebr-server/target/
 
-# vscode
-.settings/
-.classpath
-.project
-.factorypath
 
-# idea
-.idea/
-ebr.iml
-ebr-cli/ebr-cli.iml
-ebr-server/ebr-server.iml
-/target/
+
+
