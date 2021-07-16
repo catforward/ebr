@@ -1,0 +1,18 @@
+>go version
+go version go1.16.6 windows/amd64
+1. 初始化
+>go mod init ebr
+go: creating new go.mod: module ebr
+2. 自动更新
+>go mod ebr
+
+3. 拷贝vendor
+自动将依赖的第三方包拷贝到vendor目录下
+>go mod vendor
+
+4. 其它
+go mod download：下载依赖包，当前项目中如果没有引入是不会进行下载，下面会说个实际使用的操作
+go mod edit：编辑go.mod
+go mod graph：打印模块依赖图
+go mod verify：验证依赖是否正确
+go mod why：解释为什么需要依赖
