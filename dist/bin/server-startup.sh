@@ -7,7 +7,7 @@ APP_JAR=${EBR_ROOT}/libs/${APP_NAME}
 CLI_LOG=${EBR_ROOT}/logs/${APP_NAME}.log
 
 JAVA_BIN=/usr/bin/java
-JAVA_OPTS="-Djava.awt.headless=true -Xms32m -Xmx96m -XX:+UseG1GC -Xlog:gc:${EBR_ROOT}/logs/gc_${APP_NAME}.log"
+JAVA_OPTS="-Djava.awt.headless=true -Xms32m -Xmx64m -XX:+UseG1GC -Xlog:gc:${EBR_ROOT}/logs/gc_${APP_NAME}.log"
 
 is_exist() {
     pid=$(ps -ef | grep ${APP_NAME} | grep -v grep | awk '{print $2}')

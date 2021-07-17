@@ -1,11 +1,10 @@
-package act
+package actions
 
 import (
 	"log"
 )
 
 type ShowAction struct {
-
 }
 
 func (act *ShowAction) DoAction(target string) {
