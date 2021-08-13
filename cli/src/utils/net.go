@@ -1,0 +1,16 @@
+package utils
+
+import (
+	"strconv"
+)
+
+var (
+	BASE_URL string
+)
+
+func HttpInit() {
+	config := EbrConfig
+	BASE_URL = "http://" + config.Http.Address + ":" + strconv.Itoa(config.Http.Port) + "/ebr/api"
+	// log.Printf("Http base url: '%s'.", BASE_URL)
+
+}

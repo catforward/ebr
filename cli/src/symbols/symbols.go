@@ -1,4 +1,4 @@
-package consts
+package symbols
 
 const (
 	// normal words

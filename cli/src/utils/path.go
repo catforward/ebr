@@ -1,7 +1,7 @@
 package utils
 
 import (
-	"ebr/consts"
+	"ebr/symbols"
 	"log"
 	"os"
 	"path"
@@ -20,7 +20,7 @@ func GetBinPath() string {
 // 假设conf目录与bin目录平级
 func GetConfPath() string {
 	parentPath := filepath.Dir(getCurrentAbsPath())
-	confPath := filepath.Join(parentPath, consts.CONF)
+	confPath := filepath.Join(parentPath, symbols.CONF)
 	return confPath
 }
 
