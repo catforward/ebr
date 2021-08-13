@@ -18,7 +18,7 @@
 package pers.tsm.ebr.types;
 
 /**
- *
+ * <pre>attributes of task define</pre>
  *
  * @author l.gong
  */

@@ -17,34 +17,29 @@
  */
 package pers.tsm.ebr.schd;
 
-import static java.util.Objects.isNull;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.json.JsonObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pers.tsm.ebr.common.AppConfigs;
+import pers.tsm.ebr.common.AppConsts;
 import pers.tsm.ebr.common.ServiceSymbols;
-import pers.tsm.ebr.common.Symbols;
 import pers.tsm.ebr.data.Task;
 import pers.tsm.ebr.data.TaskRepo;
 import pers.tsm.ebr.types.TaskStateEnum;
 import pers.tsm.ebr.types.TaskTypeEnum;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.*;
+import java.util.function.Supplier;
+
+import static java.util.Objects.isNull;
+
 /**
- *
+ * <pre>task's runner</pre>
  *
  * @author l.gong
  */
@@ -64,7 +59,8 @@ public class TaskExecVerticle extends AbstractVerticle {
                 new LinkedBlockingQueue<>(), new TaskRunnerThreadFactory("ebr-executor-"));
         checkInterval = config.getLong(AppConfigs.SERVICE_TASK_EXECUTOR_CHECK_INTERVAL_SECONDS, 1L) * 1000;
         timerId = vertx.setTimer(checkInterval, this::handlePeriodic);
-        logger.info("TaskExecVerticle started. [{}]", deploymentID());
+        String deploymentId = deploymentID();
+        logger.info("TaskExecVerticle started. [{}]", deploymentId);
     }
 
     @Override
@@ -74,20 +70,21 @@ public class TaskExecVerticle extends AbstractVerticle {
             executorPool.shutdown();
         }
         vertx.cancelTimer(timerId);
-        logger.info("TaskExecVerticle stopped. [{}]", deploymentID());
+        String deploymentId = deploymentID();
+        logger.info("TaskExecVerticle stopped. [{}]", deploymentId);
     }
 
     private void notice(String msg, Task task) {
         String flowUrl = isNull(task.getRoot()) ? task.getUrl() : task.getRoot().getUrl();
         JsonObject param = new JsonObject();
-        param.put(Symbols.FLOW, flowUrl);
-        param.put(Symbols.TASK, task.getUrl());
+        param.put(AppConsts.FLOW, flowUrl);
+        param.put(AppConsts.TASK, task.getUrl());
         vertx.eventBus().publish(msg, param);
     }
 
     private void handlePeriodic(Long id) {
         try {
-            Task task = null;
+            Task task;
             while ((task = TaskRepo.pollRunnableTask()) != null) {
                 if (TaskTypeEnum.TASK == task.getType()) {
                     launchExecutableTask(task);
@@ -107,12 +104,12 @@ public class TaskExecVerticle extends AbstractVerticle {
     }
 
     private void launchExecutableTask(Task task) {
-        logger.info("Launch Task[url:{} command:{}]", task.getUrl(), task.getCommandLine());
+        logger.info("Launch Task[url:{} command:{}]", task.getUrl(), task.getScript());
         notice(ServiceSymbols.MSG_STATE_TASK_RUNNING, task);
 
         CompletableFuture<TaskStateEnum> future = deployTaskAsync(() -> {
             try {
-                Process process = Runtime.getRuntime().exec(task.getCommandLine());
+                Process process = Runtime.getRuntime().exec(task.getScript());
                 process.getOutputStream().close();
                 try (BufferedReader br = new BufferedReader(
                         new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8))) {

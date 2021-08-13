@@ -20,20 +20,13 @@ package pers.tsm.ebr.base;
 import java.io.Serializable;
 
 /**
- *
+ * <pre>api/service's result</pre>
  *
  * @author l.gong
  */
 public interface IResult extends Serializable {
-    /**
-     * <p>get the code of result</p>
-     * @return String
-     */
+
     String getCode();
 
-    /**
-     * <p>get the message of result</p>
-     * @return String
-     */
     String getMessage();
 }

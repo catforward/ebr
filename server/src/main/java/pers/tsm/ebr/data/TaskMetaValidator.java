@@ -17,17 +17,16 @@
  */
 package pers.tsm.ebr.data;
 
-import static java.util.Objects.isNull;
-import static java.util.Objects.requireNonNull;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 import pers.tsm.ebr.common.AppException;
 import pers.tsm.ebr.types.ResultEnum;
 
+import static java.util.Objects.isNull;
+import static java.util.Objects.requireNonNull;
+
 /**
- *
+ * <pre>flow's validator(Meta Info)</pre>
  *
  * @author l.gong
  */
@@ -67,7 +66,7 @@ public class TaskMetaValidator implements IValidator {
             logger.debug("flow[{}]'s parameter[group] existed.", task.meta.id);
             throw new AppException(ResultEnum.ERR_10104);
         }
-        if (!isNull(task.meta.depends) && !task.meta.depends.isEmpty()) {
+        if (!task.meta.depends.isEmpty()) {
             logger.debug("flow[{}]'s parameter[depends] existed.", task.meta.id);
             throw new AppException(ResultEnum.ERR_10104);
         }

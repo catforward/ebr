@@ -17,8 +17,6 @@
  */
 package pers.tsm.ebr.common;
 
-import static java.util.Objects.isNull;
-
 import java.io.File;
 import java.nio.file.Path;
 import java.time.Instant;
@@ -26,8 +24,10 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 
+import static java.util.Objects.isNull;
+
 /**
- *
+ * <pre>misc string utility</pre>
  *
  * @author l.gong
  */
@@ -43,7 +43,7 @@ public class StringUtils {
 
     public static String toFlowUrl(Path dataStorePath, Path filePath) {
         String flowUrl = filePath.toUri().toString().replaceAll(dataStorePath.toUri().toString(), "");
-        flowUrl = flowUrl.replaceAll(Symbols.FLOW_FILE_SUFFIX, "");
+        flowUrl = flowUrl.replaceAll(AppConsts.FLOW_FILE_SUFFIX, "");
         return (flowUrl.startsWith("/")) ? flowUrl : "/" + flowUrl;
     }
 
@@ -53,7 +53,7 @@ public class StringUtils {
 
     public static String warpIfEmbedScriptPath(String defineScript) {
         if (isNullOrBlank(defineScript)) {
-            return Symbols.BLANK_STR;
+            return AppConsts.BLANK_STR;
         }
         if (!new File(defineScript).isAbsolute()) {
             return String.format("%s%s%s", AppPaths.getBinPath(), File.separator, defineScript);

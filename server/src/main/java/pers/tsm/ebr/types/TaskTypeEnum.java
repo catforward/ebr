@@ -18,7 +18,7 @@
 package pers.tsm.ebr.types;
 
 /**
- *
+ * <pre>task's type</pre>
  *
  * @author l.gong
  */

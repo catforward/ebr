@@ -17,17 +17,17 @@
  */
 package pers.tsm.ebr.common;
 
-import static java.util.Objects.requireNonNull;
+import pers.tsm.ebr.data.VerticleProp;
 
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-import pers.tsm.ebr.data.VerticleProp;
+import static java.util.Objects.requireNonNull;
 
 /**
- *
+ * <pre>app's init context</pre>
  *
  * @author l.gong
  */
@@ -35,8 +35,7 @@ public final class AppContext {
 
     private final List<VerticleProp> verticleDescList = new CopyOnWriteArrayList<>();
     /**
-     * key: api url
-     * value: service id
+     * key: api url value: service id
      */
     private final Map<String, String> apiServiceMap = new ConcurrentHashMap<>();
 

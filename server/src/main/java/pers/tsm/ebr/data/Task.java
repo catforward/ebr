@@ -17,25 +17,25 @@
  */
 package pers.tsm.ebr.data;
 
-import static java.util.Objects.isNull;
-import static java.util.Objects.requireNonNull;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import pers.tsm.ebr.common.AppConsts;
 import pers.tsm.ebr.common.AppException;
 import pers.tsm.ebr.common.StringUtils;
-import pers.tsm.ebr.common.Symbols;
 import pers.tsm.ebr.types.TaskAttrEnum;
 import pers.tsm.ebr.types.TaskStateEnum;
 import pers.tsm.ebr.types.TaskTypeEnum;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static java.util.Objects.isNull;
+import static java.util.Objects.requireNonNull;
+
 /**
  * <pre>
- * Flow启动后
- * UNKNOWN --> STANDBY
+ * Flow:
+ * STORED  --> STANDBY(READY)
  * STANDBY --> RUNNING
  *         --> PAUSED
  *         --> SKIPPED
@@ -56,7 +56,7 @@ public class Task {
         String id;
         String group;
         String desc;
-        List<String> depends;
+        final List<String> depends;
         String script;
 
         private Meta() {
@@ -68,9 +68,9 @@ public class Task {
             requireNonNull(taskBody);
             Meta meta = new Meta();
             meta.id = id;
-            meta.group = taskBody.getString(TaskAttrEnum.GROUP.getName(), Symbols.BLANK_STR);
-            meta.desc = taskBody.getString(TaskAttrEnum.DESC.getName(), Symbols.BLANK_STR);
-            meta.script = taskBody.getString(TaskAttrEnum.SCRIPT.getName(), Symbols.BLANK_STR);
+            meta.group = taskBody.getString(TaskAttrEnum.GROUP.getName(), AppConsts.BLANK_STR);
+            meta.desc = taskBody.getString(TaskAttrEnum.DESC.getName(), AppConsts.BLANK_STR);
+            meta.script = taskBody.getString(TaskAttrEnum.SCRIPT.getName(), AppConsts.BLANK_STR);
             meta.script = StringUtils.warpIfEmbedScriptPath(meta.script);
             JsonArray array = taskBody.getJsonArray(TaskAttrEnum.DEPENDS.getName());
             if (!isNull(array) && !array.isEmpty()) {
@@ -86,22 +86,22 @@ public class Task {
     String url;
     Task root;
     Task parent;
-    List<Task> children;
-    List<Task> predecessor;
-    List<Task> successor;
+    final List<Task> children;
+    final List<Task> predecessor;
+    final List<Task> successor;
     TaskTypeEnum type;
     volatile TaskStateEnum state;
 
     public Task(Meta meta) {
         this.meta = meta;
-        this.url = Symbols.BLANK_STR;
+        this.url = AppConsts.BLANK_STR;
         this.root = null;
         this.parent = null;
         this.children = new ArrayList<>();
         this.predecessor = new ArrayList<>();
         this.successor = new ArrayList<>();
         this.type = TaskTypeEnum.TASK;
-        this.state = TaskStateEnum.UNKNOWN;
+        this.state = TaskStateEnum.STORED;
     }
 
     @Override
@@ -140,7 +140,7 @@ public class Task {
         return successor;
     }
 
-    public String getCommandLine() {
+    public String getScript() {
         return meta.script;
     }
 
@@ -150,7 +150,7 @@ public class Task {
 
     public void reset() {
         synchronized(this) {
-            state = TaskStateEnum.UNKNOWN;
+            state = TaskStateEnum.STORED;
         }
     }
 
@@ -162,14 +162,6 @@ public class Task {
 
     public void updateState(TaskStateEnum newState) {
         switch (state) {
-            case UNKNOWN: {
-                if (TaskStateEnum.STANDBY == newState) {
-                    state = newState;
-                } else {
-                    raiseStateException(newState);
-                }
-                break;
-            }
             case STANDBY: {
                 if (TaskStateEnum.RUNNING == newState
                         || TaskStateEnum.PAUSED == newState
@@ -189,6 +181,7 @@ public class Task {
                 }
                 break;
             }
+            case STORED:
             case PAUSED:
             case ERROR: {
                 if (TaskStateEnum.STANDBY == newState) {

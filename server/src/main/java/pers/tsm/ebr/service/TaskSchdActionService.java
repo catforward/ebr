@@ -17,36 +17,33 @@
  */
 package pers.tsm.ebr.service;
 
-import static java.util.Objects.isNull;
-
-import java.util.HashMap;
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pers.tsm.ebr.base.BaseService;
 import pers.tsm.ebr.base.IResult;
+import pers.tsm.ebr.common.AppConsts;
 import pers.tsm.ebr.common.AppException;
 import pers.tsm.ebr.common.ServiceSymbols;
-import pers.tsm.ebr.common.Symbols;
 import pers.tsm.ebr.types.ResultEnum;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import static java.util.Objects.isNull;
 
 /**
  *<pre>
  * request:
  * {
- *  "action": "xxx",
- *  "target": {
- *      "flow": "xxx",
- *      "task":"xxx"(optional)
- *  }
- * } * 
- * response: { }
+ *  "action": string,
+ *  "flow": string,
+ *  "task"(optional): string
+ * }
+ * response: common response's format
  * 
  * </pre>
  *
@@ -59,10 +56,10 @@ public class TaskSchdActionService extends BaseService {
     @Override
     public void start() throws Exception {
         super.start();
-        actionMapping.put(Symbols.START, ServiceSymbols.MSG_ACTION_TASK_START);
-        actionMapping.put(Symbols.STOP, ServiceSymbols.MSG_ACTION_TASK_STOP);
-        actionMapping.put(Symbols.PAUSE, ServiceSymbols.MSG_ACTION_TASK_PAUSE);
-        actionMapping.put(Symbols.SKIP, ServiceSymbols.MSG_ACTION_TASK_SKIP);
+        actionMapping.put(AppConsts.START, ServiceSymbols.MSG_ACTION_TASK_START);
+        actionMapping.put(AppConsts.STOP, ServiceSymbols.MSG_ACTION_TASK_STOP);
+        actionMapping.put(AppConsts.PAUSE, ServiceSymbols.MSG_ACTION_TASK_PAUSE);
+        actionMapping.put(AppConsts.SKIP, ServiceSymbols.MSG_ACTION_TASK_SKIP);
         registerService(ServiceSymbols.SERVICE_SCHD_ACTION);
     }
 
@@ -76,19 +73,13 @@ public class TaskSchdActionService extends BaseService {
         logger.trace("doPrepare -> {}", inData);
         return Future.future(promise -> {
             JsonObject postBody = getPostBody();
-            String action = postBody.getString(Symbols.ACTION);
+            String action = postBody.getString(AppConsts.ACTION);
             if (isNull(action) || action.isBlank()) {
                 logger.debug("parameter[action] is empty.");
                 promise.fail(new AppException(ResultEnum.ERR_11001));
                 return;
             }
-            JsonObject target = postBody.getJsonObject(Symbols.TARGET);
-            if (isNull(target) || target.isEmpty()) {
-                logger.debug("parameter[target] is empty.");
-                promise.fail(new AppException(ResultEnum.ERR_11001));
-                return;
-            }
-            String flowUrl = target.getString(Symbols.FLOW);
+            String flowUrl = postBody.getString(AppConsts.FLOW);
             if (isNull(flowUrl) || flowUrl.isBlank()) {
                 logger.debug("parameter[flowUrl] is empty.");
                 promise.fail(new AppException(ResultEnum.ERR_11001));
@@ -103,20 +94,23 @@ public class TaskSchdActionService extends BaseService {
         logger.trace("doService -> {}", inData);
         return Future.future(promise -> {
             JsonObject postBody = getPostBody();
-            String action = postBody.getString(Symbols.ACTION);
-            JsonObject target = postBody.getJsonObject(Symbols.TARGET);
-            handleAction(action, target)
+            String action = postBody.getString(AppConsts.ACTION);
+            String flowUrl = postBody.getString(AppConsts.FLOW);
+            handleAction(action, flowUrl)
             .onSuccess(ar -> promise.complete(ResultEnum.SUCCESS))
             .onFailure(promise::fail);
         });
     }
 
-    private Future<Void> handleAction(String action, JsonObject target) {
+    private Future<Void> handleAction(String action, String flowUrl) {
         String actionId = actionMapping.get(action);
         if (isNull(actionId) || actionId.isBlank()) {
             throw new AppException(ResultEnum.ERR_11007);
         }
-        return Future.future(promise -> vertx.eventBus().request(actionId, target, (AsyncResult<Message<JsonObject>> res) -> {
+
+        JsonObject param = new JsonObject();
+        param.put(AppConsts.FLOW, flowUrl);
+        return Future.future(promise -> vertx.eventBus().request(actionId, param, (AsyncResult<Message<JsonObject>> res) -> {
             if (res.failed()) {
                 promise.fail(res.cause());
             } else {

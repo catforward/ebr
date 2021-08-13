@@ -17,26 +17,9 @@
  */
 package pers.tsm.ebr;
 
-import static pers.tsm.ebr.common.ServiceSymbols.SERVICE_INFO_FLOW;
-import static pers.tsm.ebr.common.ServiceSymbols.SERVICE_INFO_FLOWS;
-import static pers.tsm.ebr.common.ServiceSymbols.SERVICE_SCHD_ACTION;
-import static pers.tsm.ebr.common.ServiceSymbols.URL_INFO_FLOW;
-import static pers.tsm.ebr.common.ServiceSymbols.URL_INFO_FLOWS;
-import static pers.tsm.ebr.common.ServiceSymbols.URL_SCHD_ACTION;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.function.Supplier;
-
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-
-import io.vertx.core.CompositeFuture;
-import io.vertx.core.DeploymentOptions;
-import io.vertx.core.Future;
-import io.vertx.core.Verticle;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 import io.vertx.core.json.JsonObject;
 import pers.tsm.ebr.common.AppConfigs;
 import pers.tsm.ebr.common.AppContext;
@@ -46,13 +29,20 @@ import pers.tsm.ebr.data.TaskRepo;
 import pers.tsm.ebr.data.VerticleProp;
 import pers.tsm.ebr.schd.TaskExecVerticle;
 import pers.tsm.ebr.schd.TaskSchdVerticle;
-import pers.tsm.ebr.service.FsRepoWatchService;
-import pers.tsm.ebr.service.TaskInfoDetailService;
-import pers.tsm.ebr.service.TaskInfoListService;
+import pers.tsm.ebr.service.FlowDetailService;
+import pers.tsm.ebr.service.FlowListService;
+import pers.tsm.ebr.service.FsRepoWatchVerticle;
 import pers.tsm.ebr.service.TaskSchdActionService;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Supplier;
+
+import static pers.tsm.ebr.common.ServiceSymbols.*;
+
 /**
- *
+ * <pre>app function config（Cache，API，Service...）</pre>
  *
  * @author l.gong
  */
@@ -79,13 +69,13 @@ public class Deployer {
                     .build();
             TaskRepo.setIdleFlowPoolCache(taskCache);
             // API
-            AppContext.addApiServiceMapping(URL_INFO_FLOWS, SERVICE_INFO_FLOWS);
-            AppContext.addApiServiceMapping(URL_INFO_FLOW, SERVICE_INFO_FLOW);
+            AppContext.addApiServiceMapping(URL_INFO_FLOW_LIST, SERVICE_INFO_FLOW_LIST);
+            AppContext.addApiServiceMapping(URL_INFO_FLOW_DETAIL, SERVICE_INFO_FLOW_DETAIL);
             AppContext.addApiServiceMapping(URL_SCHD_ACTION, SERVICE_SCHD_ACTION);
             // Vertical
-            AppContext.addVerticle(new VerticleProp(FsRepoWatchService::new, makeDefaultWorkerOptions(1, config)));
-            AppContext.addVerticle(new VerticleProp(TaskInfoListService::new, makeDefaultWorkerOptions(1, config)));
-            AppContext.addVerticle(new VerticleProp(TaskInfoDetailService::new, makeDefaultWorkerOptions(1, config)));
+            AppContext.addVerticle(new VerticleProp(FsRepoWatchVerticle::new, makeDefaultWorkerOptions(1, config)));
+            AppContext.addVerticle(new VerticleProp(FlowListService::new, makeDefaultWorkerOptions(1, config)));
+            AppContext.addVerticle(new VerticleProp(FlowDetailService::new, makeDefaultWorkerOptions(1, config)));
             AppContext.addVerticle(new VerticleProp(TaskSchdActionService::new, makeDefaultWorkerOptions(1, config)));
             AppContext.addVerticle(new VerticleProp(TaskSchdVerticle::new, makeDefaultWorkerOptions(1, config)));
             AppContext.addVerticle(new VerticleProp(TaskExecVerticle::new, makeDefaultWorkerOptions(1, config)));

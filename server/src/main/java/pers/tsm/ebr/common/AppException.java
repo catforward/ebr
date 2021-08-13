@@ -21,7 +21,7 @@ import pers.tsm.ebr.base.IResult;
 import pers.tsm.ebr.types.ResultEnum;
 
 /**
- *
+ * <pre>app's runtime exception</pre>
  *
  * @author l.gong
  */

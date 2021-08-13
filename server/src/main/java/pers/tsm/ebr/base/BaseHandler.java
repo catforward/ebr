@@ -17,18 +17,6 @@
  */
 package pers.tsm.ebr.base;
 
-import static java.util.Objects.isNull;
-import static pers.tsm.ebr.common.Symbols.BODY;
-import static pers.tsm.ebr.common.Symbols.METHOD;
-import static pers.tsm.ebr.common.Symbols.PATH;
-import static pers.tsm.ebr.common.Symbols.USER_AGENT;
-
-import java.util.Map;
-import java.util.Optional;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.vertx.core.AsyncResult;
 import io.vertx.core.Future;
 import io.vertx.core.Handler;
@@ -39,11 +27,19 @@ import io.vertx.core.http.HttpServerRequest;
 import io.vertx.core.http.HttpServerResponse;
 import io.vertx.core.json.JsonObject;
 import io.vertx.ext.web.RoutingContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pers.tsm.ebr.common.AppException;
 import pers.tsm.ebr.types.ResultEnum;
 
+import java.util.Map;
+import java.util.Optional;
+
+import static java.util.Objects.isNull;
+import static pers.tsm.ebr.common.AppConsts.*;
+
 /**
- *
+ * <pre>http's request handler</pre>
  *
  * @author l.gong
  */
@@ -56,11 +52,6 @@ public class BaseHandler implements Handler<RoutingContext> {
         this.apiServiceMap = apiServiceMap;
     }
 
-    /**
-     * <p>处理REST请求</p>
-     *
-     * @param routingContext 路由上下文
-     */
     @Override
     public void handle(RoutingContext routingContext) {
         try {
@@ -72,7 +63,6 @@ public class BaseHandler implements Handler<RoutingContext> {
                     .put(BODY, Optional.ofNullable(routingContext.getBodyAsJson()).orElse(emptyBody));
             logger.trace("request info: {}", inData);
 
-            // 准备工作（验证，获取数据等）-> 服务处理 的处理顺序
             doPrepare(inData)
             .compose(v -> doHandle(routingContext, inData))
             .onSuccess(ar -> {
@@ -81,7 +71,7 @@ public class BaseHandler implements Handler<RoutingContext> {
                 response.putHeader("content-type", "application/json");
                 response.end(ar.toString());
             }).onFailure(ex -> {
-                logger.debug("处理结果：失败...", ex);
+                logger.debug("service failed...", ex);
                 if (ex instanceof AppException) {
                     AppException se = (AppException) ex;
                     String respStr = new ServiceResultMsg(se.getReason()).toJsonObject().toString();
@@ -90,24 +80,16 @@ public class BaseHandler implements Handler<RoutingContext> {
                     response.putHeader("content-type", "application/json");
                     response.end(respStr);
                 } else {
-                    // 其他未知异常
                     routingContext.fail(Integer.parseInt(ResultEnum.ERR_400.getCode()));
                 }
             });
 
         } catch (Exception ex) {
-            // 出现异常时，vertx会向客户端返回HTTP 500错误，但是服务器端没有任何日志
             logger.error("Exception: ", ex);
             routingContext.fail(Integer.parseInt(ResultEnum.ERR_500.getCode()));
         }
     }
 
-    /**
-     * <p>前置准备处理</p>
-     * <p>使用场景：特殊的参数检查，或特别的参数取得</p>
-     * @param inData 请求数据
-     * @return 处理结果
-     */
     private Future<Void> doPrepare(JsonObject inData) {
         return Future.future(promise -> {
             String path = inData.getString(PATH);
@@ -119,12 +101,6 @@ public class BaseHandler implements Handler<RoutingContext> {
         });
     }
 
-    /**
-     * <p>服务处理</p>
-     * @param routingContext 路由上下文
-     * @param inData 请求数据
-     * @return 处理结果
-     */
     private Future<JsonObject> doHandle(RoutingContext routingContext, JsonObject inData) {
         return Future.future(promise -> {
             String serviceName = apiServiceMap.get(inData.getString(PATH));

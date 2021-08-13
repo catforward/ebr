@@ -17,14 +17,17 @@
  */
 package pers.tsm.ebr.common;
 
+import io.vertx.core.json.JsonArray;
+import io.vertx.core.json.JsonObject;
+
 /**
- *
+ * <pre>app's const</pre>
  *
  * @author l.gong
  */
-public final class Symbols {
+public final class AppConsts {
 
-    private Symbols() {}
+    private AppConsts() {}
 
     public static final String ENV_EBR_ROOT = "EBR_ROOT";
     public static final String BASE_URL = "/ebr";
@@ -59,5 +62,10 @@ public final class Symbols {
     public static final String LAST_MODIFIED_TIME = "lastModifiedTime";
     public static final String SIZE = "size";
     public static final String URL = "url";
+    public static final String STATE = "state";
+    public static final String TYPE = "type";
+
+    public static final JsonObject EMPTY_JSON_OBJ = new JsonObject();
+    public static final JsonArray EMPTY_JSON_ARR = new JsonArray();
 
 }

@@ -17,20 +17,19 @@
  */
 package pers.tsm.ebr.data;
 
-import static java.util.Objects.requireNonNull;
-
-import java.io.File;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import pers.tsm.ebr.common.AppConsts;
 import pers.tsm.ebr.common.AppException;
-import pers.tsm.ebr.common.Symbols;
 import pers.tsm.ebr.types.ResultEnum;
 import pers.tsm.ebr.types.TaskTypeEnum;
 
+import java.io.File;
+
+import static java.util.Objects.requireNonNull;
+
 /**
- *
+ * <pre>flow's validator(external command)</pre>
  *
  * @author l.gong
  */
@@ -45,7 +44,7 @@ public class ExternalScriptAttrValidator implements IValidator {
         if (TaskTypeEnum.TASK != task.getType()) {
             return;
         }
-        String[] fullCommand = task.meta.script.split(Symbols.SPACE);
+        String[] fullCommand = task.meta.script.split(AppConsts.SPACE);
         if (fullCommand.length == 0) {
             logger.debug("task[{}]'s parameter[script] not define.", task.meta.id);
             throw new AppException(ResultEnum.ERR_10104);

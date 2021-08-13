@@ -17,15 +17,13 @@
  */
 package pers.tsm.ebr.base;
 
-import static pers.tsm.ebr.common.Symbols.CODE;
-import static pers.tsm.ebr.common.Symbols.DATA;
-import static pers.tsm.ebr.common.Symbols.MSG;
-
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
+import static pers.tsm.ebr.common.AppConsts.*;
+
 /**
- *
+ * <pre>service's result message</pre>
  *
  * @author l.gong
  */

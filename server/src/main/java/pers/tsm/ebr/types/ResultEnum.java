@@ -20,7 +20,7 @@ package pers.tsm.ebr.types;
 import pers.tsm.ebr.base.IResult;
 
 /**
- *
+ * <pre>api or function return code</pre>
  *
  * @author l.gong
  */

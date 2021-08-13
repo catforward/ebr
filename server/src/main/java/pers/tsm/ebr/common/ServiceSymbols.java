@@ -17,10 +17,10 @@
  */
 package pers.tsm.ebr.common;
 
-import static pers.tsm.ebr.common.Symbols.BASE_URL;
+import static pers.tsm.ebr.common.AppConsts.BASE_URL;
 
 /**
- *
+ * <pre>service's const</pre>
  *
  * @author l.gong
  */
@@ -28,15 +28,17 @@ public final class ServiceSymbols {
 
     private ServiceSymbols() {}
 
-    public static final String URL_INFO_FLOWS = BASE_URL + "/api/info/flows";
-    public static final String SERVICE_INFO_FLOWS = "service.info.flows";
+    /* API */
+    public static final String URL_INFO_FLOW_LIST = BASE_URL + "/api/info/flows";
+    public static final String SERVICE_INFO_FLOW_LIST = "service.info.flows";
 
-    public static final String URL_INFO_FLOW = BASE_URL + "/api/info/flow";
-    public static final String SERVICE_INFO_FLOW = "service.info.flow";
+    public static final String URL_INFO_FLOW_DETAIL = BASE_URL + "/api/info/flow";
+    public static final String SERVICE_INFO_FLOW_DETAIL = "service.info.flow";
 
     public static final String URL_SCHD_ACTION = BASE_URL + "/api/schd/action";
     public static final String SERVICE_SCHD_ACTION = "service.schd.action";
 
+    /* MSG */
     public static final String MSG_ACTION_REFRESH_FS_DEFINE = "msg.action.refresh.fs.define";
     public static final String MSG_ACTION_TASK_START = "msg.action.task.start";
     public static final String MSG_ACTION_TASK_STOP = "msg.action.task.stop";

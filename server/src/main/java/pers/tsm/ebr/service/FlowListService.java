@@ -17,22 +17,21 @@
  */
 package pers.tsm.ebr.service;
 
-import java.util.Map;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.vertx.core.Future;
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pers.tsm.ebr.base.BaseService;
 import pers.tsm.ebr.base.IResult;
+import pers.tsm.ebr.common.AppConsts;
 import pers.tsm.ebr.common.ServiceSymbols;
 import pers.tsm.ebr.common.StringUtils;
-import pers.tsm.ebr.common.Symbols;
 import pers.tsm.ebr.data.TaskDefineFileProp;
-import pers.tsm.ebr.data.TaskDefineRepo;
+import pers.tsm.ebr.data.TaskRepo;
 import pers.tsm.ebr.types.ResultEnum;
+
+import java.util.Map;
 
 /**
  * <pre>
@@ -40,8 +39,10 @@ import pers.tsm.ebr.types.ResultEnum;
  * {
  * flows: [
  *     {
- *         "url": "xxx"，
- *         "lastModifiedTime": "xxxx"
+ *         "url": string,
+ *         "state": string,
+ *         "lastModifiedTime": string,
+ *         "size": number
  *     }, {}, ...
  * ]
  * }
@@ -49,18 +50,18 @@ import pers.tsm.ebr.types.ResultEnum;
  *
  * @author l.gong
  */
-public class TaskInfoListService extends BaseService {
-    private static final Logger logger = LoggerFactory.getLogger(TaskInfoListService.class);
+public class FlowListService extends BaseService {
+    private static final Logger logger = LoggerFactory.getLogger(FlowListService.class);
 
     @Override
     public void start() throws Exception {
         super.start();
-        registerService(ServiceSymbols.SERVICE_INFO_FLOWS);
+        registerService(ServiceSymbols.SERVICE_INFO_FLOW_LIST);
     }
 
     @Override
     protected String getServiceName() {
-        return TaskInfoListService.class.getName();
+        return FlowListService.class.getName();
     }
 
     @Override
@@ -68,12 +69,14 @@ public class TaskInfoListService extends BaseService {
         logger.trace("doService -> {}", inData);
         return Future.future(promise -> {
             JsonArray flows = new JsonArray();
-            outData.put(Symbols.FLOWS, flows);
-            Map<String, TaskDefineFileProp> info =  TaskDefineRepo.copyDefineFileInfo();
+            outData.put(AppConsts.FLOWS, flows);
+            Map<String, TaskDefineFileProp> info =  TaskRepo.getAllDefineInfo();
             info.forEach((url, prop) -> {
                 JsonObject flow = new JsonObject();
-                flow.put(Symbols.URL, prop.getFlowUrl());
-                flow.put(Symbols.LAST_MODIFIED_TIME, StringUtils.toDatetimeStr(prop.getLastModifiedTime(), zone));
+                flow.put(AppConsts.URL, prop.getFlowUrl());
+                flow.put(AppConsts.STATE, prop.getState());
+                flow.put(AppConsts.LAST_MODIFIED_TIME, StringUtils.toDatetimeStr(prop.getLastModifiedTime(), zone));
+                flow.put(AppConsts.SIZE, prop.getFileSize());
                 flows.add(flow);
             });
             promise.complete(ResultEnum.SUCCESS);

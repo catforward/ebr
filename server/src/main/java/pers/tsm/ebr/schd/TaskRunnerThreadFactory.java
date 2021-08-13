@@ -17,30 +17,31 @@
  */
 package pers.tsm.ebr.schd;
 
+import java.util.Objects;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- *
+ * <pre>runner's thread factory</pre>
  *
  * @author l.gong
  */
 public class TaskRunnerThreadFactory implements ThreadFactory {
 
     private static final AtomicInteger ATOMIC_INTEGER = new AtomicInteger(1);
-    private final ThreadGroup group;
     private final AtomicInteger threadNumber = new AtomicInteger(1);
     private final String namePrefix;
 
     TaskRunnerThreadFactory(final String prefix) {
-        SecurityManager s = System.getSecurityManager();
-        group = (s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup();
         namePrefix = prefix + "pool-" + ATOMIC_INTEGER.getAndIncrement() + "-thread-";
     }
 
     @Override
     public Thread newThread(Runnable r) {
-        Thread t = new Thread(group, r, namePrefix + threadNumber.getAndIncrement(), 0);
+        Objects.requireNonNull(r);
+        SecurityManager s = System.getSecurityManager();
+        Thread t = new Thread((s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup(),
+                r, namePrefix + threadNumber.getAndIncrement(), 0);
         if (t.isDaemon()) {
             t.setDaemon(false);
         }

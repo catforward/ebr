@@ -17,10 +17,12 @@
  */
 package pers.tsm.ebr.data;
 
+import io.vertx.core.json.JsonObject;
+
 import static java.util.Objects.isNull;
 
 /**
- *
+ * <pre>describing a define file</pre>
  *
  * @author l.gong
  */
@@ -28,6 +30,8 @@ public class TaskDefineFileProp {
 
     private String absolutePath;
     private String flowUrl;
+    private String state;
+    private JsonObject content;
     private long fileSize;
     private long lastModifiedTime;
 
@@ -44,58 +48,50 @@ public class TaskDefineFileProp {
         return isNull(other) || this.lastModifiedTime > other.lastModifiedTime;
     }
 
-    /**
-     * @return the absPath
-     */
     public String getAbsolutePath() {
         return absolutePath;
     }
 
-    /**
-     * @param absPath the absPath to set
-     */
     public void setAbsolutePath(String absPath) {
         this.absolutePath = absPath;
     }
 
-    /**
-     * @return the flowUrl
-     */
     public String getFlowUrl() {
         return flowUrl;
     }
 
-    /**
-     * @param flowUrl the fileUrl to set
-     */
     public void setFlowUrl(String flowUrl) {
         this.flowUrl = flowUrl;
     }
 
-    /**
-     * @return the fileSize
-     */
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
+    }
+
+    public JsonObject getContent() {
+        return content;
+    }
+
+    public void setContent(JsonObject content) {
+        this.content = content;
+    }
+
     public long getFileSize() {
         return fileSize;
     }
 
-    /**
-     * @param fileSize the fileSize to set
-     */
     public void setFileSize(long fileSize) {
         this.fileSize = fileSize;
     }
 
-    /**
-     * @return the lastModifiedTime
-     */
     public long getLastModifiedTime() {
         return lastModifiedTime;
     }
 
-    /**
-     * @param lastModifiedTime the lastModifiedTime to set
-     */
     public void setLastModifiedTime(long lastModifiedTime) {
         this.lastModifiedTime = lastModifiedTime;
     }

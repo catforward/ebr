@@ -17,25 +17,24 @@
  */
 package pers.tsm.ebr;
 
-import static java.util.Objects.isNull;
-
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Vertx;
 import io.vertx.core.VertxOptions;
 import io.vertx.core.json.JsonObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pers.tsm.ebr.base.HttpApiServer;
 import pers.tsm.ebr.common.AppConfigs;
 import pers.tsm.ebr.data.TaskDefineRepo;
 import pers.tsm.ebr.data.TaskRepo;
 
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import static java.util.Objects.isNull;
+
 /**
- *
+ * <pre>External Batch Runner</pre>
  *
  * @author l.gong
  */
@@ -44,9 +43,8 @@ public final class AppMain {
     
     private static final String MAJOR = "4";
     private static final String MINOR = "0";
-    private static final String PATCH = "0";
     private static final String PHASE = "alpha";
-    public static final String VERSION = MAJOR + "." + MINOR + "." + PATCH + "-" + PHASE;
+    public static final String VERSION = MAJOR + "." + MINOR + "-" + PHASE;
     
     private Vertx vertx;
 
@@ -107,15 +105,15 @@ public final class AppMain {
     String printBanner() {
         String logo = "\n";
         logo += "******************************************\n";
-        logo += "*                                        *\n";
-        logo += "*        ███████╗██████╗ ██████╗         *\n";
-        logo += "*        ██╔════╝██╔══██╗██╔══██╗        *\n";
-        logo += "*        █████╗  ██████╔╝██████╔╝        *\n";
-        logo += "*        ██╔══╝  ██╔══██╗██╔══██╗        *\n";
-        logo += "*        ███████╗██████╔╝██║  ██║        *\n";
-        logo += "*        ╚══════╝╚═════╝ ╚═╝  ╚═╝        *\n";
-        logo += "*                                        *\n";
-        logo += "*            Ver:" + AppMain.VERSION + "             *\n";
+        logo += "                                          \n";
+        logo += "         ███████╗██████╗ ██████╗          \n";
+        logo += "         ██╔════╝██╔══██╗██╔══██╗         \n";
+        logo += "         █████╗  ██████╔╝██████╔╝         \n";
+        logo += "         ██╔══╝  ██╔══██╗██╔══██╗         \n";
+        logo += "         ███████╗██████╔╝██║  ██║         \n";
+        logo += "         ╚══════╝╚═════╝ ╚═╝  ╚═╝         \n";
+        logo += "                                          \n";
+        logo += "             Ver:" + AppMain.VERSION + "                \n";
         logo += "******************************************\n";
         return logo;
     }

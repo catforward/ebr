@@ -17,30 +17,24 @@
  */
 package pers.tsm.ebr.base;
 
-import static java.util.Objects.isNull;
-import static java.util.Objects.requireNonNull;
-import static pers.tsm.ebr.common.Symbols.BLANK_STR;
-import static pers.tsm.ebr.common.Symbols.BODY;
-import static pers.tsm.ebr.common.Symbols.METHOD;
-import static pers.tsm.ebr.common.Symbols.PATH;
-import static pers.tsm.ebr.common.Symbols.USER_AGENT;
-
-import java.time.ZoneId;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.eventbus.Message;
-import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pers.tsm.ebr.common.AppConfigs;
 import pers.tsm.ebr.common.AppException;
 import pers.tsm.ebr.types.ResultEnum;
 
+import java.time.ZoneId;
+
+import static java.util.Objects.isNull;
+import static java.util.Objects.requireNonNull;
+import static pers.tsm.ebr.common.AppConsts.*;
+
 /**
- *
+ * <pre>service's worker</pre>
  *
  * @author l.gong
  */
@@ -48,36 +42,30 @@ public abstract class BaseService extends AbstractVerticle {
     private static final Logger logger = LoggerFactory.getLogger(BaseService.class);
     protected JsonObject inData;
     protected JsonObject outData;
-    protected final JsonObject emptyJsonObject = new JsonObject();
-    protected final JsonArray emptyJsonArray = new JsonArray();
     protected ZoneId zone;
 
     @Override
     public void start() throws Exception {
         super.start();
-        zone = ZoneId.of(config().getString(AppConfigs.SERVICE_TIMEZONE, "Asia/Tokyo"));
-        logger.info("Service: {} started. [{}]", getServiceName(), deploymentID());
+        String timezone = AppConfigs.get().getJsonObject(AppConfigs.SECTION_APP)
+                .getString(AppConfigs.APP_TIMEZONE, "Asia/Tokyo");
+        zone = ZoneId.of(timezone);
+        String deploymentId = deploymentID();
+        logger.info("Service: {} started. [{}]", getServiceName(), deploymentId);
     }
 
     @Override
     public void stop() throws Exception {
         super.stop();
-        logger.info("Service: {} stopped. [{}]", getServiceName(), deploymentID());
+        String deploymentId = deploymentID();
+        logger.info("Service: {} stopped. [{}]", getServiceName(), deploymentId);
     }
 
-    /**
-     * <p>注册服务</p>
-     * @param serviceId 服务ID
-     */
     protected void registerService(String serviceId) {
         requireNonNull(serviceId);
         vertx.eventBus().consumer(serviceId, this::handleServiceEvent);
     }
 
-    /**
-     * <p>注册内部请求服务</p>
-     * @param requestId 服务ID
-     */
     protected void registerRequest(String requestId) {
         requireNonNull(requestId);
         vertx.eventBus().consumer(requestId, this::handleRequestEvent);
@@ -88,20 +76,10 @@ public abstract class BaseService extends AbstractVerticle {
         vertx.eventBus().consumer(msgId, this::handleMsgEvent);
     }
 
-    /**
-     * <p>获取请求体</p>
-     * @return 请求体
-     */
     protected JsonObject getPostBody() {
-        return isNull(inData) ? emptyJsonObject : inData.getJsonObject(BODY);
+        return isNull(inData) ? EMPTY_JSON_OBJ : inData.getJsonObject(BODY);
     }
 
-    /**
-     * <p>获取字符串型的请求参数值</p>
-     * @param name 参数名
-     * @param def 默认值
-     * @return 参数值
-     */
     protected String getParameter(String name, String def) {
         if (isNull(inData) || isNull(name)) {
             return def;
@@ -116,41 +94,20 @@ public abstract class BaseService extends AbstractVerticle {
         return isNull(value) ? def : value;
     }
 
-    /**
-     * <p>获取字符串型的请求参数值</p>
-     * @param name 参数名
-     * @return 参数值
-     */
     protected String getParameter(String name) {
         return getParameter(name, BLANK_STR);
     }
 
-    /**
-     * <p>前置准备处理</p>
-     * @return 结果返回码
-     */
     protected Future<IResult> doPrepare() {
         return Future.future(promise -> promise.complete(ResultEnum.SUCCESS));
     }
 
-    /**
-     * <p>获取服务名称</p>
-     * @return 服务名称
-     */
     protected abstract String getServiceName();
 
-    /**
-     * <p>服务处理</p>
-     * @return 结果返回码
-     */
     protected Future<IResult> doRequest() {
         return Future.future(promise -> promise.complete(ResultEnum.SUCCESS));
     }
 
-    /**
-     * <p>内部请求处理</p>
-     * @param msg 请求体
-     */
     protected void handleRequestEvent(Message<JsonObject> msg) {
         try {
             inData = msg.body();
@@ -174,19 +131,10 @@ public abstract class BaseService extends AbstractVerticle {
         }
     }
 
-    /**
-     * <p>服务处理</p>
-     * @return 结果返回码
-     */
     protected Future<IResult> doService() {
         return Future.future(promise -> promise.complete(ResultEnum.SUCCESS));
     }
 
-    /**
-     * <p>处理注册的事件</p>
-     *
-     * @param msg EventBus消息
-     */
     protected void handleServiceEvent(Message<JsonObject> msg) {
         try {
             inData = msg.body();
@@ -235,12 +183,9 @@ public abstract class BaseService extends AbstractVerticle {
         }
     }
 
-    private Future<Void> makeReplyMsg(Message<JsonObject> msg, IResult ret) {
-        return Future.future(promise -> {
-            logger.trace("makeReplyMsg: {}", outData);
-            msg.reply(new ServiceResultMsg(ret).setData(outData).toJsonObject());
-            promise.complete();
-        });
+    private void makeReplyMsg(Message<JsonObject> msg, IResult ret) {
+        logger.trace("makeReplyMsg: {}", outData);
+        msg.reply(new ServiceResultMsg(ret).setData(outData).toJsonObject());
     }
 
     protected void emitMsg(String msg, JsonObject param) {

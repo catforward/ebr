@@ -17,20 +17,15 @@
  */
 package pers.tsm.ebr.schd;
 
-import static java.util.Objects.isNull;
-
-import java.util.List;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import io.vertx.core.AbstractVerticle;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pers.tsm.ebr.base.ServiceResultMsg;
+import pers.tsm.ebr.common.AppConsts;
 import pers.tsm.ebr.common.AppException;
 import pers.tsm.ebr.common.ServiceSymbols;
-import pers.tsm.ebr.common.Symbols;
 import pers.tsm.ebr.data.Flow;
 import pers.tsm.ebr.data.Task;
 import pers.tsm.ebr.data.TaskRepo;
@@ -38,25 +33,29 @@ import pers.tsm.ebr.types.ResultEnum;
 import pers.tsm.ebr.types.TaskStateEnum;
 import pers.tsm.ebr.types.TaskTypeEnum;
 
+import java.util.List;
+
+import static java.util.Objects.isNull;
+
 /**
  *<pre>
  * task start request:
  * {
- *    "flow": "xxx",
- *    "task":"xxx"(optional)
+ *    "flow": string,
+ *    "task"(optional): string
  * }
  * 
  * task running/complete msg:
  * {
- *    "flow": "xxx",
- *    "task":"xxx"
+ *    "flow": string,
+ *    "task": string
  * }
  * 
  * task failed msg:
  * {
- *    "flow": "xxx",
- *    "task":"xxx",
- *    "cause": ""
+ *    "flow": string,
+ *    "task": string,
+ *    "cause": string
  * }
  * 
  * </pre>
@@ -75,26 +74,29 @@ public class TaskSchdVerticle extends AbstractVerticle {
         vertx.eventBus().consumer(ServiceSymbols.MSG_STATE_TASK_RUNNING, this::handleTaskRunningMsg);
         vertx.eventBus().consumer(ServiceSymbols.MSG_STATE_TASK_COMPLETE, this::handleTaskCompleteMsg);
         vertx.eventBus().consumer(ServiceSymbols.MSG_STATE_TASK_FAILED, this::handleTaskFailedMsg);
+        String deploymentId = deploymentID();
+        logger.info("TaskSchdVerticle started. [{}]", deploymentId);
     }
 
     @Override
     public void stop() throws Exception {
         super.stop();
-        logger.info("TaskExecVerticle stopped. [{}]", deploymentID());
+        String deploymentId = deploymentID();
+        logger.info("TaskSchdVerticle stopped. [{}]", deploymentId);
     }
 
     private void notice(String msg, Task task) {
         String flowUrl = isNull(task.getRoot()) ? task.getUrl() : task.getRoot().getUrl();
         JsonObject param = new JsonObject();
-        param.put(Symbols.FLOW, flowUrl);
-        param.put(Symbols.TASK, task.getUrl());
+        param.put(AppConsts.FLOW, flowUrl);
+        param.put(AppConsts.TASK, task.getUrl());
         vertx.eventBus().publish(msg, param);
     }
 
     private void handleTaskStartAction(Message<JsonObject> msg) {
         JsonObject target = msg.body();
-        String flowUrl = target.getString(Symbols.FLOW);
-        String taskUrl = target.getString(Symbols.TASK);
+        String flowUrl = target.getString(AppConsts.FLOW);
+        String taskUrl = target.getString(AppConsts.TASK);
         Flow flow = TaskRepo.getFlow(flowUrl);
         if (isNull(flow)) {
             throw new AppException(ResultEnum.ERR_11003);
@@ -136,6 +138,8 @@ public class TaskSchdVerticle extends AbstractVerticle {
         checkParentState(task);
         if (TaskTypeEnum.FLOW != task.getType()) {
             findRunnableTask(task);
+        } else {
+            TaskRepo.removeRunnableFlow(TaskRepo.getFlow(task.getUrl()));
         }
     }
 
@@ -147,7 +151,7 @@ public class TaskSchdVerticle extends AbstractVerticle {
 
     private Task getSpecifiedTask(JsonObject target) {
         Flow flow = getSpecifiedFlow(target);
-        String taskUrl = target.getString(Symbols.TASK);
+        String taskUrl = target.getString(AppConsts.TASK);
         if (isNull(taskUrl) || taskUrl.isBlank()) {
             logger.debug("specified task: {}", taskUrl);
             throw new AppException(ResultEnum.ERR_11004);
@@ -161,7 +165,7 @@ public class TaskSchdVerticle extends AbstractVerticle {
     }
 
     private Flow getSpecifiedFlow(JsonObject target) {
-        String flowUrl = target.getString(Symbols.FLOW);
+        String flowUrl = target.getString(AppConsts.FLOW);
         if (isNull(flowUrl) || flowUrl.isBlank()) {
             logger.debug("specified flow: {}", flowUrl);
             throw new AppException(ResultEnum.ERR_11003);

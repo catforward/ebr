@@ -17,8 +17,9 @@
  */
 package pers.tsm.ebr.data;
 
-import static java.util.Objects.isNull;
-import static java.util.Objects.requireNonNull;
+import com.google.common.cache.Cache;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Map;
 import java.util.Queue;
@@ -27,16 +28,12 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.locks.ReentrantLock;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.cache.Cache;
-import com.google.common.cache.RemovalListener;
-
-import io.vertx.core.json.JsonObject;
+import static java.util.Objects.isNull;
+import static java.util.Objects.requireNonNull;
+import static pers.tsm.ebr.types.TaskStateEnum.STORED;
 
 /**
- *
+ * <pre>flow's loader/cache</pre>
  *
  * @author l.gong
  */
@@ -48,11 +45,6 @@ public class TaskRepo {
     /** key: flow_url, value: task class*/
     private Cache<String, Flow> idleFlowPool;
     private final Queue<Task> taskQueue;
-
-    public static final RemovalListener<String, JsonObject> removalListener = notification -> {
-        logger.debug("define file content cache: Key {} was removed ({})",
-                notification.getKey(), notification.getCause());
-    };
 
     private static class InstanceHolder {
         private static final TaskRepo INSTANCE = new TaskRepo();
@@ -134,10 +126,23 @@ public class TaskRepo {
         return InstanceHolder.INSTANCE.taskQueue.poll();
     }
 
+    public static Map<String, TaskDefineFileProp> getAllDefineInfo() {
+        Map<String, TaskDefineFileProp> copyMap =  TaskDefineRepo.copyDefineFileInfo();
+        copyMap.forEach((url, prop) -> {
+            Flow runningFlow = InstanceHolder.INSTANCE.runningFlowPool.get(url);
+            if (isNull(runningFlow)) {
+                prop.setState(STORED.getName());
+            } else {
+                prop.setState(runningFlow.getState().getName());
+            }
+        });
+        return copyMap;
+    }
+
     private Flow createFlowFromDefine(String flowUrl) {
         try {
-            JsonObject content = TaskDefineRepo.getDefineFileContent(flowUrl);
-            FlowMaker maker = new FlowMaker(flowUrl, content);
+            TaskDefineFileProp prop = TaskDefineRepo.getDefineFileInfo(flowUrl);
+            FlowMaker maker = new FlowMaker(flowUrl, prop.getContent());
             return maker.makeAndValidate();
         } catch (ExecutionException e) {
             logger.error("", e);

@@ -17,6 +17,10 @@
  */
 package pers.tsm.ebr.common;
 
+import io.vertx.core.json.JsonObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,15 +28,10 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import io.vertx.core.json.JsonObject;
-
 import static java.util.Objects.requireNonNull;
 
 /**
- *
+ * <pre>app's config</pre>
  *
  * @author l.gong
  */
@@ -45,10 +44,10 @@ public final class AppConfigs {
     public static final String SECTION_SERVICE = "service";
 
     public static final String APP_DEV_MODE = "devMode";
+    public static final String APP_TIMEZONE = "timezone";
     public static final String APP_ALLOW_COMMAND_PATH = "allowCommandPath";
     public static final String HTTP_ADDRESS = "address";
     public static final String HTTP_PORT = "port";
-    public static final String SERVICE_TIMEZONE = "timezone";
     public static final String SERVICE_FS_DATA_CHECK_INTERVAL_SECONDS = "fsDataCheckIntervalSeconds";
     public static final String SERVICE_FS_DATA_CACHE_EXPIRE_SECONDS = "fsDataCacheExpireSeconds";
     public static final String SERVICE_FS_DATA_CACHE_INITIAL_CAPACITY = "fsDataCacheInitialCapacity";
@@ -71,9 +70,6 @@ public final class AppConfigs {
 
     private AppConfigs() {}
 
-    /**
-     * load configuration from config.json
-     */
     public static void load() throws IOException {
         InstanceHolder.INSTANCE.loadConfigFile();
         InstanceHolder.INSTANCE.loadExternalConfigFile();
@@ -82,23 +78,17 @@ public final class AppConfigs {
         }
         InstanceHolder.INSTANCE.isDevMode = InstanceHolder.INSTANCE.config
                 .getJsonObject(SECTION_APP).getBoolean(APP_DEV_MODE, false);
-        logger.debug("config info -> {}", InstanceHolder.INSTANCE.config.encodePrettily());
+        String prettyStr = InstanceHolder.INSTANCE.config.encodePrettily();
+        logger.debug("config info -> {}", prettyStr);
         logger.info("Load Configuration ........... DONE");
     }
 
-    /**
-     * clear all configuration
-     */
     public static void release() {
         if (!InstanceHolder.INSTANCE.config.isEmpty()) {
             InstanceHolder.INSTANCE.config.clear();
         }
     }
 
-    /**
-     * get a configuration copy
-     * @return JsonObject
-     */
     public static JsonObject get() {
         return InstanceHolder.INSTANCE.config.copy();
     }
@@ -107,15 +97,12 @@ public final class AppConfigs {
         return InstanceHolder.INSTANCE.isDevMode;
     }
 
-    /**
-     * load configuration from default config.json
-     */
     private void loadConfigFile() throws IOException {
         try (InputStream stream = getClass().getResourceAsStream("/" + CONFIG_FILE)) {
             requireNonNull(stream);
             byte[] b = new byte[1024];
             int len = 0;
-            int temp = 0;
+            int temp;
             while ((temp = stream.read()) != -1) {
                 b[len] = (byte) temp;
                 len++;
@@ -125,9 +112,6 @@ public final class AppConfigs {
         }
     }
 
-    /**
-     * load configuration from user defined config.json
-     */
     private void loadExternalConfigFile() throws IOException {
         String extConfFile = String.format("%s%s%s", AppPaths.getConfPath(), File.separator, CONFIG_FILE);
         URI confStorePath = new File(extConfFile).toURI();

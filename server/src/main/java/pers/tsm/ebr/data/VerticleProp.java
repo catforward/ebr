@@ -17,15 +17,15 @@
  */
 package pers.tsm.ebr.data;
 
-import static java.util.Objects.requireNonNull;
-
-import java.util.function.Supplier;
-
 import io.vertx.core.DeploymentOptions;
 import io.vertx.core.Verticle;
 
+import java.util.function.Supplier;
+
+import static java.util.Objects.requireNonNull;
+
 /**
- *
+ * <pre>describing a service</pre>
  *
  * @author l.gong
  */

@@ -18,18 +18,18 @@
 package pers.tsm.ebr.types;
 
 /**
- *
+ * <pre>task's state</pre>
  *
  * @author l.gong
  */
 public enum TaskStateEnum {
-    UNKNOWN(0, "unknown"),
-    STANDBY(1, "standby"),
-    RUNNING(2, "running"),
-    PAUSED(3, "paused"),
-    SKIPPED(4, "skipped"),
-    ERROR(5, "error"),
-    FINISHED(6, "finished"),
+    STORED(1, "stored"),
+    STANDBY(2, "standby"),
+    RUNNING(3, "running"),
+    PAUSED(4, "paused"),
+    SKIPPED(5, "skipped"),
+    ERROR(6, "error"),
+    FINISHED(7, "finished"),
     ;
 
     private final int state;

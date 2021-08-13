@@ -17,30 +17,28 @@
  */
 package pers.tsm.ebr.data;
 
-import static java.util.Objects.isNull;
-import static java.util.Objects.requireNonNull;
+import com.google.common.graph.GraphBuilder;
+import com.google.common.graph.MutableGraph;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import pers.tsm.ebr.common.AppException;
+import pers.tsm.ebr.types.ResultEnum;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.graph.GraphBuilder;
-import com.google.common.graph.MutableGraph;
-
-import pers.tsm.ebr.common.AppException;
-import pers.tsm.ebr.types.ResultEnum;
+import static java.util.Objects.isNull;
+import static java.util.Objects.requireNonNull;
 
 /**
- *
+ * <pre>flow's validator(DAG)</pre>
  *
  * @author l.gong
  */
 class DAGFlowValidator implements IValidator {
     private static final Logger logger = LoggerFactory.getLogger(DAGFlowValidator.class);
 
-    private Map<String, MutableGraph<Task>> urlGraphMapping;
+    private final Map<String, MutableGraph<Task>> urlGraphMapping;
 
     DAGFlowValidator() {
         urlGraphMapping = new HashMap<>();

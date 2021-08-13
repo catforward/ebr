@@ -1,6 +1,7 @@
 {
     "app": {
       "devMode": true,
+      "timezone": "Asia/Tokyo",
       "allowCommandPath": [
         "/opt/one/batch/"
       ]
@@ -18,7 +19,6 @@
       "port": 8088
     },
     "service": {
-      "timezone": "Asia/Tokyo",
       "fsDataCheckIntervalSeconds" : 60,
       "fsDataCacheExpireSeconds": 900,
       "fsDataCacheInitialCapacity": 2,

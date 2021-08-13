@@ -1,29 +1,29 @@
 {
-    "vertx": {
-      "eventLoopPoolSize": 1,
-      "workerPoolSize": 10,
-      "maxWorkerExecuteTime": 3600000,
-      "eventBusOptions": {
-        "connectTimeout": 6000
-      }
-    },
-    
-    "http": {
-      "address": "127.0.0.1",
-      "port": 8088
-    },
-    
-    "service": {
-      "timezone": "Asia/Tokyo",
-      "fsDataCheckIntervalSeconds" : 60,
-      "fsDataCacheExpireSeconds": 900,
-      "fsDataCacheInitialCapacity": 2,
-      "fsDataCacheMaximumSize": 50,
-      "taskCacheExpireSeconds": 300,
-      "taskCacheInitialCapacity": 2,
-      "taskCacheMaximumSize": 20,
-      "taskExecutorMaximumSize": 4,
-      "taskExecutorMinimumSize": 2,
-      "taskExecutorCheckIntervalSeconds": 1
+  "app": {
+    "timezone": "Asia/Tokyo"
+  },
+  "vertx": {
+    "eventLoopPoolSize": 1,
+    "workerPoolSize": 10,
+    "maxWorkerExecuteTime": 3600000,
+    "eventBusOptions": {
+      "connectTimeout": 6000
     }
+  },
+  "http": {
+    "address": "127.0.0.1",
+    "port": 8088
+  },
+  "service": {
+    "fsDataCheckIntervalSeconds": 60,
+    "fsDataCacheExpireSeconds": 900,
+    "fsDataCacheInitialCapacity": 2,
+    "fsDataCacheMaximumSize": 50,
+    "taskCacheExpireSeconds": 300,
+    "taskCacheInitialCapacity": 2,
+    "taskCacheMaximumSize": 20,
+    "taskExecutorMaximumSize": 4,
+    "taskExecutorMinimumSize": 2,
+    "taskExecutorCheckIntervalSeconds": 1
+  }
 }

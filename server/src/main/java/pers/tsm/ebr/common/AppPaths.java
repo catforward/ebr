@@ -17,31 +17,26 @@
  */
 package pers.tsm.ebr.common;
 
-import static java.util.Objects.isNull;
-import static pers.tsm.ebr.common.Symbols.BIN;
-import static pers.tsm.ebr.common.Symbols.CONF;
-import static pers.tsm.ebr.common.Symbols.DATA;
-import static pers.tsm.ebr.common.Symbols.ENV_EBR_ROOT;
-import static pers.tsm.ebr.common.Symbols.LOGS;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static java.util.Objects.isNull;
+import static pers.tsm.ebr.common.AppConsts.*;
 
 /**
  * <pre>
- * The path utility.
- * Made the path info with the folder structure below this:
+ * app's path utility
  *
  * ${EBR_ROOT}/
  *     |-- bin/
- *     |     |-- ebr.sh
+ *     |     |-- xxx.sh
  *     |-- conf/
  *     |     |-- config.json
- *     |-- lib/
+ *     |-- libs/
  *     |     |-- ebr.jar
  *     |-- logs/
  *     |     |-- ebr.log
@@ -53,7 +48,7 @@ import org.slf4j.LoggerFactory;
  */
 public final class AppPaths {
     private static final Logger logger = LoggerFactory.getLogger(AppPaths.class);
-    private static final String PATH_FROMAT = "%s%s%s";
+    private static final String PATH_FORMAT = "%s%s%s";
 
     private final String rootPath;
     private final String confPath;
@@ -67,10 +62,10 @@ public final class AppPaths {
 
     private AppPaths() {
         rootPath = initRootPath();
-        confPath = String.format(PATH_FROMAT, rootPath, File.separator, CONF);
-        logsPath = String.format(PATH_FROMAT, rootPath, File.separator, LOGS);
-        dataPath = String.format(PATH_FROMAT, rootPath, File.separator, DATA);
-        binPath = String.format(PATH_FROMAT, rootPath, File.separator, BIN);
+        confPath = String.format(PATH_FORMAT, rootPath, File.separator, CONF);
+        logsPath = String.format(PATH_FORMAT, rootPath, File.separator, LOGS);
+        dataPath = String.format(PATH_FORMAT, rootPath, File.separator, DATA);
+        binPath = String.format(PATH_FORMAT, rootPath, File.separator, BIN);
     }
 
     private String initRootPath() {
@@ -89,57 +84,22 @@ public final class AppPaths {
         return rawPath;
     }
 
-    /**
-     * <pre>
-     * get the absolute path of "conf" folder
-     * </pre>
-     *
-     * @return String The path
-     */
     public static String getConfPath() {
         return InstanceHolder.INSTANCE.confPath;
     }
 
-    /**
-     * <pre>
-     * get the absolute path of "data" folder
-     * </pre>
-     *
-     * @return String The path
-     */
     public static String getDataPath() {
         return InstanceHolder.INSTANCE.dataPath;
     }
 
-    /**
-     * <pre>
-     * get the absolute path of "logs" folder
-     * </pre>
-     *
-     * @return String The path
-     */
     public static String getLogsPath() {
         return InstanceHolder.INSTANCE.logsPath;
     }
 
-    /**
-     * <pre>
-     * get the root deploy path
-     * </pre>
-     *
-     * @return String The path
-     */
     public static String getRootPath() {
         return InstanceHolder.INSTANCE.rootPath;
     }
 
-    /**
-     * <pre>
-     * get the absolute path of "bin" folder
-     * </pre>
-     *
-     * @return String The path
-     */
     public static String getBinPath() {
         return InstanceHolder.INSTANCE.binPath;
     }

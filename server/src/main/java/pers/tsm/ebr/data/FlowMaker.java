@@ -17,23 +17,19 @@
  */
 package pers.tsm.ebr.data;
 
-import static java.util.Objects.isNull;
-import static java.util.Objects.requireNonNull;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-
 import io.vertx.core.json.JsonObject;
+import pers.tsm.ebr.common.AppConsts;
 import pers.tsm.ebr.common.AppException;
-import pers.tsm.ebr.common.Symbols;
 import pers.tsm.ebr.types.ResultEnum;
 import pers.tsm.ebr.types.TaskTypeEnum;
 
+import java.util.*;
+
+import static java.util.Objects.isNull;
+import static java.util.Objects.requireNonNull;
+
 /**
- *
+ * <pre>flow's maker</pre>
  *
  * @author l.gong
  */
@@ -66,11 +62,11 @@ class FlowMaker {
         return flow;
     }
 
-    private Flow makeBasicFlowInfo() {
+    private void makeBasicFlowInfo() {
         for (String taskId : content.getMap().keySet()) {
             JsonObject taskBody = content.getJsonObject(taskId);
             Task task = new Task(Task.Meta.buildFrom(taskId, taskBody));
-            if (Symbols.FLOW.equalsIgnoreCase(taskId)) {
+            if (AppConsts.FLOW.equalsIgnoreCase(taskId)) {
                 if (!isNull(flow)) {
                     throw new AppException(ResultEnum.ERR_10102);
                 }
@@ -83,7 +79,6 @@ class FlowMaker {
         if (isNull(flow)) {
             throw new AppException(ResultEnum.ERR_10101);
         }
-        return flow;
     }
 
     private void updateTaskPropInfo() {
@@ -104,8 +99,6 @@ class FlowMaker {
                     throw new AppException(ResultEnum.ERR_10107);
                 }
                 task.parent = groupTask;
-                //task.predecessor.add(groupTask);
-                //groupTask.successor.add(task);
             }
         });
     }
