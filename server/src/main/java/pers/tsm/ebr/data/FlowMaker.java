@@ -29,7 +29,7 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.requireNonNull;
 
 /**
- * <pre>flow's maker</pre>
+ * <pre>Flow's maker</pre>
  *
  * @author l.gong
  */

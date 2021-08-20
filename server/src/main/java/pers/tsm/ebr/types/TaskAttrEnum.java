@@ -18,7 +18,7 @@
 package pers.tsm.ebr.types;
 
 /**
- * <pre>attributes of task define</pre>
+ * <pre>Attributes of task define</pre>
  *
  * @author l.gong
  */
@@ -36,6 +36,11 @@ public enum TaskAttrEnum {
         this.name = name;
     }
 
+    /**
+     * Get the raw name
+     *
+     * @return attribute's name
+     */
     public String getName() {
         return name;
     }

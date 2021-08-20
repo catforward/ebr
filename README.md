@@ -1,65 +1,88 @@
 # EBR (External Batch Runner)
 
 ![build](https://img.shields.io/badge/build-passing-green)
+[![license](https://img.shields.io/badge/license-Apache%202-blue.svg)](https://github.com/catforward/ebr/blob/master/LICENSE)
 
-README
+[中文](./README.zh_CN.md) | [日本語](./README.ja_JP.md)
 
-- [中文](./README.zh_CN.md)
-- [日本語](./README.ja_JP.md)
+## Intro
 
-Note: This is a pure personal study project. It's means that it have no design documents and have no the best practices, just coding following my mind.
+**EBR** is a simple tool used to manage several external process with clear dependencies.
+> This is a pure personal project. Update only when adding or modifying features.
 
-EBR(External Batch Runner) , a simple tool used to execute several external programs with clear dependencies.
+## Quick Start
+### Flow's Define (folder [/sample_path/ebr/data/FLOW-4.json])
 
-External Program
-
-- A script program (i.e. shell script, windows bat, python script ...)
-- Executable binary programs without GUI
-
-For example
-
-we have a definition of program's dependencies like this below
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<task id="TaskFlow-1" desc="root group">
-    <task id="task-1" desc="run command-1" command="/your/path/command-1.sh"/>
-    <task id="task-2" desc="task group-1" depends="task-1">
-        <task id="task-2-1" desc="run command-2" command="/your/path/command-2.sh"/>
-        <task id="task-2-1" desc="run command-3" command="/your/path/command-3.sh"/>
-        <task id="task-2-3" desc="run command-4" depends="task-2-1,task-2-2" command="/your/path/command-4.sh"/>
-    </task>
-    <task id="task-3" desc="run command-5" depends="task-1,task-2" command="/your/path/command-5.sh"/>
-    <task id="task-4" desc="run command-6" depends="task-1" command="/your/path/command-6.sh"/>
-</task>
+```json
+{
+  "flow": {
+    "desc": "sample flow-4 (nested hybrid)"
+  },
+  "T1": {
+    "group": "flow", "desc": "test task unit T1", "script": "echo.sh T1"
+  },
+  "T2": {
+    "group": "flow", "desc": "test task unit T2",
+    "depends": [ "T1" ]
+  },
+  "T2-1": {
+    "group": "T2", "desc": "test task unit T2-1", "script": "echo.sh T2-1"
+  },
+  "T2-2": {
+    "group": "T2", "desc": "test task unit T2-2", "script": "echo.sh T2-2"
+  },
+  "T2-3": {
+    "group": "T2", "desc": "test task unit T2-3", "script": "echo.sh T2-3",
+    "depends": [ "T2-1", "T2-2" ]
+  },
+  "T3": {
+    "group": "flow", "desc": "test task unit T3", "script": "echo.sh T3",
+    "depends": [ "T1", "T2" ]
+  },
+  "T4": {
+    "group": "flow", "desc": "test task unit T4", "script": "echo.sh T4",
+    "depends": [ "T1" ]
+  }
+}
 ```
+> The define file will be read and translated to a graph(DAG) data struct when the flow is ready to run
+<br>
+![image](docs/sample_task_flow.jpg)
 
-when we kick this command
-
+- Server Start
 ```bash
-java -jar /${your_path}/ebr.jar -f /${your_path}/your_define.xml
+root@sample-server: /sample_path/ebr/bin/server-startup.sh
 ```
 
-EBR will parse the definition to a directed acyclic graph (DAG), and then, execute them as we defined.
-
-![image](ebr-docs/sample_task_flow.jpg)
-
-PS: build a native-image by GraalVM for better performance
+- CLI
 ```bash
-cd ${your_path}/ebr-dist/lib
-native-image -H:ReflectionConfigurationFiles=../../ebr-cli/build/graal.json -jar ../ebr-cli.jar
+root@sample-server: /sample_path/ebr/bin/ebr show
+URL                                       State                 LastModifiedTime          Size(bytes)
+-----------------------------------------------------------------------------------------------------
+/FLOW-4                                   stored                2021-07-16 19:45:54               881
+
+
+root@sample-server: /sample_path/ebr/bin/ebr show -f /FLOW-4
+URL               Type    State     Depends                             Script
+-----------------------------------------------------------------------------------------------------------
+/FLOW-4/T4        task    stored    /FLOW-4/T1                          /sample_path/ebr/bin/echo.sh T4
+/FLOW-4/T1        task    stored    --                                  /sample_path/ebr/bin/echo.sh T1
+/FLOW-4/T2        group   stored    /FLOW-4/T1                          --
+/FLOW-4/T2/T2-3   task    stored    /FLOW-4/T2/T2-1, /FLOW-4/T2/T2-2    /sample_path/ebr/bin/echo.sh T2-3
+/FLOW-4/T2/T2-1   task    stored    --                                  /sample_path/ebr/bin/echo.sh T2-1
+/FLOW-4/T2/T2-2   task    stored    --                                  /sample_path/ebr/bin/echo.sh T2-2
+/FLOW-4/T3        task    stored    /FLOW-4/T1, /FLOW-4/T2              /sample_path/ebr/bin/echo.sh T3
+
+root@sample-server: /sample_path/ebr/bin/ebr run -f /FLOW-4
 ```
-and then we can run it within cron like this blow:
+
+- Task's execution order
 ```bash
-# 2:05 AM every day
-05 2 * * * /your_path/ebr -f your_define.xml
+T1 --> T4,T2-1,T2-2 --> T2-3 --> T3
 ```
 
-Development Environment
 
-- OS: Debian 9
-- JDK: OpenJDK 11
+## Usecase
+![image](docs/sample_usecase.jpg)
 
-Dependency
 
-- OpenJDK 11

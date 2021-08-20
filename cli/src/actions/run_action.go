@@ -10,17 +10,20 @@ import (
 	"net/http"
 )
 
-type RunActionRespData struct {
-	Code string `json:"code"`
-	Msg  string `json:"msg"`
-}
-
+// Flow/Task执行动作
 type RunAction struct {
 	api_url   string
 	api_param map[string]string
 	api_res   []byte
 }
 
+// Flow/Task执行动作的响应数据结构
+type RunActionRespData struct {
+	Code string `json:"code"`
+	Msg  string `json:"msg"`
+}
+
+// 动作执行
 func (act *RunAction) DoAction(target string) {
 	log.Println("RunAction...")
 	// 初始化数据
@@ -81,8 +84,8 @@ func (act *RunAction) formatResult() {
 	}
 
 	if res.Code != "0" {
-		log.Fatalf("Run Action Failed... [code:'%s', msg:'%s']", res.Code, res.Msg)
+		log.Fatalf("Request Failed... [code:'%s', msg:'%s']", res.Code, res.Msg)
 	} else {
-		fmt.Println("Target Start...")
+		fmt.Println("Request Succeeded...")
 	}
 }

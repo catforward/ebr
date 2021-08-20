@@ -13,19 +13,21 @@ const (
 	CONFIG_FILE string = "config.json"
 )
 
-// 只需要http定义的部分
+// EBR的配置文件
 // 具体参见 conf/config.json
+type Config struct {
+	Http HttpConfig `json:"http"`
+}
+
+// 只需要http定义的部分
 type HttpConfig struct {
 	Address string `json:"address"`
 	Port    int    `json:"port"`
 }
 
-type Config struct {
-	Http HttpConfig `json:"http"`
-}
-
 var EbrConfig *Config
 
+// 初始化
 func ConfigInit() {
 	configFile := filepath.Join(GetConfPath(), CONFIG_FILE)
 	EbrConfig = new(Config)

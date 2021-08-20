@@ -43,7 +43,7 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.requireNonNull;
 
 /**
- * <pre>folder's loader/cache</pre>
+ * <pre>Folder's loader/cache</pre>
  *
  * @author l.gong
  */
@@ -53,7 +53,7 @@ public class TaskDefineRepo {
     /** key: flow_url, value: prop class*/
     private final Map<String, TaskDefineFileProp> defineFileInfo;
     /** key: flow_url, value: file content(JsonObject)*/
-    private Cache<String, JsonObject> defineFileContent;
+    private Cache<String, JsonObject> defineFileContentCache;
 
     public static final RemovalListener<String, JsonObject> removalListener = notification -> {
         logger.debug("define file content cache: Key {} was removed ({})",
@@ -71,7 +71,7 @@ public class TaskDefineRepo {
     }
 
     public static void release() {
-        InstanceHolder.INSTANCE.defineFileContent.invalidateAll();
+        InstanceHolder.INSTANCE.defineFileContentCache.invalidateAll();
         InstanceHolder.INSTANCE.defineFileInfo.clear();
     }
 
@@ -116,24 +116,34 @@ public class TaskDefineRepo {
         copyMap.clear();
     }
 
+    /**
+     * Give a cache to store the task define content
+     *
+     * @param cache Cache object
+     */
     public static void setFileContentCache(Cache<String, JsonObject> cache) {
         requireNonNull(cache);
         synchronized(InstanceHolder.INSTANCE) {
-            if (!isNull(InstanceHolder.INSTANCE.defineFileContent)) {
-                InstanceHolder.INSTANCE.defineFileContent.invalidateAll();
+            if (!isNull(InstanceHolder.INSTANCE.defineFileContentCache)) {
+                InstanceHolder.INSTANCE.defineFileContentCache.invalidateAll();
             }
-            InstanceHolder.INSTANCE.defineFileContent = cache;
+            InstanceHolder.INSTANCE.defineFileContentCache = cache;
         }
     }
 
+    /**
+     * Add a prop object to memory store
+     *
+     * @param prop property object of task define file
+     */
     private static void addDefineFileProp(TaskDefineFileProp prop) {
         requireNonNull(prop);
         InstanceHolder.INSTANCE.poolLock.lock();
         try {
             InstanceHolder.INSTANCE.defineFileInfo.put(prop.getFlowUrl(), prop);
             JsonObject obj = new JsonObject(Files.readString(Paths.get(prop.getAbsolutePath())));
-            InstanceHolder.INSTANCE.defineFileContent.invalidate(prop.getFlowUrl());
-            InstanceHolder.INSTANCE.defineFileContent.put(prop.getFlowUrl(), obj);
+            InstanceHolder.INSTANCE.defineFileContentCache.invalidate(prop.getFlowUrl());
+            InstanceHolder.INSTANCE.defineFileContentCache.put(prop.getFlowUrl(), obj);
         } catch (IOException ex) {
             logger.error("can not read from [{}], caching skipped...", prop.getAbsolutePath(), ex);
         } finally {
@@ -161,7 +171,7 @@ public class TaskDefineRepo {
         InstanceHolder.INSTANCE.poolLock.lock();
         try {
             InstanceHolder.INSTANCE.defineFileInfo.remove(prop.getFlowUrl());
-            InstanceHolder.INSTANCE.defineFileContent.invalidate(prop.getFlowUrl());
+            InstanceHolder.INSTANCE.defineFileContentCache.invalidate(prop.getFlowUrl());
         } finally {
             InstanceHolder.INSTANCE.poolLock.unlock();
         }
@@ -179,7 +189,7 @@ public class TaskDefineRepo {
             if (isNull(prop)) {
                 throw new AppException(String.format("task[%s] is not exist.", flowUrl));
             }
-            JsonObject content = InstanceHolder.INSTANCE.defineFileContent.get(flowUrl, () ->
+            JsonObject content = InstanceHolder.INSTANCE.defineFileContentCache.get(flowUrl, () ->
                     new JsonObject(Files.readString(Paths.get(prop.getAbsolutePath()))));
             if (isNull(content)) {
                 throw new AppException(String.format("task[%s] is not exist.(path:[%s])", flowUrl, prop.getAbsolutePath()));

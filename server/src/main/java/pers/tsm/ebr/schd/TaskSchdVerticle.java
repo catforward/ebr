@@ -139,7 +139,9 @@ public class TaskSchdVerticle extends AbstractVerticle {
         if (TaskTypeEnum.FLOW != task.getType()) {
             findRunnableTask(task);
         } else {
-            TaskRepo.removeRunnableFlow(TaskRepo.getFlow(task.getUrl()));
+            Flow flow = TaskRepo.getFlow(task.getUrl());
+            flow.reset();
+            TaskRepo.removeRunnableFlow(flow);
         }
     }
 

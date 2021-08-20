@@ -119,7 +119,7 @@ public class FlowDetailService extends BaseService {
         });
     }
 
-    public JsonArray toContentArray(Task root) {
+    private JsonArray toContentArray(Task root) {
         if (isNull(root)) {
             return EMPTY_JSON_ARR;
         }

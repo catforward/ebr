@@ -35,7 +35,7 @@ import static java.util.Objects.isNull;
 import static pers.tsm.ebr.common.AppConsts.BASE_URL;
 
 /**
- * <pre>api http server</pre>
+ * <pre>Api http server</pre>
  *
  * @author l.gong
  */

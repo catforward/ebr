@@ -42,7 +42,7 @@ import java.util.function.Supplier;
 import static pers.tsm.ebr.common.ServiceSymbols.*;
 
 /**
- * <pre>app function config（Cache，API，Service...）</pre>
+ * <pre>App function config（Cache，API，Service...）</pre>
  *
  * @author l.gong
  */
@@ -50,6 +50,12 @@ public class Deployer {
 
     private Deployer() {}
 
+    /**
+     * Describe the function in this app
+     *
+     * @param config service's config in config.json
+     * @return service's config
+     */
     public static Future<JsonObject> collect(JsonObject config) {
         return Future.future(promise -> {
             // Cache
@@ -84,6 +90,13 @@ public class Deployer {
         });
     }
 
+    /**
+     * Deploy all verticle in this app
+     *
+     * @param vertx instance of vertx
+     * @param config service's config in config.json
+     * @return void
+     */
     @SuppressWarnings("rawtypes")
     public static Future<Void> deploy(Vertx vertx, JsonObject config) {
         return Future.future(promise -> {
@@ -94,7 +107,7 @@ public class Deployer {
         });
     }
 
-    public static Future<Void> deployVerticle(Vertx vertx, Supplier<Verticle> verticleSupplier, DeploymentOptions options) {
+    private static Future<Void> deployVerticle(Vertx vertx, Supplier<Verticle> verticleSupplier, DeploymentOptions options) {
         return Future.future(promise -> 
             vertx.deployVerticle(verticleSupplier, options, ar -> {
                 if (ar.succeeded()) {

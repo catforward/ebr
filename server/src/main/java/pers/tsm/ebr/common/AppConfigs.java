@@ -31,7 +31,7 @@ import java.nio.file.Paths;
 import static java.util.Objects.requireNonNull;
 
 /**
- * <pre>app's config</pre>
+ * <pre>App's config</pre>
  *
  * @author l.gong
  */

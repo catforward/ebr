@@ -27,7 +27,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import static java.util.Objects.requireNonNull;
 
 /**
- * <pre>app's init context</pre>
+ * <pre>App's init context</pre>
  *
  * @author l.gong
  */

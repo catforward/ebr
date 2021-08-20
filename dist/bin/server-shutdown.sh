@@ -1,6 +1,6 @@
 #!/bin/bash
 
-APP_NAME=ebr.jar
+APP_NAME=ebr-server.jar
 
 is_exist() {
 	pid=$(ps -ef | grep ${APP_NAME} | grep -v grep | awk '{print $2}')

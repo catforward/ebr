@@ -22,7 +22,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
- * <pre>runner's thread factory</pre>
+ * <pre>Runner's thread factory</pre>
  *
  * @author l.gong
  */

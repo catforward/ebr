@@ -34,7 +34,7 @@ import static java.util.Objects.requireNonNull;
 import static pers.tsm.ebr.common.AppConsts.*;
 
 /**
- * <pre>service's worker</pre>
+ * <pre>Service's worker</pre>
  *
  * @author l.gong
  */

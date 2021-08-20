@@ -20,7 +20,7 @@ package pers.tsm.ebr.types;
 import pers.tsm.ebr.base.IResult;
 
 /**
- * <pre>api or function return code</pre>
+ * <pre>Api or function return code</pre>
  *
  * @author l.gong
  */
@@ -58,11 +58,21 @@ public enum ResultEnum implements IResult {
         this.message = message;
     }
 
+    /**
+     * Get the raw code
+     *
+     * @return result code
+     */
     @Override
     public String getCode() {
         return code;
     }
 
+    /**
+     * Get the raw message
+     *
+     * @return result message
+     */
     @Override
     public String getMessage() {
         return message;

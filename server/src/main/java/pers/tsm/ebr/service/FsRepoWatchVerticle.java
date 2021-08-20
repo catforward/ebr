@@ -31,7 +31,7 @@ import java.io.IOException;
 import static pers.tsm.ebr.common.AppConsts.EMPTY_JSON_OBJ;
 
 /**
- * <pre>refreshing define file's folder every n seconds</pre>
+ * <pre>Refreshing define file's folder every n seconds</pre>
  *
  * @author l.gong
  */
@@ -60,7 +60,7 @@ public class FsRepoWatchVerticle extends AbstractVerticle {
         logger.info("FsRepoWatchVerticle stopped. [{}]", deploymentId);
     }
 
-    protected void handleRefreshFsDefineMsg(Message<JsonObject> msg) {
+    private void handleRefreshFsDefineMsg(Message<JsonObject> msg) {
         try {
             TaskDefineRepo.reload();
         } catch (IOException ex) {

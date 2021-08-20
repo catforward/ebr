@@ -39,7 +39,7 @@ import java.util.function.Supplier;
 import static java.util.Objects.isNull;
 
 /**
- * <pre>task's runner</pre>
+ * <pre>Task's runner</pre>
  *
  * @author l.gong
  */

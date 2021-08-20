@@ -39,7 +39,7 @@ import static java.util.Objects.isNull;
 import static pers.tsm.ebr.common.AppConsts.*;
 
 /**
- * <pre>http's request handler</pre>
+ * <pre>Http's request handler</pre>
  *
  * @author l.gong
  */

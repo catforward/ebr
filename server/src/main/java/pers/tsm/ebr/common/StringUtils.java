@@ -27,7 +27,7 @@ import java.time.format.DateTimeFormatter;
 import static java.util.Objects.isNull;
 
 /**
- * <pre>misc string utility</pre>
+ * <pre>Misc string utility</pre>
  *
  * @author l.gong
  */
@@ -36,21 +36,58 @@ public class StringUtils {
 
     private StringUtils() {}
 
+    /**
+     * Format a time to [yyyy-MM-dd HH:mm:ss]
+     *
+     * @param time target time
+     * @param zone target zone
+     * @return a formatted time string
+     */
     public static String toDatetimeStr(long time, ZoneId zone) {
         LocalDateTime datetime = LocalDateTime.ofInstant(Instant.ofEpochMilli(time), zone);
         return yyyyMMddHHmmssFormatter.format(datetime);
     }
 
+    /**
+     * Convert path name to Flow's Url <br/>
+     * eg: <br/>
+     * filename: /your_path/data/sub/flow-x.json <br/>
+     * url: /sub/flow-x.json
+     *
+     * @param dataStorePath data store path instance
+     * @param filePath json file's path instance
+     * @return flow's url
+     */
     public static String toFlowUrl(Path dataStorePath, Path filePath) {
         String flowUrl = filePath.toUri().toString().replaceAll(dataStorePath.toUri().toString(), "");
         flowUrl = flowUrl.replaceAll(AppConsts.FLOW_FILE_SUFFIX, "");
         return (flowUrl.startsWith("/")) ? flowUrl : "/" + flowUrl;
     }
 
+    /**
+     * Validate the string instance
+     *
+     * @param str string instance
+     * @return true: string instance is null or empty content
+     */
     public static boolean isNullOrBlank(String str) {
     	return isNull(str) || str.isBlank();
     }
 
+    /**
+     * Convert the script/bin's path which define in json file
+     *
+     * case_1:<br/>
+     * script tag: echo.sh <br/>
+     * result: /your_path/bin/echo.sh <br/>
+     *
+     * case_2:<br/>
+     * script tag: /your_path/bin/echo.sh <br/>
+     * result: /your_path/bin/echo.sh <br/>
+     *
+     * @param defineScript external script/bin's path in json file
+     * @return converted path
+     */
     public static String warpIfEmbedScriptPath(String defineScript) {
         if (isNullOrBlank(defineScript)) {
             return AppConsts.BLANK_STR;

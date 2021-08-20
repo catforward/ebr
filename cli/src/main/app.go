@@ -1,5 +1,9 @@
 package main
 
+/*
+作为EBR的命令行前端，通过子命令（Action）向API Server发起HTTP请求
+将响应数据显示到终端
+*/
 import (
 	act "ebr/actions"
 	"ebr/symbols"

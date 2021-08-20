@@ -66,6 +66,7 @@ public final class AppMain {
                 }
             }));
 
+            logger.info(printBanner());
             AppConfigs.load();
             JsonObject config = AppConfigs.get();
             vertx = Vertx.vertx(new VertxOptions(config.getJsonObject(AppConfigs.SECTION_VERTX)));
@@ -75,7 +76,6 @@ public final class AppMain {
                 logger.info("All Vertical deploy done.");
                 vertx.deployVerticle(HttpApiServer::new, new DeploymentOptions()
                         .setConfig(config.getJsonObject(AppConfigs.SECTION_HTTP)))
-                .onSuccess(str -> logger.info(printBanner()))
                 .onFailure(ex -> System.exit(1));
             }).onFailure(ex -> {
                 logger.error("Vertical deploy failed...", ex);
@@ -104,7 +104,7 @@ public final class AppMain {
 
     String printBanner() {
         String logo = "\n";
-        logo += "******************************************\n";
+        logo += "                                          \n";
         logo += "                                          \n";
         logo += "         ███████╗██████╗ ██████╗          \n";
         logo += "         ██╔════╝██╔══██╗██╔══██╗         \n";

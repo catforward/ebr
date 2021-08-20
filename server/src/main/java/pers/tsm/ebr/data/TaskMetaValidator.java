@@ -26,7 +26,7 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.requireNonNull;
 
 /**
- * <pre>flow's validator(Meta Info)</pre>
+ * <pre>Flow's validator(Meta Info)</pre>
  *
  * @author l.gong
  */

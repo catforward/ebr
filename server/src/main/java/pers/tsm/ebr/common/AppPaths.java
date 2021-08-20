@@ -29,7 +29,7 @@ import static pers.tsm.ebr.common.AppConsts.*;
 
 /**
  * <pre>
- * app's path utility
+ * App's path utility
  *
  * ${EBR_ROOT}/
  *     |-- bin/

@@ -25,7 +25,7 @@ import java.util.function.Supplier;
 import static java.util.Objects.requireNonNull;
 
 /**
- * <pre>describing a service</pre>
+ * <pre>Describing a service</pre>
  *
  * @author l.gong
  */

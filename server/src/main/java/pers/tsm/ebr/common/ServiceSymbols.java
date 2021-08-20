@@ -20,7 +20,7 @@ package pers.tsm.ebr.common;
 import static pers.tsm.ebr.common.AppConsts.BASE_URL;
 
 /**
- * <pre>service's const</pre>
+ * <pre>Service's const</pre>
  *
  * @author l.gong
  */

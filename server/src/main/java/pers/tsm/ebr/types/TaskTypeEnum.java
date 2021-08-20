@@ -18,7 +18,7 @@
 package pers.tsm.ebr.types;
 
 /**
- * <pre>task's type</pre>
+ * <pre>Task's type</pre>
  *
  * @author l.gong
  */
@@ -36,10 +36,20 @@ public enum TaskTypeEnum {
         this.name = name;
     }
 
+    /**
+     * Get the raw type code
+     *
+     * @return type's code
+     */
     public int getType() {
         return this.type;
     }
 
+    /**
+     * Get the raw type name
+     *
+     * @return type's name
+     */
     public String getName() {
         return this.name;
     }

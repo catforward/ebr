@@ -1,8 +1,8 @@
 #!/bin/bash
 
 SCRIPT_ROOT=$(cd $(dirname $0); pwd)
-export EBR_ROOT=$(pwd ${SCRIPT_ROOT}/..)
-APP_NAME=ebr.jar
+export EBR_ROOT=$(cd ${SCRIPT_ROOT}/..; pwd)
+APP_NAME=ebr-server.jar
 APP_JAR=${EBR_ROOT}/libs/${APP_NAME}
 CLI_LOG=${EBR_ROOT}/logs/${APP_NAME}.log
 

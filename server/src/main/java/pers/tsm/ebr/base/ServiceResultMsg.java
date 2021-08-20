@@ -23,7 +23,16 @@ import io.vertx.core.json.JsonObject;
 import static pers.tsm.ebr.common.AppConsts.*;
 
 /**
- * <pre>service's result message</pre>
+ * <pre>Service's result message</pre>
+ * <pre>
+ *     {
+ *         "code": "xxx",
+ *         "msg": "xxx",
+ *         "data"(optional): {
+ *             ...
+ *         }
+ *     }
+ * </pre>
  *
  * @author l.gong
  */

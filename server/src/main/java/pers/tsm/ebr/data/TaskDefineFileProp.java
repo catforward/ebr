@@ -22,7 +22,7 @@ import io.vertx.core.json.JsonObject;
 import static java.util.Objects.isNull;
 
 /**
- * <pre>describing a define file</pre>
+ * <pre>Describing a define file</pre>
  *
  * @author l.gong
  */

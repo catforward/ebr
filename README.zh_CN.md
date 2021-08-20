@@ -1,65 +1,91 @@
 # EBR (External Batch Runner)
 
 ![build](https://img.shields.io/badge/build-passing-green)
+[![license](https://img.shields.io/badge/license-Apache%202-blue.svg)](https://github.com/catforward/ebr/blob/master/LICENSE)
 
-README
+[English](./README.md) | [日本語](./README.ja_JP.md)
 
-- [English](./README.md)
-- [日本語](./README.ja_JP.md)
 
-Note: 这是一个纯粹的个人学习项目。没有设计文档，也没有什么所谓的最佳实践，只是按照我的想法编写的垃圾代码。
+## 简介
 
-EBR(External Batch Runner) 是一个简单的工具，用来管理并执行若干个有清晰的前置依赖关系的外部命令。
+**EBR** 是一个简单的任务流程编排工具，用来管理并执行若干有明确依赖关系的任务。
+> 个人项目，不定期更新
 
-外部程序包括
+## 快速开始
 
-- 脚本程序 (shell, bat, python...)
-- 无界面的可执行程序
+### 任务编排
+- 例如：任务流FLOW-4的定义保存于[/sample_path/ebr/data/FLOW-4.json]，且任务定义如下
 
-例如
-
-- 当有一个如下的依赖定义时
-
-```xml
-<?xml version="1.0" encoding="UTF-8"?>
-<task id="TaskFlow-1" desc="root group">
-    <task id="task-1" desc="run command-1" command="/your/path/command-1.sh"/>
-    <task id="task-2" desc="task group-1" depends="task-1">
-        <task id="task-2-1" desc="run command-2" command="/your/path/command-2.sh"/>
-        <task id="task-2-1" desc="run command-3" command="/your/path/command-3.sh"/>
-        <task id="task-2-3" desc="run command-4" depends="task-2-1,task-2-2" command="/your/path/command-4.sh"/>
-    </task>
-    <task id="task-3" desc="run command-5" depends="task-1,task-2" command="/your/path/command-5.sh"/>
-    <task id="task-4" desc="run command-6" depends="task-1" command="/your/path/command-6.sh"/>
-</task>
+```json
+{
+  "flow": {
+    "desc": "sample flow-4 (nested hybrid)"
+  },
+  "T1": {
+    "group": "flow", "desc": "test task unit T1", "script": "echo.sh T1"
+  },
+  "T2": {
+    "group": "flow", "desc": "test task unit T2",
+    "depends": [ "T1" ]
+  },
+  "T2-1": {
+    "group": "T2", "desc": "test task unit T2-1", "script": "echo.sh T2-1"
+  },
+  "T2-2": {
+    "group": "T2", "desc": "test task unit T2-2", "script": "echo.sh T2-2"
+  },
+  "T2-3": {
+    "group": "T2", "desc": "test task unit T2-3", "script": "echo.sh T2-3",
+    "depends": [ "T2-1", "T2-2" ]
+  },
+  "T3": {
+    "group": "flow", "desc": "test task unit T3", "script": "echo.sh T3",
+    "depends": [ "T1", "T2" ]
+  },
+  "T4": {
+    "group": "flow", "desc": "test task unit T4", "script": "echo.sh T4",
+    "depends": [ "T1" ]
+  }
+}
 ```
+> 在运行时会被转换成以下的图（DAG）结构
+<br>
+![image](docs/sample_task_flow.jpg)
 
-- 执行以下命令
-
+- 启动服务器
 ```bash
-java -jar /${your_path}/ebr.jar -f /${your_path}/your_define.xml
+root@sample-server: /sample_path/ebr/bin/server-startup.sh
 ```
 
-- EBR将会解析给定的依赖定义，并转换成如下的有向无环的图结构（DAG），然后按照顺序执行它们
-
-![image](ebr-docs/sample_task_flow.jpg)
-
-PS: 为了更好的性能，可以使用GraalVM将其编译为二进制程序
+- 命令行工具
 ```bash
-cd ${your_path}/ebr-dist/lib
-native-image -H:ReflectionConfigurationFiles=../../ebr-cli/build/graal.json -jar ../ebr-cli.jar
+root@sample-server: /sample_path/ebr/bin/ebr show
+URL                                       State                 LastModifiedTime          Size(bytes)
+-----------------------------------------------------------------------------------------------------
+/FLOW-4                                   stored                2021-07-16 19:45:54               881
+
+
+root@sample-server: /sample_path/ebr/bin/ebr show -f /FLOW-4
+URL               Type    State     Depends                             Script
+-----------------------------------------------------------------------------------------------------------
+/FLOW-4/T4        task    stored    /FLOW-4/T1                          /sample_path/ebr/bin/echo.sh T4
+/FLOW-4/T1        task    stored    --                                  /sample_path/ebr/bin/echo.sh T1
+/FLOW-4/T2        group   stored    /FLOW-4/T1                          --
+/FLOW-4/T2/T2-3   task    stored    /FLOW-4/T2/T2-1, /FLOW-4/T2/T2-2    /sample_path/ebr/bin/echo.sh T2-3
+/FLOW-4/T2/T2-1   task    stored    --                                  /sample_path/ebr/bin/echo.sh T2-1
+/FLOW-4/T2/T2-2   task    stored    --                                  /sample_path/ebr/bin/echo.sh T2-2
+/FLOW-4/T3        task    stored    /FLOW-4/T1, /FLOW-4/T2              /sample_path/ebr/bin/echo.sh T3
+
+root@sample-server: /sample_path/ebr/bin/ebr run -f /FLOW-4
 ```
-还可以由cron来定时启动:
+- 任务的执行顺序
 ```bash
-# 2:05 AM every day
-05 2 * * * /your_path/ebr -f your_define.xml
+T1 --> T4,T2-1,T2-2 --> T2-3 --> T3
 ```
 
-开发运行环境
 
-- OS: Debian 9
-- JDK: OpenJDK 11
+## 使用场景例
+![image](docs/sample_usecase.jpg)
 
-依赖
 
-- OpenJDK 11
+

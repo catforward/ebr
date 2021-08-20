@@ -10,8 +10,6 @@ const (
 	// command
 	SHOW string = "show"
 	RUN  string = "run"
-	SKIP string = "skip"
-	STOP string = "stop"
 	// return code
 	NORMAL               int = 0
 	UNKNOWN_COMMAND      int = 1

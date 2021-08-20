@@ -18,10 +18,16 @@
 package pers.tsm.ebr.data;
 
 /**
- * <pre>validator</pre>
+ * <pre>Validator</pre>
  *
  * @author l.gong
  */
 public interface IValidator {
+
+	/**
+	 * Validate the task
+	 *
+	 * @param task target task
+	 */
 	void validate(Task task);
 }

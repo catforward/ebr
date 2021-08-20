@@ -31,7 +31,7 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.requireNonNull;
 
 /**
- * <pre>flow's validator(DAG)</pre>
+ * <pre>Flow's validator(DAG)</pre>
  *
  * @author l.gong
  */

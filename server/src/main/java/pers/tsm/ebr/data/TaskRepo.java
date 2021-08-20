@@ -33,7 +33,7 @@ import static java.util.Objects.requireNonNull;
 import static pers.tsm.ebr.types.TaskStateEnum.STORED;
 
 /**
- * <pre>flow's loader/cache</pre>
+ * <pre>Flow's loader/cache</pre>
  *
  * @author l.gong
  */
@@ -61,6 +61,11 @@ public class TaskRepo {
         InstanceHolder.INSTANCE.runningFlowPool.clear();
     }
 
+    /**
+     * Give a cache to store the flow object
+     *
+     * @param cache Cache object
+     */
     public static void setIdleFlowPoolCache(Cache<String, Flow> cache) {
         requireNonNull(cache);
         synchronized(InstanceHolder.INSTANCE) {
@@ -71,6 +76,12 @@ public class TaskRepo {
         }
     }
 
+    /**
+     * Get the specified flow object
+     *
+     * @param flowUrl flow's url
+     * @return Flow object
+     */
     public static Flow getFlow(String flowUrl) {
         requireNonNull(flowUrl);
         Flow flow = InstanceHolder.INSTANCE.runningFlowPool.get(flowUrl);
@@ -83,6 +94,13 @@ public class TaskRepo {
         return flow;
     }
 
+    /**
+     * Get the specified task object
+     *
+     * @param flowUrl flow's url
+     * @param taskUrl task's url
+     * @return Task object
+     */
     public static Task getTask(String flowUrl, String taskUrl) {
         requireNonNull(flowUrl);
         requireNonNull(taskUrl);
@@ -94,6 +112,11 @@ public class TaskRepo {
         }
     }
 
+    /**
+     * Push a runnable flow object to running object pool
+     *
+     * @param flow Flow object
+     */
     public static void pushRunnableFlow(Flow flow) {
         requireNonNull(flow);
         InstanceHolder.INSTANCE.poolLock.lock();
@@ -106,6 +129,11 @@ public class TaskRepo {
         }
     }
 
+    /**
+     * Remove a runnable flow object from running object pool
+     *
+     * @param flow Flow object
+     */
     public static void removeRunnableFlow(Flow flow) {
         requireNonNull(flow);
         InstanceHolder.INSTANCE.poolLock.lock();
@@ -117,15 +145,30 @@ public class TaskRepo {
         }
     }
 
+    /**
+     * Add a runnable task object to task queue
+     *
+     * @param task Task object
+     */
     public static void pushRunnableTask(Task task) {
         requireNonNull(task);
         InstanceHolder.INSTANCE.taskQueue.add(task);
     }
 
+    /**
+     * Poll a runnable task object from task queue
+     *
+     * @return Task object
+     */
     public static Task pollRunnableTask() {
         return InstanceHolder.INSTANCE.taskQueue.poll();
     }
 
+    /**
+     * Get all task's define property
+     *
+     * @return a copy of define info
+     */
     public static Map<String, TaskDefineFileProp> getAllDefineInfo() {
         Map<String, TaskDefineFileProp> copyMap =  TaskDefineRepo.copyDefineFileInfo();
         copyMap.forEach((url, prop) -> {

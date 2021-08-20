@@ -21,7 +21,7 @@ import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
 
 /**
- * <pre>app's const</pre>
+ * <pre>App's const</pre>
  *
  * @author l.gong
  */

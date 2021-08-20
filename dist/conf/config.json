@@ -1,14 +1,14 @@
 {
     "app": {
-      "devMode": true,
+      "devMode": false,
       "timezone": "Asia/Tokyo",
       "allowCommandPath": [
         "/opt/one/batch/"
       ]
     },
     "vertx": {
-      "eventLoopPoolSize": 2,
-      "workerPoolSize": 10,
+      "eventLoopPoolSize": 1,
+      "workerPoolSize": 5,
       "maxWorkerExecuteTime": 3600000,
       "eventBusOptions": {
         "connectTimeout": 6000

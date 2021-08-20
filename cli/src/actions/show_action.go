@@ -12,6 +12,14 @@ import (
 	"github.com/muesli/gotable"
 )
 
+// Flow/Task的信息显示动作
+type ShowAction struct {
+	api_url   string
+	api_param map[string]string
+	api_res   []byte
+}
+
+// Flow的显示数据
 type FlowInfo struct {
 	Url              string      `json:"url"`
 	State            string      `json:"state"`
@@ -19,6 +27,7 @@ type FlowInfo struct {
 	FileSize         json.Number `json:"size"`
 }
 
+// Flow一览显示动作的响应数据
 type FlowInfoRespData struct {
 	Code string `json:"code"`
 	Msg  string `json:"msg"`
@@ -27,6 +36,7 @@ type FlowInfoRespData struct {
 	} `json:"data"`
 }
 
+// Task的显示数据
 type TaskDetail struct {
 	Url     string   `json:"url"`
 	Type    string   `json:"type"`
@@ -35,6 +45,7 @@ type TaskDetail struct {
 	Depends []string `json:"depends"`
 }
 
+// Flow的详细信息显示动作的响应数据
 type FlowDetailRespData struct {
 	Code string `json:"code"`
 	Msg  string `json:"msg"`
@@ -46,12 +57,7 @@ type FlowDetailRespData struct {
 	} `json:"data"`
 }
 
-type ShowAction struct {
-	api_url   string
-	api_param map[string]string
-	api_res   []byte
-}
-
+// 动作执行
 func (act *ShowAction) DoAction(target string) {
 	// 初始化数据
 	act.initData(target)

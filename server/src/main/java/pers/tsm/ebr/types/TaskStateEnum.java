@@ -18,7 +18,7 @@
 package pers.tsm.ebr.types;
 
 /**
- * <pre>task's state</pre>
+ * <pre>Task's state</pre>
  *
  * @author l.gong
  */
@@ -40,10 +40,20 @@ public enum TaskStateEnum {
         this.name = name;
     }
 
+    /**
+     * Get the raw state code
+     *
+     * @return state's code
+     */
     public int getState() {
         return this.state;
     }
-    
+
+    /**
+     * Get the raw state name
+     *
+     * @return state's name
+     */
     public String getName() {
         return this.name;
     }

@@ -29,7 +29,7 @@ import java.io.File;
 import static java.util.Objects.requireNonNull;
 
 /**
- * <pre>flow's validator(external command)</pre>
+ * <pre>Flow's validator(external command)</pre>
  *
  * @author l.gong
  */

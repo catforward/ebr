@@ -20,7 +20,7 @@ package pers.tsm.ebr.base;
 import java.io.Serializable;
 
 /**
- * <pre>api/service's result</pre>
+ * <pre>Api/Service's result</pre>
  *
  * @author l.gong
  */

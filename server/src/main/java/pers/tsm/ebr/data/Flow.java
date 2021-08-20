@@ -28,7 +28,7 @@ import static java.util.Objects.isNull;
 import static java.util.Objects.requireNonNull;
 
 /**
- * <pre>task's flow</pre>
+ * <pre>Task's flow</pre>
  *
  * @author l.gong
  */
@@ -76,6 +76,11 @@ public class Flow {
     public void standby() {
         this.root.standby();
         this.urlTaskMapping.forEach((url, task) -> task.standby());
+    }
+
+    public void reset() {
+        this.root.reset();
+        this.urlTaskMapping.forEach((url, task) -> task.reset());
     }
 
 }
