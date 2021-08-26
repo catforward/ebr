@@ -39,12 +39,16 @@ import static java.util.Objects.requireNonNull;
  * STANDBY --> RUNNING
  *         --> PAUSED
  *         --> SKIPPED
+ *         --> ABORTED
  * RUNNING --> FINISHED
  *         --> ERROR
  * PAUSED  --> STANDBY(RESTART)
- * ERROR   --> STANDBY(RERUN)
+ *         --> ABORTED
+ * ERROR   --> STANDBY(RETRY)
+ *         --> ABORTED
  * FINISHED--> (X)
- * SKIPPED --> (X)
+ * SKIPPED --> ABORTED
+ * ABORTED --> (X)
  * 
  * </pre>
  *
@@ -54,6 +58,7 @@ public class Task {
 
     static class Meta {
         String id;
+        String cron;
         String group;
         String desc;
         final List<String> depends;
@@ -68,6 +73,7 @@ public class Task {
             requireNonNull(taskBody);
             Meta meta = new Meta();
             meta.id = id;
+            meta.cron = taskBody.getString(TaskAttrEnum.CRON.getName(), AppConsts.BLANK_STR);
             meta.group = taskBody.getString(TaskAttrEnum.GROUP.getName(), AppConsts.BLANK_STR);
             meta.desc = taskBody.getString(TaskAttrEnum.DESC.getName(), AppConsts.BLANK_STR);
             meta.script = taskBody.getString(TaskAttrEnum.SCRIPT.getName(), AppConsts.BLANK_STR);
@@ -144,6 +150,10 @@ public class Task {
         return meta.script;
     }
 
+    public String getCronStr() {
+        return meta.cron;
+    }
+
     public TaskTypeEnum getType() {
         return type;
     }
@@ -160,17 +170,18 @@ public class Task {
         }
     }
 
-    public void updateState(TaskStateEnum newState) {
+    public synchronized void updateState(TaskStateEnum newState) {
         switch (state) {
             case STANDBY: {
                 if (TaskStateEnum.RUNNING == newState
                         || TaskStateEnum.PAUSED == newState
-                        || TaskStateEnum.SKIPPED == newState) {
+                        || TaskStateEnum.SKIPPED == newState
+                        || TaskStateEnum.ABORTED == newState) {
                     state = newState;
                 } else {
                     raiseStateException(newState);
                 }
-                break;
+                return;
             }
             case RUNNING: {
                 if (TaskStateEnum.FINISHED == newState
@@ -179,21 +190,40 @@ public class Task {
                 } else {
                     raiseStateException(newState);
                 }
-                break;
+                return;
             }
-            case STORED:
-            case PAUSED:
-            case ERROR: {
+            case STORED: {
                 if (TaskStateEnum.STANDBY == newState) {
                     state = newState;
                 } else {
                     raiseStateException(newState);
                 }
+                return;
+            }
+            case PAUSED:
+            case ERROR: {
+                if (TaskStateEnum.STANDBY == newState
+                        || TaskStateEnum.ABORTED == newState) {
+                    state = newState;
+                } else {
+                    raiseStateException(newState);
+                }
+                return;
+            }
+            case SKIPPED:{
+                if (TaskStateEnum.ABORTED == newState) {
+                    state = newState;
+                } else {
+                    raiseStateException(newState);
+                }
+                return;
+            }
+            case FINISHED:
+            case ABORTED:
+            default: {
+                // do nothing
                 break;
             }
-            case SKIPPED:
-            case FINISHED:
-            default: raiseStateException(newState);
         }
     }
 

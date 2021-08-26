@@ -23,11 +23,12 @@ package pers.tsm.ebr.types;
  * @author l.gong
  */
 public enum TaskAttrEnum {
-    ID("id"),
-    GROUP("group"),
-    DESC("desc"),
-    SCRIPT("script"),
+    CRON("cron"),
     DEPENDS("depends"),
+    DESC("desc"),
+    GROUP("group"),
+    ID("id"),
+    SCRIPT("script"),
     ;
 
     private final String name;

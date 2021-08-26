@@ -1,4 +1,6 @@
 /*
+  Copyright 2021 liang gong
+
   Licensed to the Apache Software Foundation (ASF) under one
   or more contributor license agreements.  See the NOTICE file
   distributed with this work for additional information
@@ -27,12 +29,10 @@ import pers.tsm.ebr.data.Flow;
 import pers.tsm.ebr.data.TaskDefineRepo;
 import pers.tsm.ebr.data.TaskRepo;
 import pers.tsm.ebr.data.VerticleProp;
+import pers.tsm.ebr.schd.CronSchdVerticle;
 import pers.tsm.ebr.schd.TaskExecVerticle;
-import pers.tsm.ebr.schd.TaskSchdVerticle;
-import pers.tsm.ebr.service.FlowDetailService;
-import pers.tsm.ebr.service.FlowListService;
-import pers.tsm.ebr.service.FsRepoWatchVerticle;
-import pers.tsm.ebr.service.TaskSchdActionService;
+import pers.tsm.ebr.schd.ActionSchdVerticle;
+import pers.tsm.ebr.service.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -83,8 +83,9 @@ public class Deployer {
             AppContext.addVerticle(new VerticleProp(FlowListService::new, makeDefaultWorkerOptions(1, config)));
             AppContext.addVerticle(new VerticleProp(FlowDetailService::new, makeDefaultWorkerOptions(1, config)));
             AppContext.addVerticle(new VerticleProp(TaskSchdActionService::new, makeDefaultWorkerOptions(1, config)));
-            AppContext.addVerticle(new VerticleProp(TaskSchdVerticle::new, makeDefaultWorkerOptions(1, config)));
+            AppContext.addVerticle(new VerticleProp(ActionSchdVerticle::new, makeDefaultWorkerOptions(1, config)));
             AppContext.addVerticle(new VerticleProp(TaskExecVerticle::new, makeDefaultWorkerOptions(1, config)));
+            AppContext.addVerticle(new VerticleProp(CronSchdVerticle::new, makeDefaultWorkerOptions(1, config)));
 
             promise.complete(config);
         });

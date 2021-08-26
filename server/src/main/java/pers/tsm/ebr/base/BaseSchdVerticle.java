@@ -15,14 +15,12 @@
   See the License for the specific language governing permissions and
   limitations under the License.
  */
-package pers.tsm.ebr.schd;
+package pers.tsm.ebr.base;
 
 import io.vertx.core.AbstractVerticle;
-import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pers.tsm.ebr.base.ServiceResultMsg;
 import pers.tsm.ebr.common.AppConsts;
 import pers.tsm.ebr.common.AppException;
 import pers.tsm.ebr.common.ServiceSymbols;
@@ -38,54 +36,14 @@ import java.util.List;
 import static java.util.Objects.isNull;
 
 /**
- *<pre>
- * task start request:
- * {
- *    "flow": string,
- *    "task"(optional): string
- * }
- * 
- * task running/complete msg:
- * {
- *    "flow": string,
- *    "task": string
- * }
- * 
- * task failed msg:
- * {
- *    "flow": string,
- *    "task": string,
- *    "cause": string
- * }
- * 
- * </pre>
+ * <pre>Base Functions</pre>
  *
  * @author l.gong
  */
-public class TaskSchdVerticle extends AbstractVerticle {
-    private static final Logger logger = LoggerFactory.getLogger(TaskSchdVerticle.class);
-    
-    @Override
-    public void start() throws Exception {
-        super.start();
-        // request
-        vertx.eventBus().consumer(ServiceSymbols.MSG_ACTION_TASK_START, this::handleTaskStartAction);
-        // message
-        vertx.eventBus().consumer(ServiceSymbols.MSG_STATE_TASK_RUNNING, this::handleTaskRunningMsg);
-        vertx.eventBus().consumer(ServiceSymbols.MSG_STATE_TASK_COMPLETE, this::handleTaskCompleteMsg);
-        vertx.eventBus().consumer(ServiceSymbols.MSG_STATE_TASK_FAILED, this::handleTaskFailedMsg);
-        String deploymentId = deploymentID();
-        logger.info("TaskSchdVerticle started. [{}]", deploymentId);
-    }
+public class BaseSchdVerticle extends AbstractVerticle {
+    private static final Logger logger = LoggerFactory.getLogger(BaseSchdVerticle.class);
 
-    @Override
-    public void stop() throws Exception {
-        super.stop();
-        String deploymentId = deploymentID();
-        logger.info("TaskSchdVerticle stopped. [{}]", deploymentId);
-    }
-
-    private void notice(String msg, Task task) {
+    protected void notice(String msg, Task task) {
         String flowUrl = isNull(task.getRoot()) ? task.getUrl() : task.getRoot().getUrl();
         JsonObject param = new JsonObject();
         param.put(AppConsts.FLOW, flowUrl);
@@ -93,65 +51,13 @@ public class TaskSchdVerticle extends AbstractVerticle {
         vertx.eventBus().publish(msg, param);
     }
 
-    private void handleTaskStartAction(Message<JsonObject> msg) {
-        JsonObject target = msg.body();
-        String flowUrl = target.getString(AppConsts.FLOW);
-        String taskUrl = target.getString(AppConsts.TASK);
-        Flow flow = TaskRepo.getFlow(flowUrl);
-        if (isNull(flow)) {
-            throw new AppException(ResultEnum.ERR_11003);
-        }
-        if (isNull(taskUrl) || taskUrl.isBlank()) {
-            TaskStateEnum state = flow.getState();
-            if (TaskStateEnum.RUNNING == state || TaskStateEnum.SKIPPED == state) {
-                throw new AppException(ResultEnum.ERR_11005);
-            }
-            // finished, failed, paused, unknown, standby
-            flow.standby();
-            TaskRepo.pushRunnableFlow(flow);
-            TaskRepo.pushRunnableTask(flow.getRootTask());
-        } else {
-            Task task = flow.getTask(taskUrl);
-            if (isNull(task)) {
-                throw new AppException(ResultEnum.ERR_11004);
-            }
-            TaskStateEnum state = task.getState();
-            if (TaskStateEnum.RUNNING == state || TaskStateEnum.SKIPPED == state) {
-                throw new AppException(ResultEnum.ERR_11006);
-            }
-            TaskRepo.pushRunnableTask(task);
-        }
-        msg.reply(new ServiceResultMsg(ResultEnum.SUCCESS).rawData());
+    protected void notice(String msg, Flow flow) {
+        JsonObject param = new JsonObject();
+        param.put(AppConsts.FLOW, flow.getUrl());
+        vertx.eventBus().publish(msg, param);
     }
 
-    private void handleTaskRunningMsg(Message<JsonObject> msg) {
-        Task task = getSpecifiedTask(msg.body());
-        task.updateState(TaskStateEnum.RUNNING);
-        if (TaskTypeEnum.TASK != task.getType()) {
-            findRunnableTask(task);
-        }
-    }
-
-    private void handleTaskCompleteMsg(Message<JsonObject> msg) {
-        Task task = getSpecifiedTask(msg.body());
-        task.updateState(TaskStateEnum.FINISHED);
-        checkParentState(task);
-        if (TaskTypeEnum.FLOW != task.getType()) {
-            findRunnableTask(task);
-        } else {
-            Flow flow = TaskRepo.getFlow(task.getUrl());
-            flow.reset();
-            TaskRepo.removeRunnableFlow(flow);
-        }
-    }
-
-    private void handleTaskFailedMsg(Message<JsonObject> msg) {
-        Task task = getSpecifiedTask(msg.body());
-        task.updateState(TaskStateEnum.ERROR);
-        checkParentState(task);
-    }
-
-    private Task getSpecifiedTask(JsonObject target) {
+    protected Task getSpecifiedTask(JsonObject target) {
         Flow flow = getSpecifiedFlow(target);
         String taskUrl = target.getString(AppConsts.TASK);
         if (isNull(taskUrl) || taskUrl.isBlank()) {
@@ -166,7 +72,7 @@ public class TaskSchdVerticle extends AbstractVerticle {
         return task;
     }
 
-    private Flow getSpecifiedFlow(JsonObject target) {
+    protected Flow getSpecifiedFlow(JsonObject target) {
         String flowUrl = target.getString(AppConsts.FLOW);
         if (isNull(flowUrl) || flowUrl.isBlank()) {
             logger.debug("specified flow: {}", flowUrl);
@@ -180,7 +86,7 @@ public class TaskSchdVerticle extends AbstractVerticle {
         return flow;
     }
 
-    private void findRunnableTask(Task src) {
+    protected void findRunnableTask(Task src) {
         List<Task> targets = getRunnableCheckTargets(src);
         for (Task target : targets) {
             if (TaskTypeEnum.FLOW != target.getType()
@@ -201,7 +107,7 @@ public class TaskSchdVerticle extends AbstractVerticle {
         }
     }
 
-    private List<Task> getRunnableCheckTargets(Task src) {
+    protected List<Task> getRunnableCheckTargets(Task src) {
         if (TaskTypeEnum.FLOW == src.getType()) {
             return src.getChildren();
         } else if (TaskTypeEnum.GROUP == src.getType() && TaskStateEnum.RUNNING == src.getState()) {
@@ -215,20 +121,24 @@ public class TaskSchdVerticle extends AbstractVerticle {
         }
     }
 
-    private void checkParentState(Task src) {
+    protected void checkParentState(Task src) {
         if (isNull(src) || TaskTypeEnum.FLOW == src.getType()) {
             return;
         }
         Task parent = src.getParent();
         int doneCount = 0;
         for (Task child : parent.getChildren()) {
-            if (TaskStateEnum.ERROR == child.getState()) {
+            TaskStateEnum taskState = child.getState();
+            if (TaskStateEnum.ERROR == taskState) {
                 notice(ServiceSymbols.MSG_STATE_TASK_FAILED, parent);
                 break;
             }
-            if (TaskStateEnum.FINISHED == child.getState()) {
+            if (TaskStateEnum.FINISHED == taskState
+                || TaskStateEnum.SKIPPED == taskState
+                || TaskStateEnum.ABORTED == taskState) {
                 doneCount++;
             }
+            // paused -> stay in running
         }
         if (doneCount == parent.getChildren().size()) {
             notice(ServiceSymbols.MSG_STATE_TASK_COMPLETE, parent);

@@ -30,6 +30,7 @@ public enum TaskStateEnum {
     SKIPPED(5, "skipped"),
     ERROR(6, "error"),
     FINISHED(7, "finished"),
+    ABORTED(8, "aborted"),
     ;
 
     private final int state;

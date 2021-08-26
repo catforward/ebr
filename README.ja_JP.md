@@ -48,8 +48,7 @@
 }
 ```
 > サーバ中、下記の様なグラフィック（DAG）構造へ変換される
-<br>
-![image](docs/sample_task_flow.jpg)
+> ![image](docs/sample_task_flow.jpg)
 
 - サーバ起動
 ```bash
@@ -75,7 +74,7 @@ URL               Type    State     Depends                             Script
 /FLOW-4/T2/T2-2   task    stored    --                                  /sample_path/ebr/bin/echo.sh T2-2
 /FLOW-4/T3        task    stored    /FLOW-4/T1, /FLOW-4/T2              /sample_path/ebr/bin/echo.sh T3
 
-root@sample-server: /sample_path/ebr/bin/ebr run -f /FLOW-4
+root@sample-server: /sample_path/ebr/bin/ebr start -f /FLOW-4
 ```
 
 - タスクの実行順番

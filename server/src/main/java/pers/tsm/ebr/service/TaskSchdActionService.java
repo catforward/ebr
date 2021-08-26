@@ -57,7 +57,7 @@ public class TaskSchdActionService extends BaseService {
     public void start() throws Exception {
         super.start();
         actionMapping.put(AppConsts.START, ServiceSymbols.MSG_ACTION_TASK_START);
-        actionMapping.put(AppConsts.STOP, ServiceSymbols.MSG_ACTION_TASK_STOP);
+        actionMapping.put(AppConsts.ABORT, ServiceSymbols.MSG_ACTION_TASK_ABORTED);
         actionMapping.put(AppConsts.PAUSE, ServiceSymbols.MSG_ACTION_TASK_PAUSE);
         actionMapping.put(AppConsts.SKIP, ServiceSymbols.MSG_ACTION_TASK_SKIP);
         registerService(ServiceSymbols.SERVICE_SCHD_ACTION);

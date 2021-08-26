@@ -42,14 +42,10 @@ public abstract class BaseService extends AbstractVerticle {
     private static final Logger logger = LoggerFactory.getLogger(BaseService.class);
     protected JsonObject inData;
     protected JsonObject outData;
-    protected ZoneId zone;
 
     @Override
     public void start() throws Exception {
         super.start();
-        String timezone = AppConfigs.get().getJsonObject(AppConfigs.SECTION_APP)
-                .getString(AppConfigs.APP_TIMEZONE, "Asia/Tokyo");
-        zone = ZoneId.of(timezone);
         String deploymentId = deploymentID();
         logger.info("Service: {} started. [{}]", getServiceName(), deploymentId);
     }

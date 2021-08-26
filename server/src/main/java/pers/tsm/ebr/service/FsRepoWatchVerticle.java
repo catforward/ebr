@@ -44,7 +44,7 @@ public class FsRepoWatchVerticle extends AbstractVerticle {
     @Override
     public void start() throws Exception {
         super.start();
-        vertx.eventBus().consumer(ServiceSymbols.MSG_ACTION_REFRESH_FS_DEFINE, this::handleRefreshFsDefineMsg);
+        vertx.eventBus().consumer(ServiceSymbols.MSG_ACTION_REFRESH_FS_DEFINE, this::onRefreshFsDefineMsg);
         scanInterval = config().getLong(AppConfigs.SERVICE_FS_DATA_CHECK_INTERVAL_SECONDS, 30L) * 1000;
         // the first time
         vertx.setTimer(2000, id -> vertx.eventBus().publish(ServiceSymbols.MSG_ACTION_REFRESH_FS_DEFINE, EMPTY_JSON_OBJ));
@@ -60,7 +60,7 @@ public class FsRepoWatchVerticle extends AbstractVerticle {
         logger.info("FsRepoWatchVerticle stopped. [{}]", deploymentId);
     }
 
-    private void handleRefreshFsDefineMsg(Message<JsonObject> msg) {
+    private void onRefreshFsDefineMsg(Message<JsonObject> msg) {
         try {
             TaskDefineRepo.reload();
         } catch (IOException ex) {

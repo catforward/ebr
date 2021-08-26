@@ -24,7 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pers.tsm.ebr.base.BaseService;
 import pers.tsm.ebr.base.IResult;
-import pers.tsm.ebr.common.AppConsts;
 import pers.tsm.ebr.common.AppException;
 import pers.tsm.ebr.common.ServiceSymbols;
 import pers.tsm.ebr.data.Flow;
@@ -38,6 +37,7 @@ import java.util.List;
 
 import static java.util.Objects.isNull;
 import static pers.tsm.ebr.common.AppConsts.*;
+import static pers.tsm.ebr.common.StringUtils.isNullOrBlank;
 
 
 /**
@@ -49,6 +49,7 @@ import static pers.tsm.ebr.common.AppConsts.*;
  * response: {
  *     "flow": {
  *         "url": string,
+ *         "cron"(optional): string,
  *         "content" : [
  *          {
  *              url: string,
@@ -86,7 +87,7 @@ public class FlowDetailService extends BaseService {
         logger.trace("doPrepare -> {}", inData);
         return Future.future(promise -> {
             JsonObject postBody = getPostBody();
-            String taskUrl = postBody.getString(AppConsts.FLOW);
+            String taskUrl = postBody.getString(FLOW);
             if (isNull(taskUrl) || taskUrl.isBlank()) {
                 logger.debug("flow's url is empty.");
                 promise.fail(new AppException(ResultEnum.ERR_11001));
@@ -101,16 +102,19 @@ public class FlowDetailService extends BaseService {
         logger.trace("doService -> {}", inData);
         return Future.future(promise -> {
             JsonObject postBody = getPostBody();
-            String flowUrl = postBody.getString(AppConsts.FLOW);
+            String flowUrl = postBody.getString(FLOW);
             JsonObject flowData = new JsonObject();
-            outData.put(AppConsts.FLOW, flowData);
+            outData.put(FLOW, flowData);
             try {
                 Flow flow = TaskRepo.getFlow(flowUrl);
                 if (isNull(flow)) {
                     throw new AppException(ResultEnum.ERR_11003);
                 }
-                flowData.put(AppConsts.URL, flow.getUrl());
-                flowData.put(AppConsts.CONTENT, toContentArray(flow.getRootTask()));
+                flowData.put(URL, flow.getUrl());
+                if (!isNullOrBlank(flow.getRootTask().getCronStr())) {
+                    flowData.put(CRON, flow.getRootTask().getCronStr());
+                }
+                flowData.put(CONTENT, toContentArray(flow.getRootTask()));
             } catch (Exception ex) {
                 promise.fail(ex);
                 return;

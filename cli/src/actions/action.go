@@ -15,8 +15,10 @@ func GetAction(cmdName string) IAction {
 	switch cmdName {
 	case symbols.SHOW:
 		return new(ShowAction)
-	case symbols.RUN:
-		return new(RunAction)
+	case symbols.START:
+		return new(StartAction)
+	case symbols.ABORT:
+		return new(AbortAction)
 	default:
 		return nil
 	}

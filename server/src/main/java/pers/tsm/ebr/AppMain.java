@@ -1,4 +1,6 @@
 /*
+  Copyright 2021 liang gong
+
   Licensed to the Apache Software Foundation (ASF) under one
   or more contributor license agreements.  See the NOTICE file
   distributed with this work for additional information
@@ -25,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pers.tsm.ebr.base.HttpApiServer;
 import pers.tsm.ebr.common.AppConfigs;
+import pers.tsm.ebr.data.CronFlowRepo;
 import pers.tsm.ebr.data.TaskDefineRepo;
 import pers.tsm.ebr.data.TaskRepo;
 
@@ -90,6 +93,7 @@ public final class AppMain {
     void onShutdown() throws InterruptedException {
         TaskDefineRepo.release();
         TaskRepo.release();
+        CronFlowRepo.release();
         AppConfigs.release();
         if (isNull(vertx)) {
             return;

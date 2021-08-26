@@ -24,6 +24,7 @@
     "taskCacheMaximumSize": 20,
     "taskExecutorMaximumSize": 4,
     "taskExecutorMinimumSize": 2,
-    "taskExecutorCheckIntervalSeconds": 1
+    "taskExecutorCheckIntervalSeconds": 1,
+    "cronSchdCheckIntervalSeconds": 5
   }
 }

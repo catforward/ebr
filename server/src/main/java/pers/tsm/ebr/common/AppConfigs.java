@@ -27,6 +27,7 @@ import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.time.ZoneId;
 
 import static java.util.Objects.requireNonNull;
 
@@ -58,11 +59,14 @@ public final class AppConfigs {
     public static final String SERVICE_TASK_EXECUTOR_MAXIMUM_SIZE = "taskExecutorMaximumSize";
     public static final String SERVICE_TASK_EXECUTOR_MINIMUM_SIZE = "taskExecutorMinimumSize";
     public static final String SERVICE_TASK_EXECUTOR_CHECK_INTERVAL_SECONDS = "taskExecutorCheckIntervalSeconds";
+    public static final String SERVICE_CRON_SCHD_CHECK_INTERVAL_SECONDS = "cronSchdCheckIntervalSeconds";
 
     private static final String CONFIG_FILE = "config.json";
+    private static final String DEF_ZONE = "Asia/Tokyo";
 
     private final JsonObject config = new JsonObject();
     private boolean isDevMode = false;
+    private ZoneId zoneId;
 
     private static class InstanceHolder {
         private static final AppConfigs INSTANCE = new AppConfigs();
@@ -78,6 +82,9 @@ public final class AppConfigs {
         }
         InstanceHolder.INSTANCE.isDevMode = InstanceHolder.INSTANCE.config
                 .getJsonObject(SECTION_APP).getBoolean(APP_DEV_MODE, false);
+        String timezone = InstanceHolder.INSTANCE.config.getJsonObject(AppConfigs.SECTION_APP)
+                .getString(AppConfigs.APP_TIMEZONE, DEF_ZONE);
+        InstanceHolder.INSTANCE.zoneId = ZoneId.of(timezone);
         String prettyStr = InstanceHolder.INSTANCE.config.encodePrettily();
         logger.debug("config info -> {}", prettyStr);
         logger.info("Load Configuration ........... DONE");
@@ -95,6 +102,10 @@ public final class AppConfigs {
 
     public static boolean isDevMode() {
         return InstanceHolder.INSTANCE.isDevMode;
+    }
+
+    public static ZoneId getZoneId() {
+        return InstanceHolder.INSTANCE.zoneId;
     }
 
     private void loadConfigFile() throws IOException {

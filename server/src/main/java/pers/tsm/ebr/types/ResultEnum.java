@@ -48,6 +48,7 @@ public enum ResultEnum implements IResult {
     ERR_11005("11005", "specified flow is already running or skipped"),
     ERR_11006("11006", "specified task is already running or skipped"),
     ERR_11007("11007", "unsupported action"),
+    ERR_11008("11008", "can not abort flow"),
     ;
 
     private final String code;

@@ -55,7 +55,7 @@ public final class AppConsts {
     public static final String TARGET = "target";
     public static final String PAUSE = "pause";
     public static final String START = "start";
-    public static final String STOP = "stop";
+    public static final String ABORT = "abort";
     public static final String SKIP = "skip";
 
     public static final String CONTENT = "content";
@@ -64,6 +64,7 @@ public final class AppConsts {
     public static final String URL = "url";
     public static final String STATE = "state";
     public static final String TYPE = "type";
+    public static final String CRON = "cron";
 
     public static final JsonObject EMPTY_JSON_OBJ = new JsonObject();
     public static final JsonArray EMPTY_JSON_ARR = new JsonArray();

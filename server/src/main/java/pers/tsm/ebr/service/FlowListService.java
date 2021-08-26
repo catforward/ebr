@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pers.tsm.ebr.base.BaseService;
 import pers.tsm.ebr.base.IResult;
+import pers.tsm.ebr.common.AppConfigs;
 import pers.tsm.ebr.common.AppConsts;
 import pers.tsm.ebr.common.ServiceSymbols;
 import pers.tsm.ebr.common.StringUtils;
@@ -75,7 +76,9 @@ public class FlowListService extends BaseService {
                 JsonObject flow = new JsonObject();
                 flow.put(AppConsts.URL, prop.getFlowUrl());
                 flow.put(AppConsts.STATE, prop.getState());
-                flow.put(AppConsts.LAST_MODIFIED_TIME, StringUtils.toDatetimeStr(prop.getLastModifiedTime(), zone));
+                flow.put(AppConsts.LAST_MODIFIED_TIME,
+                        StringUtils.toDatetimeStr(prop.getLastModifiedTime(),
+                        AppConfigs.getZoneId()));
                 flow.put(AppConsts.SIZE, prop.getFileSize());
                 flows.add(flow);
             });

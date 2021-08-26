@@ -17,12 +17,11 @@
  */
 package pers.tsm.ebr.schd;
 
-import io.vertx.core.AbstractVerticle;
 import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pers.tsm.ebr.base.BaseSchdVerticle;
 import pers.tsm.ebr.common.AppConfigs;
-import pers.tsm.ebr.common.AppConsts;
 import pers.tsm.ebr.common.ServiceSymbols;
 import pers.tsm.ebr.data.Task;
 import pers.tsm.ebr.data.TaskRepo;
@@ -43,7 +42,7 @@ import static java.util.Objects.isNull;
  *
  * @author l.gong
  */
-public class TaskExecVerticle extends AbstractVerticle {
+public class TaskExecVerticle extends BaseSchdVerticle {
     private static final Logger logger = LoggerFactory.getLogger(TaskExecVerticle.class);
     private ExecutorService executorPool;
     private long timerId = 0L;
@@ -74,23 +73,24 @@ public class TaskExecVerticle extends AbstractVerticle {
         logger.info("TaskExecVerticle stopped. [{}]", deploymentId);
     }
 
-    private void notice(String msg, Task task) {
-        String flowUrl = isNull(task.getRoot()) ? task.getUrl() : task.getRoot().getUrl();
-        JsonObject param = new JsonObject();
-        param.put(AppConsts.FLOW, flowUrl);
-        param.put(AppConsts.TASK, task.getUrl());
-        vertx.eventBus().publish(msg, param);
-    }
-
     private void handlePeriodic(Long id) {
         try {
             Task task;
             while ((task = TaskRepo.pollRunnableTask()) != null) {
-                if (TaskTypeEnum.TASK == task.getType()) {
-                    launchExecutableTask(task);
-                } else {
-                    // flow or group
+                if (TaskTypeEnum.FLOW == task.getType() || TaskTypeEnum.GROUP == task.getType()) {
                     notice(ServiceSymbols.MSG_STATE_TASK_RUNNING, task);
+                    continue;
+                }
+                // task
+                TaskStateEnum taskState = task.getState();
+                if (TaskStateEnum.STANDBY == taskState) {
+                    launchExecutableTask(task);
+                } else if (TaskStateEnum.PAUSED == taskState) {
+                    notice(ServiceSymbols.MSG_STATE_TASK_PAUSED, task);
+                } else if (TaskStateEnum.SKIPPED == taskState) {
+                    notice(ServiceSymbols.MSG_STATE_TASK_SKIPPED, task);
+                } else if (TaskStateEnum.ABORTED == taskState) {
+                    notice(ServiceSymbols.MSG_STATE_TASK_ABORTED, task);
                 }
             }
         } finally {

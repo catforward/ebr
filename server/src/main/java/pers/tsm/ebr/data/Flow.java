@@ -17,10 +17,13 @@
  */
 package pers.tsm.ebr.data;
 
+import com.cronutils.model.Cron;
+import pers.tsm.ebr.common.AppConfigs;
 import pers.tsm.ebr.common.AppException;
 import pers.tsm.ebr.types.ResultEnum;
 import pers.tsm.ebr.types.TaskStateEnum;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -35,6 +38,8 @@ import static java.util.Objects.requireNonNull;
 public class Flow {
     final Task root;
     final Map<String, Task> urlTaskMapping;
+    private Cron cron;
+    private LocalDateTime latestResetDateTime;
 
     Flow(Task root) {
         this.root = root;
@@ -73,6 +78,22 @@ public class Flow {
         }
     }
 
+    public LocalDateTime getLatestResetDateTime() {
+        return this.latestResetDateTime;
+    }
+
+    public Cron getCron() {
+        return this.cron;
+    }
+
+    public void setCron(Cron cron) {
+        this.cron = cron;
+    }
+
+    public Map<String, Task> getAllTaskRef() {
+        return this.urlTaskMapping;
+    }
+
     public void standby() {
         this.root.standby();
         this.urlTaskMapping.forEach((url, task) -> task.standby());
@@ -81,6 +102,19 @@ public class Flow {
     public void reset() {
         this.root.reset();
         this.urlTaskMapping.forEach((url, task) -> task.reset());
+        this.latestResetDateTime = LocalDateTime.now(AppConfigs.getZoneId());
+    }
+
+    public void abort() {
+        this.urlTaskMapping.forEach((url, task) -> {
+            TaskStateEnum taskState = task.getState();
+            if (TaskStateEnum.STANDBY == taskState
+                    || TaskStateEnum.PAUSED == taskState
+                    || TaskStateEnum.ERROR == taskState
+                    || TaskStateEnum.SKIPPED == taskState) {
+                task.updateState(TaskStateEnum.ABORTED);
+            }
+        });
     }
 
 }

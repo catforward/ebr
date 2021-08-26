@@ -11,21 +11,21 @@ import (
 )
 
 // Flow/Task执行动作
-type RunAction struct {
+type StartAction struct {
 	api_url   string
 	api_param map[string]string
 	api_res   []byte
 }
 
 // Flow/Task执行动作的响应数据结构
-type RunActionRespData struct {
+type StartActionRespData struct {
 	Code string `json:"code"`
 	Msg  string `json:"msg"`
 }
 
 // 动作执行
-func (act *RunAction) DoAction(target string) {
-	log.Println("RunAction...")
+func (act *StartAction) DoAction(target string) {
+	log.Println("StartAction...")
 	// 初始化数据
 	act.initData(target)
 	// 数据请求
@@ -34,9 +34,9 @@ func (act *RunAction) DoAction(target string) {
 	act.formatResult()
 }
 
-func (act *RunAction) initData(flow string) {
+func (act *StartAction) initData(flow string) {
 	if flow == "" {
-		log.Fatalf("the target of run action must be set.")
+		log.Fatalf("the target of start action must be set.")
 		return
 	}
 	act.api_url = utl.BASE_URL + "/schd/action"
@@ -45,7 +45,7 @@ func (act *RunAction) initData(flow string) {
 	act.api_param["flow"] = flow
 }
 
-func (act *RunAction) doRequest() {
+func (act *StartAction) doRequest() {
 	bytesData, err := json.Marshal(act.api_param)
 	if err != nil {
 		fmt.Println(err.Error())
@@ -76,8 +76,8 @@ func (act *RunAction) doRequest() {
 	// fmt.Println("response Body:", string(act.api_res))
 }
 
-func (act *RunAction) formatResult() {
-	var res RunActionRespData
+func (act *StartAction) formatResult() {
+	var res StartActionRespData
 	if err := json.Unmarshal(act.api_res, &res); err != nil {
 		fmt.Println(err.Error())
 		return
