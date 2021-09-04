@@ -1,7 +1,7 @@
 {
   "flow": {
     "desc": "sample flow-4 (nested hybrid)",
-    "cron": "0/5 * * * *"
+    "cron": "5 2 * * *"
   },
   "T1": {
     "group": "flow",

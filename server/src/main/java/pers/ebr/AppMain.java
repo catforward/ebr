@@ -25,8 +25,8 @@ import io.vertx.core.VertxOptions;
 import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pers.ebr.base.HttpApiServer;
 import pers.ebr.base.AppConfigs;
+import pers.ebr.base.HttpApiServer;
 import pers.ebr.data.CronFlowRepo;
 import pers.ebr.data.TaskDefineRepo;
 import pers.ebr.data.TaskRepo;
@@ -118,7 +118,6 @@ public final class AppMain {
         logo += "         ╚══════╝╚═════╝ ╚═╝  ╚═╝         \n";
         logo += "                                          \n";
         logo += "             Ver:" + AppMain.VERSION + "                \n";
-        logo += "******************************************\n";
         return logo;
     }
 

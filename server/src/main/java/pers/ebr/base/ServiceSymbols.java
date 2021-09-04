@@ -43,14 +43,13 @@ public final class ServiceSymbols {
     /* MSG */
     public static final String MSG_ACTION_REFRESH_FS_DEFINE = "msg.action.refresh.fs.define";
     public static final String MSG_ACTION_CRON_CHECK = "msg.action.cron.check";
-    public static final String MSG_ACTION_CRON_REJECT = "msg.action.cron.reject";
-    public static final String MSG_ACTION_TASK_START = "msg.action.task.start";
-    public static final String MSG_ACTION_TASK_ABORTED = "msg.action.task.aborted";
-    public static final String MSG_ACTION_TASK_PAUSE = "msg.action.task.pause";
-    public static final String MSG_ACTION_TASK_SKIP = "msg.action.task.skip";
+    public static final String MSG_ACTION_FLOW_START = "msg.action.flow.start";
+    public static final String MSG_ACTION_FLOW_ABORTED = "msg.action.flow.aborted";
 
     public static final String MSG_STATE_FLOW_LAUNCH = "msg.state.flow.launch";
     public static final String MSG_STATE_FLOW_FINISH = "msg.state.flow.finish";
+
+    public static final String MSG_STATE_TASK_LAUNCH = "msg.state.task.launch";
     public static final String MSG_STATE_TASK_ABORTED = "msg.state.task.aborted";
     public static final String MSG_STATE_TASK_PAUSED = "msg.state.task.paused";;
     public static final String MSG_STATE_TASK_SKIPPED = "msg.state.task.skipped";

@@ -23,11 +23,8 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pers.ebr.base.BaseSchdVerticle;
-import pers.ebr.base.ServiceResultMsg;
-import pers.ebr.base.AppConsts;
-import pers.ebr.base.AppException;
-import pers.ebr.base.ServiceSymbols;
+import pers.ebr.base.*;
+import pers.ebr.data.CronFlowRepo;
 import pers.ebr.data.Flow;
 import pers.ebr.data.Task;
 import pers.ebr.data.TaskRepo;
@@ -36,13 +33,13 @@ import pers.ebr.types.TaskStateEnum;
 import pers.ebr.types.TaskTypeEnum;
 
 import static java.util.Objects.isNull;
+import static pers.ebr.base.StringUtils.isNullOrBlank;
 
 /**
  *<pre>
- * task start request:
+ * flow start/abort request:
  * {
  *    "flow": string,
- *    "task"(optional): string
  * }
  * 
  * task running/complete msg:
@@ -62,15 +59,15 @@ import static java.util.Objects.isNull;
  *
  * @author l.gong
  */
-public class ActionSchdVerticle extends BaseSchdVerticle {
+public class ActionSchdVerticle extends BaseScheduler {
     private static final Logger logger = LoggerFactory.getLogger(ActionSchdVerticle.class);
     
     @Override
     public void start() throws Exception {
         super.start();
         // client request
-        vertx.eventBus().consumer(ServiceSymbols.MSG_ACTION_TASK_START, this::onStartAction);
-        vertx.eventBus().consumer(ServiceSymbols.MSG_ACTION_TASK_ABORTED, this::onAbortAction);
+        vertx.eventBus().consumer(ServiceSymbols.MSG_ACTION_FLOW_START, this::onStartFlowAction);
+        vertx.eventBus().consumer(ServiceSymbols.MSG_ACTION_FLOW_ABORTED, this::onAbortFlowAction);
         // state changed message
         vertx.eventBus().consumer(ServiceSymbols.MSG_STATE_TASK_RUNNING, this::onRunningMsg);
         vertx.eventBus().consumer(ServiceSymbols.MSG_STATE_TASK_COMPLETE, this::onCompleteMsg);
@@ -88,55 +85,43 @@ public class ActionSchdVerticle extends BaseSchdVerticle {
         logger.info("TaskSchdVerticle stopped. [{}]", deploymentId);
     }
 
-    private void onStartAction(Message<JsonObject> msg) {
+    private void onStartFlowAction(Message<JsonObject> msg) {
         JsonObject target = msg.body();
         String flowUrl = target.getString(AppConsts.FLOW);
-        String taskUrl = target.getString(AppConsts.TASK);
         Flow flow = TaskRepo.getFlow(flowUrl);
         if (isNull(flow)) {
             throw new AppException(ResultEnum.ERR_11003);
         }
-        if (isNull(taskUrl) || taskUrl.isBlank()) {
-            TaskStateEnum state = flow.getState();
-            if (TaskStateEnum.RUNNING == state || TaskStateEnum.SKIPPED == state) {
-                throw new AppException(ResultEnum.ERR_11005);
-            }
-            flow.standby();
-            TaskRepo.pushRunnableFlow(flow);
-            TaskRepo.pushRunnableTask(flow.getRootTask());
-            notice(ServiceSymbols.MSG_STATE_FLOW_LAUNCH, flow);
+        TaskStateEnum state = flow.getState();
+        if (TaskStateEnum.RUNNING == state || TaskStateEnum.SKIPPED == state) {
+            throw new AppException(ResultEnum.ERR_11005);
+        }
+        if (!isNullOrBlank(flow.getRootTask().getCronStr())) {
+            CronFlowRepo.addFlow(flow);
         } else {
-            Task task = flow.getTask(taskUrl);
-            if (isNull(task)) {
-                throw new AppException(ResultEnum.ERR_11004);
-            }
-            TaskStateEnum state = task.getState();
-            if (TaskStateEnum.RUNNING == state || TaskStateEnum.SKIPPED == state) {
-                throw new AppException(ResultEnum.ERR_11006);
-            }
-            TaskRepo.pushRunnableTask(task);
+            launchFlow(flow);
         }
         msg.reply(new ServiceResultMsg(ResultEnum.SUCCESS).rawData());
     }
 
-    private void onAbortAction(Message<JsonObject> msg) {
+    private void onAbortFlowAction(Message<JsonObject> msg) {
         JsonObject target = msg.body();
         String flowUrl = target.getString(AppConsts.FLOW);
         Flow flow = TaskRepo.getFlow(flowUrl);
         if (isNull(flow)) {
             throw new AppException(ResultEnum.ERR_11003);
         }
+
+        CronFlowRepo.removeFlow(flow);
 
         TaskStateEnum flowState = flow.getState();
         if (TaskStateEnum.STORED == flowState
                 || TaskStateEnum.FINISHED == flowState
                 || TaskStateEnum.ABORTED == flowState) {
-            logger.debug("can not abort flow[{}].", flowUrl);
-            throw new AppException(ResultEnum.ERR_11008);
+            logger.info("can not abort flow[{}]. state:[{}]  --> abort...", flowUrl, flowState.getName());
+        } else {
+            flow.abort();
         }
-
-        notice(ServiceSymbols.MSG_ACTION_CRON_REJECT, flow);
-        flow.abort();
 
         msg.reply(new ServiceResultMsg(ResultEnum.SUCCESS).rawData());
     }

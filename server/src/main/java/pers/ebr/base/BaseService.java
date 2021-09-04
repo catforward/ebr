@@ -19,7 +19,6 @@
  */
 package pers.ebr.base;
 
-import io.vertx.core.AbstractVerticle;
 import io.vertx.core.Future;
 import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
@@ -35,7 +34,7 @@ import static java.util.Objects.requireNonNull;
  *
  * @author l.gong
  */
-public abstract class BaseService extends AbstractVerticle {
+public abstract class BaseService extends BaseVerticle {
     private static final Logger logger = LoggerFactory.getLogger(BaseService.class);
     protected JsonObject inData;
     protected JsonObject outData;
@@ -179,10 +178,6 @@ public abstract class BaseService extends AbstractVerticle {
     private void makeReplyMsg(Message<JsonObject> msg, IResult ret) {
         logger.trace("makeReplyMsg: {}", outData);
         msg.reply(new ServiceResultMsg(ret).setData(outData).toJsonObject());
-    }
-
-    protected void emitMsg(String msg, JsonObject param) {
-        vertx.eventBus().publish(msg, param);
     }
 
 }

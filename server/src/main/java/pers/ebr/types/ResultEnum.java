@@ -31,7 +31,6 @@ public enum ResultEnum implements IResult {
     ERROR("1", "internal error"),
     // http
     ERR_400("400", "bad request"),
-    ERR_401("401", "unauthorized"),
     ERR_404("404", "not found"),
     ERR_500("500", "internal server error"),
     // task execute

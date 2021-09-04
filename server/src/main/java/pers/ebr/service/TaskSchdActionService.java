@@ -25,11 +25,7 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pers.ebr.base.BaseService;
-import pers.ebr.base.IResult;
-import pers.ebr.base.AppConsts;
-import pers.ebr.base.AppException;
-import pers.ebr.base.ServiceSymbols;
+import pers.ebr.base.*;
 import pers.ebr.types.ResultEnum;
 
 import java.util.HashMap;
@@ -42,8 +38,7 @@ import static java.util.Objects.isNull;
  * request:
  * {
  *  "action": string,
- *  "flow": string,
- *  "task"(optional): string
+ *  "flow": string
  * }
  * response: common response's format
  * 
@@ -58,10 +53,8 @@ public class TaskSchdActionService extends BaseService {
     @Override
     public void start() throws Exception {
         super.start();
-        actionMapping.put(AppConsts.START, ServiceSymbols.MSG_ACTION_TASK_START);
-        actionMapping.put(AppConsts.ABORT, ServiceSymbols.MSG_ACTION_TASK_ABORTED);
-        actionMapping.put(AppConsts.PAUSE, ServiceSymbols.MSG_ACTION_TASK_PAUSE);
-        actionMapping.put(AppConsts.SKIP, ServiceSymbols.MSG_ACTION_TASK_SKIP);
+        actionMapping.put(AppConsts.START, ServiceSymbols.MSG_ACTION_FLOW_START);
+        actionMapping.put(AppConsts.ABORT, ServiceSymbols.MSG_ACTION_FLOW_ABORTED);
         registerService(ServiceSymbols.SERVICE_SCHD_ACTION);
     }
 

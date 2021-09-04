@@ -25,16 +25,17 @@ import io.vertx.core.eventbus.Message;
 import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pers.ebr.base.*;
+import pers.ebr.base.AppConfigs;
+import pers.ebr.base.BaseScheduler;
+import pers.ebr.base.ServiceSymbols;
 import pers.ebr.data.CronFlowRepo;
 import pers.ebr.data.Flow;
-import pers.ebr.data.TaskRepo;
-import pers.ebr.types.ResultEnum;
 import pers.ebr.types.TaskStateEnum;
 
+import java.time.Duration;
 import java.time.LocalDateTime;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
 import static java.util.Objects.isNull;
@@ -46,7 +47,7 @@ import static pers.ebr.types.TaskStateEnum.STORED;
  *
  * @author l.gong
  */
-public class CronSchdVerticle extends BaseSchdVerticle {
+public class CronSchdVerticle extends BaseScheduler {
     private static final Logger logger = LoggerFactory.getLogger(CronSchdVerticle.class);
 
     private long timerId = 0L;
@@ -55,12 +56,10 @@ public class CronSchdVerticle extends BaseSchdVerticle {
     @Override
     public void start() throws Exception {
         super.start();
-        vertx.eventBus().consumer(ServiceSymbols.MSG_STATE_FLOW_LAUNCH, this::onFlowLaunchMsg);
-        vertx.eventBus().consumer(ServiceSymbols.MSG_ACTION_CRON_REJECT, this::onCronRejectMsg);
         vertx.eventBus().consumer(ServiceSymbols.MSG_ACTION_CRON_CHECK, this::handlePeriodic);
-        checkInterval = config().getLong(AppConfigs.SERVICE_CRON_SCHD_CHECK_INTERVAL_SECONDS, 5L) * 1000;
+        checkInterval = config().getLong(AppConfigs.SERVICE_CRON_SCHD_CHECK_INTERVAL_SECONDS, 5L);
         // the first time
-        vertx.setTimer(checkInterval, id -> vertx.eventBus().publish(ServiceSymbols.MSG_ACTION_CRON_CHECK, EMPTY_JSON_OBJ));
+        vertx.setTimer(checkInterval * 1000, id -> vertx.eventBus().publish(ServiceSymbols.MSG_ACTION_CRON_CHECK, EMPTY_JSON_OBJ));
         String deploymentId = deploymentID();
         logger.info("CronSchdVerticle started. [{}]", deploymentId);
     }
@@ -74,48 +73,49 @@ public class CronSchdVerticle extends BaseSchdVerticle {
     }
 
     private void handlePeriodic(Message<JsonObject> msg) {
-        ZoneId zoneId = AppConfigs.getZoneId();
         CronFlowRepo.getCronSchdFlowPoolRef().forEach((flowUrl, flowObj) -> {
             TaskStateEnum state = flowObj.getState();
             Cron cron = flowObj.getCron();
             if (STORED == state && !isNull(cron)) {
+                LocalDateTime lastFinTime = flowObj.getLatestResetDateTime();
+                ZonedDateTime now = ZonedDateTime.now(AppConfigs.getZoneId());
+                ZonedDateTime from = isNull(lastFinTime) ? now : ZonedDateTime.of(lastFinTime, AppConfigs.getZoneId());
+
                 // cal next execute time
                 ExecutionTime executionTime = ExecutionTime.forCron(cron);
-                LocalDateTime lastFinTime = flowObj.getLatestResetDateTime();
-                LocalDateTime nowTime = LocalDateTime.now(zoneId);
-                Optional<ZonedDateTime> nextExecTime = executionTime.nextExecution(
-                        ZonedDateTime.of(isNull(lastFinTime) ? nowTime: lastFinTime, zoneId));
-                if (nextExecTime.isPresent() && nextExecTime.get().toLocalDateTime().isBefore(nowTime)) {
-                    logger.debug("Cron: lastFinTime:{}, nextExecTime:{}, nowTime:{}", lastFinTime, nextExecTime, nowTime);
-                    notice(ServiceSymbols.MSG_ACTION_TASK_START, flowObj);
-                    logger.debug("Cron: Launch Msg Sending by Cron Schd. flow:{}", flowUrl);
+                Optional<Duration> timeToNextExecution = executionTime.timeToNextExecution(now);
+                if (timeToNextExecution.isEmpty()) {
+                    logger.debug("timeToNextExecution is null. skip...");
+                    return;
+                }
+
+                // improve me
+                long secToNextExec = timeToNextExecution.get().get(ChronoUnit.SECONDS);
+
+                if (AppConfigs.isDevMode()) {
+                    logCronInfo(flowObj, executionTime, now, from, secToNextExec);
+                }
+
+                if (secToNextExec <= checkInterval) {
+                    logger.info("Cron: will launch by Cron Schd. flow:{}", flowUrl);
+                    launchFlow(flowObj);
                 }
             }
         });
         // for next time
-        timerId = vertx.setTimer(checkInterval,
+        timerId = vertx.setTimer(checkInterval * 1000,
                 id -> vertx.eventBus().publish(ServiceSymbols.MSG_ACTION_CRON_CHECK, EMPTY_JSON_OBJ));
     }
 
-    private void onFlowLaunchMsg(Message<JsonObject> msg) {
-        JsonObject target = msg.body();
-        String flowUrl = target.getString(AppConsts.FLOW);
-        Flow flow = TaskRepo.getFlow(flowUrl);
-        if (isNull(flow)) {
-            throw new AppException(ResultEnum.ERR_11003);
+    private void logCronInfo(Flow flow, ExecutionTime executionTime, ZonedDateTime now, ZonedDateTime from, long secToNextExec) {
+        Optional<ZonedDateTime> nextExecTime = executionTime.nextExecution(from);
+        String nextExecTimeStr = "unknown";
+        if (nextExecTime.isPresent()) {
+            nextExecTimeStr = nextExecTime.get().toString();
         }
-        if (!StringUtils.isNullOrBlank(flow.getRootTask().getCronStr())) {
-            CronFlowRepo.addFlow(flow);
-        }
+
+        logger.debug("Cron Info: flow:{}, lastFinTime:{}, nowTime:{}, fromTime:{}, nextExecTime:{}, secToNextExec:{}, checkInterval:{}",
+                flow.getUrl(), flow.getLatestResetDateTime(), now, from, nextExecTimeStr, secToNextExec, checkInterval);
     }
 
-    private void onCronRejectMsg(Message<JsonObject> msg) {
-        JsonObject target = msg.body();
-        String flowUrl = target.getString(AppConsts.FLOW);
-        Flow flow = TaskRepo.getFlow(flowUrl);
-        if (isNull(flow)) {
-            throw new AppException(ResultEnum.ERR_11003);
-        }
-        CronFlowRepo.removeFlow(flow);
-    }
 }

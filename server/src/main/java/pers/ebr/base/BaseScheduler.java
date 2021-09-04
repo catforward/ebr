@@ -19,7 +19,6 @@
  */
 package pers.ebr.base;
 
-import io.vertx.core.AbstractVerticle;
 import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,27 +32,22 @@ import pers.ebr.types.TaskTypeEnum;
 import java.util.List;
 
 import static java.util.Objects.isNull;
+import static java.util.Objects.requireNonNull;
 
 /**
  * <pre>Base Functions</pre>
  *
  * @author l.gong
  */
-public class BaseSchdVerticle extends AbstractVerticle {
-    private static final Logger logger = LoggerFactory.getLogger(BaseSchdVerticle.class);
+public class BaseScheduler extends BaseVerticle {
+    private static final Logger logger = LoggerFactory.getLogger(BaseScheduler.class);
 
-    protected void notice(String msg, Task task) {
-        String flowUrl = isNull(task.getRoot()) ? task.getUrl() : task.getRoot().getUrl();
-        JsonObject param = new JsonObject();
-        param.put(AppConsts.FLOW, flowUrl);
-        param.put(AppConsts.TASK, task.getUrl());
-        vertx.eventBus().publish(msg, param);
-    }
-
-    protected void notice(String msg, Flow flow) {
-        JsonObject param = new JsonObject();
-        param.put(AppConsts.FLOW, flow.getUrl());
-        vertx.eventBus().publish(msg, param);
+    protected void launchFlow(Flow flow) {
+        requireNonNull(flow);
+        flow.standby();
+        TaskRepo.pushRunnableFlow(flow);
+        TaskRepo.pushRunnableTask(flow.getRootTask());
+        notice(ServiceSymbols.MSG_STATE_FLOW_LAUNCH, flow);
     }
 
     protected Task getSpecifiedTask(JsonObject target) {

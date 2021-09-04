@@ -19,39 +19,35 @@
  */
 package pers.ebr.base;
 
-import pers.ebr.types.ResultEnum;
+import io.vertx.core.AbstractVerticle;
+import io.vertx.core.json.JsonObject;
+import pers.ebr.data.Flow;
+import pers.ebr.data.Task;
+
+import static java.util.Objects.isNull;
 
 /**
- * <pre>App's runtime exception</pre>
+ * <pre>Service's worker</pre>
  *
  * @author l.gong
  */
-public final class AppException extends RuntimeException {
-    private static final long serialVersionUID = -2319024343224680740L;
-    private final transient IResult reason;
+public class BaseVerticle extends AbstractVerticle {
 
-    public AppException(String msg) {
-        super(msg);
-        reason = ResultEnum.ERROR;
+    protected void emitMsg(String msg, JsonObject param) {
+        vertx.eventBus().publish(msg, param);
     }
 
-    public AppException(String msg, Throwable cause) {
-        super(msg, cause);
-        reason = ResultEnum.ERROR;
+    protected void notice(String msg, Task task) {
+        String flowUrl = isNull(task.getRoot()) ? task.getUrl() : task.getRoot().getUrl();
+        JsonObject param = new JsonObject();
+        param.put(AppConsts.FLOW, flowUrl);
+        param.put(AppConsts.TASK, task.getUrl());
+        emitMsg(msg, param);
     }
 
-    public AppException(IResult result) {
-        super(result.getMessage());
-        reason = result;
+    protected void notice(String msg, Flow flow) {
+        JsonObject param = new JsonObject();
+        param.put(AppConsts.FLOW, flow.getUrl());
+        emitMsg(msg, param);
     }
-
-    public AppException(IResult result, Throwable cause) {
-        super(cause);
-        reason = result;
-    }
-
-    public IResult getReason() {
-        return reason;
-    }
-
 }

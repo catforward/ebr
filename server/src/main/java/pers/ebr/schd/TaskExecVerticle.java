@@ -22,8 +22,8 @@ package pers.ebr.schd;
 import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pers.ebr.base.BaseSchdVerticle;
 import pers.ebr.base.AppConfigs;
+import pers.ebr.base.BaseVerticle;
 import pers.ebr.base.ServiceSymbols;
 import pers.ebr.data.Task;
 import pers.ebr.data.TaskRepo;
@@ -44,7 +44,7 @@ import static java.util.Objects.isNull;
  *
  * @author l.gong
  */
-public class TaskExecVerticle extends BaseSchdVerticle {
+public class TaskExecVerticle extends BaseVerticle {
     private static final Logger logger = LoggerFactory.getLogger(TaskExecVerticle.class);
     private ExecutorService executorPool;
     private long timerId = 0L;
