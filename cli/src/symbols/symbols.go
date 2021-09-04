@@ -8,8 +8,9 @@ const (
 	ADDR string = "address"
 	PORT string = "port"
 	// command
-	SHOW string = "show"
-	RUN  string = "run"
+	SHOW  string = "show"
+	START string = "start"
+	ABORT string = "abort"
 	// return code
 	NORMAL               int = 0
 	UNKNOWN_COMMAND      int = 1

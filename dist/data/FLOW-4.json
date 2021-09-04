@@ -1,1 +1,52 @@
-{  "flow": {    "desc": "sample flow-4 (nested hybrid)"  },  "T1": {    "group": "flow",    "desc": "test task unit T1",    "script": "echo.bat T1"  },  "T2": {    "group": "flow",    "desc": "test task unit T2",    "depends": [      "T1"    ]  },  "T2-1": {    "group": "T2",    "desc": "test task unit T2-1",    "script": "echo.bat T2-1"  },  "T2-2": {    "group": "T2",    "desc": "test task unit T2-2",    "script": "echo.bat T2-2"  },  "T2-3": {    "group": "T2",    "desc": "test task unit T2-3",    "script": "echo.bat T2-3",    "depends": [      "T2-1", "T2-2"    ]  },  "T3": {    "group": "flow",    "desc": "test task unit T3",    "script": "echo.bat T3",    "depends": [      "T1", "T2"    ]  },  "T4": {    "group": "flow",    "desc": "test task unit T4",    "script": "echo.bat T4",    "depends": [      "T1"    ]  }}
+{
+  "flow": {
+    "desc": "sample flow-4 (nested hybrid)",
+    "cron": "5 2 * * *"
+  },
+  "T1": {
+    "group": "flow",
+    "desc": "test task unit T1",
+    "script": "echo.bat T1"
+  },
+  "T2": {
+    "group": "flow",
+    "desc": "test task unit T2",
+    "depends": [
+      "T1"
+    ]
+  },
+  "T2-1": {
+    "group": "T2",
+    "desc": "test task unit T2-1",
+    "script": "echo.bat T2-1"
+  },
+  "T2-2": {
+    "group": "T2",
+    "desc": "test task unit T2-2",
+    "script": "echo.bat T2-2"
+  },
+  "T2-3": {
+    "group": "T2",
+    "desc": "test task unit T2-3",
+    "script": "echo.bat T2-3",
+    "depends": [
+      "T2-1", "T2-2"
+    ]
+  },
+  "T3": {
+    "group": "flow",
+    "desc": "test task unit T3",
+    "script": "echo.bat T3",
+    "depends": [
+      "T1", "T2"
+    ]
+  },
+  "T4": {
+    "group": "flow",
+    "desc": "test task unit T4",
+    "script": "echo.bat T4",
+    "depends": [
+      "T1"
+    ]
+  }
+}

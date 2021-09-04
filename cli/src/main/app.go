@@ -17,12 +17,14 @@ import (
 var (
 	required string
 	showCmd  = flag.NewFlagSet(symbols.SHOW, flag.ExitOnError)
-	runCmd   = flag.NewFlagSet(symbols.RUN, flag.ExitOnError)
+	startCmd = flag.NewFlagSet(symbols.START, flag.ExitOnError)
+	abortCmd = flag.NewFlagSet(symbols.ABORT, flag.ExitOnError)
 )
 
 var subcommands = map[string]*flag.FlagSet{
-	showCmd.Name(): showCmd,
-	runCmd.Name():  runCmd,
+	showCmd.Name():  showCmd,
+	startCmd.Name(): startCmd,
+	abortCmd.Name(): abortCmd,
 }
 
 func init() {
@@ -34,7 +36,8 @@ func usage() {
 Usage: ebr [command] [option url] 
 Commands:
 	show   : show flow's info then exit
-	run    : run specified flow then exit
+	start  : run the specified flow then exit
+	stop   : try to stop the specified flow then exit
 Options:
 	-f url : set flow's url
 `)
@@ -57,7 +60,15 @@ func checkAndRun(flg *flag.FlagSet, action act.IAction) {
 				action.DoAction(required)
 			}
 		}
-	case runCmd:
+	case startCmd:
+		{
+			if required == "" {
+				log.Fatalf("-f is required for '%s' command", flg.Name())
+				os.Exit(symbols.COMMAND_ERROR)
+			}
+			action.DoAction(required)
+		}
+	case abortCmd:
 		{
 			if required == "" {
 				log.Fatalf("-f is required for '%s' command", flg.Name())
