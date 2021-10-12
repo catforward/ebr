@@ -24,7 +24,6 @@ import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pers.ebr.base.*;
-import pers.ebr.data.CronFlowRepo;
 import pers.ebr.data.Flow;
 import pers.ebr.data.Task;
 import pers.ebr.data.TaskRepo;
@@ -87,7 +86,7 @@ public class ActionSchdVerticle extends BaseScheduler {
 
     private void onStartFlowAction(Message<JsonObject> msg) {
         JsonObject target = msg.body();
-        String flowUrl = target.getString(AppConsts.FLOW);
+        String flowUrl = target.getString(AppSymbols.FLOW);
         Flow flow = TaskRepo.getFlow(flowUrl);
         if (isNull(flow)) {
             throw new AppException(ResultEnum.ERR_11003);
@@ -96,8 +95,8 @@ public class ActionSchdVerticle extends BaseScheduler {
         if (TaskStateEnum.RUNNING == state || TaskStateEnum.SKIPPED == state) {
             throw new AppException(ResultEnum.ERR_11005);
         }
-        if (!isNullOrBlank(flow.getRootTask().getCronStr())) {
-            CronFlowRepo.addFlow(flow);
+        if (!isNullOrBlank(flow.getRootTask().getCronStr()) && !TaskRepo.isOnCronSchedule(flow)) {
+            launchCronFlow(flow);
         } else {
             launchFlow(flow);
         }
@@ -106,13 +105,15 @@ public class ActionSchdVerticle extends BaseScheduler {
 
     private void onAbortFlowAction(Message<JsonObject> msg) {
         JsonObject target = msg.body();
-        String flowUrl = target.getString(AppConsts.FLOW);
+        String flowUrl = target.getString(AppSymbols.FLOW);
         Flow flow = TaskRepo.getFlow(flowUrl);
         if (isNull(flow)) {
             throw new AppException(ResultEnum.ERR_11003);
         }
-
-        CronFlowRepo.removeFlow(flow);
+        if (TaskRepo.isOnCronSchedule(flow)) {
+            logger.info("remove form cron scheduler. flow[{}]", flowUrl);
+            TaskRepo.removeCronObject(flow);
+        }
 
         TaskStateEnum flowState = flow.getState();
         if (TaskStateEnum.STORED == flowState
@@ -140,12 +141,16 @@ public class ActionSchdVerticle extends BaseScheduler {
         checkParentState(task);
         if (TaskTypeEnum.FLOW != task.getType()) {
             findRunnableTask(task);
-        } else {
-            Flow flow = TaskRepo.getFlow(task.getUrl());
-            flow.reset();
-            TaskRepo.removeRunnableFlow(flow);
-            notice(ServiceSymbols.MSG_STATE_FLOW_FINISH, flow);
+            return;
         }
+
+        Flow flow = TaskRepo.getFlow(task.getUrl());
+        if (TaskRepo.isOnCronSchedule(flow)) {
+            flow.standby();
+        } else {
+            TaskRepo.removeRunnableFlow(flow);
+        }
+        notice(ServiceSymbols.MSG_STATE_FLOW_FINISH, flow);
     }
 
     private void onFailedMsg(Message<JsonObject> msg) {

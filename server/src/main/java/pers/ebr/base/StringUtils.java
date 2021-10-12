@@ -62,7 +62,7 @@ public class StringUtils {
      */
     public static String toFlowUrl(Path dataStorePath, Path filePath) {
         String flowUrl = filePath.toUri().toString().replaceAll(dataStorePath.toUri().toString(), "");
-        flowUrl = flowUrl.replaceAll(AppConsts.FLOW_FILE_SUFFIX, "");
+        flowUrl = flowUrl.replaceAll(AppSymbols.FLOW_FILE_SUFFIX, "");
         return (flowUrl.startsWith("/")) ? flowUrl : "/" + flowUrl;
     }
 
@@ -92,7 +92,7 @@ public class StringUtils {
      */
     public static String warpIfEmbedScriptPath(String defineScript) {
         if (isNullOrBlank(defineScript)) {
-            return AppConsts.BLANK_STR;
+            return AppSymbols.BLANK_STR;
         }
         if (!new File(defineScript).isAbsolute()) {
             return String.format("%s%s%s", AppPaths.getBinPath(), File.separator, defineScript);

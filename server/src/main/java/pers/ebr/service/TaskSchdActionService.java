@@ -53,8 +53,8 @@ public class TaskSchdActionService extends BaseService {
     @Override
     public void start() throws Exception {
         super.start();
-        actionMapping.put(AppConsts.START, ServiceSymbols.MSG_ACTION_FLOW_START);
-        actionMapping.put(AppConsts.ABORT, ServiceSymbols.MSG_ACTION_FLOW_ABORTED);
+        actionMapping.put(AppSymbols.START, ServiceSymbols.MSG_ACTION_FLOW_START);
+        actionMapping.put(AppSymbols.ABORT, ServiceSymbols.MSG_ACTION_FLOW_ABORTED);
         registerService(ServiceSymbols.SERVICE_SCHD_ACTION);
     }
 
@@ -68,13 +68,13 @@ public class TaskSchdActionService extends BaseService {
         logger.trace("doPrepare -> {}", inData);
         return Future.future(promise -> {
             JsonObject postBody = getPostBody();
-            String action = postBody.getString(AppConsts.ACTION);
+            String action = postBody.getString(AppSymbols.ACTION);
             if (isNull(action) || action.isBlank()) {
                 logger.debug("parameter[action] is empty.");
                 promise.fail(new AppException(ResultEnum.ERR_11001));
                 return;
             }
-            String flowUrl = postBody.getString(AppConsts.FLOW);
+            String flowUrl = postBody.getString(AppSymbols.FLOW);
             if (isNull(flowUrl) || flowUrl.isBlank()) {
                 logger.debug("parameter[flowUrl] is empty.");
                 promise.fail(new AppException(ResultEnum.ERR_11001));
@@ -89,8 +89,8 @@ public class TaskSchdActionService extends BaseService {
         logger.trace("doService -> {}", inData);
         return Future.future(promise -> {
             JsonObject postBody = getPostBody();
-            String action = postBody.getString(AppConsts.ACTION);
-            String flowUrl = postBody.getString(AppConsts.FLOW);
+            String action = postBody.getString(AppSymbols.ACTION);
+            String flowUrl = postBody.getString(AppSymbols.FLOW);
             handleAction(action, flowUrl)
             .onSuccess(ar -> promise.complete(ResultEnum.SUCCESS))
             .onFailure(promise::fail);
@@ -104,7 +104,7 @@ public class TaskSchdActionService extends BaseService {
         }
 
         JsonObject param = new JsonObject();
-        param.put(AppConsts.FLOW, flowUrl);
+        param.put(AppSymbols.FLOW, flowUrl);
         return Future.future(promise -> vertx.eventBus().request(actionId, param, (AsyncResult<Message<JsonObject>> res) -> {
             if (res.failed()) {
                 promise.fail(res.cause());

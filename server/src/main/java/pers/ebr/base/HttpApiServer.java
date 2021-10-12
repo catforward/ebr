@@ -62,7 +62,7 @@ public class HttpApiServer extends AbstractVerticle {
         router.route().handler(BodyHandler.create());
         router.route().failureHandler(ErrorHandler.create(vertx));
         // API
-        router.route(AppConsts.BASE_URL + "/api").handler(context ->
+        router.route(AppSymbols.BASE_URL + "/api").handler(context ->
             context.response().end(new JsonObject().put("version", AppMain.VERSION).encodePrettily())
         );
         Map<String, String> mapping = AppContext.getApiServiceMapping();

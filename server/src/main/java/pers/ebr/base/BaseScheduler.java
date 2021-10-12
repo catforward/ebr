@@ -42,9 +42,12 @@ import static java.util.Objects.requireNonNull;
 public class BaseScheduler extends BaseVerticle {
     private static final Logger logger = LoggerFactory.getLogger(BaseScheduler.class);
 
-    protected void launchFlow(Flow flow) {
-        requireNonNull(flow);
+    protected void launchCronFlow(Flow flow) {
         flow.standby();
+        TaskRepo.appendCronObject(flow);
+    }
+
+    protected void launchFlow(Flow flow) {
         TaskRepo.pushRunnableFlow(flow);
         TaskRepo.pushRunnableTask(flow.getRootTask());
         notice(ServiceSymbols.MSG_STATE_FLOW_LAUNCH, flow);
@@ -52,7 +55,7 @@ public class BaseScheduler extends BaseVerticle {
 
     protected Task getSpecifiedTask(JsonObject target) {
         Flow flow = getSpecifiedFlow(target);
-        String taskUrl = target.getString(AppConsts.TASK);
+        String taskUrl = target.getString(AppSymbols.TASK);
         if (isNull(taskUrl) || taskUrl.isBlank()) {
             logger.debug("specified task: {}", taskUrl);
             throw new AppException(ResultEnum.ERR_11004);
@@ -66,7 +69,7 @@ public class BaseScheduler extends BaseVerticle {
     }
 
     protected Flow getSpecifiedFlow(JsonObject target) {
-        String flowUrl = target.getString(AppConsts.FLOW);
+        String flowUrl = target.getString(AppSymbols.FLOW);
         if (isNull(flowUrl) || flowUrl.isBlank()) {
             logger.debug("specified flow: {}", flowUrl);
             throw new AppException(ResultEnum.ERR_11003);

@@ -27,7 +27,7 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 
 import static java.util.Objects.isNull;
-import static pers.ebr.base.AppConsts.*;
+import static pers.ebr.base.AppSymbols.*;
 
 /**
  * <pre>

@@ -21,7 +21,7 @@ package pers.ebr.data;
 
 import io.vertx.core.json.JsonArray;
 import io.vertx.core.json.JsonObject;
-import pers.ebr.base.AppConsts;
+import pers.ebr.base.AppSymbols;
 import pers.ebr.base.AppException;
 import pers.ebr.base.StringUtils;
 import pers.ebr.types.TaskAttrEnum;
@@ -75,10 +75,10 @@ public class Task {
             requireNonNull(taskBody);
             Meta meta = new Meta();
             meta.id = id;
-            meta.cron = taskBody.getString(TaskAttrEnum.CRON.getName(), AppConsts.BLANK_STR);
-            meta.group = taskBody.getString(TaskAttrEnum.GROUP.getName(), AppConsts.BLANK_STR);
-            meta.desc = taskBody.getString(TaskAttrEnum.DESC.getName(), AppConsts.BLANK_STR);
-            meta.script = taskBody.getString(TaskAttrEnum.SCRIPT.getName(), AppConsts.BLANK_STR);
+            meta.cron = taskBody.getString(TaskAttrEnum.CRON.getName(), null);
+            meta.group = taskBody.getString(TaskAttrEnum.GROUP.getName(), AppSymbols.BLANK_STR);
+            meta.desc = taskBody.getString(TaskAttrEnum.DESC.getName(), AppSymbols.BLANK_STR);
+            meta.script = taskBody.getString(TaskAttrEnum.SCRIPT.getName(), AppSymbols.BLANK_STR);
             meta.script = StringUtils.warpIfEmbedScriptPath(meta.script);
             JsonArray array = taskBody.getJsonArray(TaskAttrEnum.DEPENDS.getName());
             if (!isNull(array) && !array.isEmpty()) {
@@ -102,7 +102,7 @@ public class Task {
 
     public Task(Meta meta) {
         this.meta = meta;
-        this.url = AppConsts.BLANK_STR;
+        this.url = AppSymbols.BLANK_STR;
         this.root = null;
         this.parent = null;
         this.children = new ArrayList<>();
