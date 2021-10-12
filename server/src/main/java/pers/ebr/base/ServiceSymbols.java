@@ -19,7 +19,7 @@
  */
 package pers.ebr.base;
 
-import static pers.ebr.base.AppConsts.BASE_URL;
+import static pers.ebr.base.AppSymbols.BASE_URL;
 
 /**
  * <pre>Service's const</pre>

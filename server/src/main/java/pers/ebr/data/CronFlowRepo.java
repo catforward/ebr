@@ -67,13 +67,20 @@ public class CronFlowRepo {
         return InstanceHolder.INSTANCE.cronSchdFlowPool;
     }
 
-    public static void addFlow(Flow flow) {
+    static boolean isOnSchedule(Flow flow) {
+        requireNonNull(flow);
+        return InstanceHolder.INSTANCE.cronSchdFlowPool.containsKey(flow.getUrl());
+    }
+
+    static void addFlow(Flow flow) {
         requireNonNull(flow);
         Task root = flow.getRootTask();
         if (isNullOrBlank(root.getCronStr())) {
+            logger.debug("Cron Expr is empty. Abort... Flow:[{}]", flow.getUrl());
             return;
         }
         if (InstanceHolder.INSTANCE.cronSchdFlowPool.containsKey(flow.getUrl())) {
+            logger.debug("Flow Obj is already on schedule. Abort... Flow:[{}]", flow.getUrl());
             return;
         }
 
@@ -97,7 +104,12 @@ public class CronFlowRepo {
         logger.debug("Add new flow instance into cron scheduler pool. flow:{}, cron:{}", root.getUrl(),descriptor.describe(cron));
     }
 
-    public static void removeFlow(Flow flow) {
+    static Flow getFlow(String url) {
+        requireNonNull(url);
+        return InstanceHolder.INSTANCE.cronSchdFlowPool.get(url);
+    }
+
+    static void removeFlow(Flow flow) {
         requireNonNull(flow);
         Task root = flow.getRootTask();
         if (InstanceHolder.INSTANCE.cronSchdFlowPool.containsKey(root.getUrl())) {

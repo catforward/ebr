@@ -115,6 +115,34 @@ public class TaskRepo {
     }
 
     /**
+     * Decide the state whether the flow is managed by CronScheduler
+     * @param flow Flow object
+     * @return true: on schedule false: not on schedule
+     */
+    public static boolean isOnCronSchedule(Flow flow) {
+        requireNonNull(flow);
+        return CronFlowRepo.isOnSchedule(flow);
+    }
+
+    /**
+     *
+     * @param flow Flow object
+     */
+    public static void appendCronObject(Flow flow) {
+        requireNonNull(flow);
+        CronFlowRepo.addFlow(flow);
+    }
+
+    /**
+     *
+     * @param flow Flow object
+     */
+    public static void removeCronObject(Flow flow) {
+        requireNonNull(flow);
+        CronFlowRepo.removeFlow(flow);
+    }
+
+    /**
      * Push a runnable flow object to running object pool
      *
      * @param flow Flow object
@@ -123,6 +151,7 @@ public class TaskRepo {
         requireNonNull(flow);
         InstanceHolder.INSTANCE.poolLock.lock();
         try {
+            flow.standby();
             InstanceHolder.INSTANCE.idleFlowPool.invalidate(flow.getUrl());
             InstanceHolder.INSTANCE.runningFlowPool.remove(flow.getUrl());
             InstanceHolder.INSTANCE.runningFlowPool.put(flow.getUrl(), flow);
@@ -140,6 +169,7 @@ public class TaskRepo {
         requireNonNull(flow);
         InstanceHolder.INSTANCE.poolLock.lock();
         try {
+            flow.reset();
             InstanceHolder.INSTANCE.runningFlowPool.remove(flow.getUrl());
             InstanceHolder.INSTANCE.idleFlowPool.put(flow.getUrl(), flow);
         } finally {
@@ -171,15 +201,20 @@ public class TaskRepo {
      *
      * @return a copy of define info
      */
-    public static Map<String, TaskDefineFileProp> getAllDefineInfo() {
+    public static Map<String, TaskDefineFileProp> getAllFlowInfo() {
         Map<String, TaskDefineFileProp> copyMap =  TaskDefineRepo.copyDefineFileInfo();
         copyMap.forEach((url, prop) -> {
-            Flow runningFlow = InstanceHolder.INSTANCE.runningFlowPool.get(url);
-            if (isNull(runningFlow)) {
-                prop.setState(TaskStateEnum.STORED.getName());
-            } else {
-                prop.setState(runningFlow.getState().getName());
+            Flow flow = InstanceHolder.INSTANCE.runningFlowPool.get(url);
+            if (!isNull(flow)) {
+                prop.setState(flow.getState().getName());
+                return;
             }
+            flow = CronFlowRepo.getFlow(url);
+            if (!isNull(flow)) {
+                prop.setState(flow.getState().getName());
+                return;
+            }
+            prop.setState(TaskStateEnum.STORED.getName());
         });
         return copyMap;
     }

@@ -37,7 +37,7 @@ Usage: ebr [command] [option url]
 Commands:
 	show   : show flow's info then exit
 	start  : run the specified flow then exit
-	stop   : try to stop the specified flow then exit
+	abort  : try to abort the specified flow then exit
 Options:
 	-f url : set flow's url
 `)

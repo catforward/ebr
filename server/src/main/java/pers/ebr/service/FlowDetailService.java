@@ -38,7 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static java.util.Objects.isNull;
-import static pers.ebr.base.AppConsts.*;
+import static pers.ebr.base.AppSymbols.*;
 import static pers.ebr.base.StringUtils.isNullOrBlank;
 
 

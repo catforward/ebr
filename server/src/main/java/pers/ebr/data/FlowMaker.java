@@ -20,7 +20,7 @@
 package pers.ebr.data;
 
 import io.vertx.core.json.JsonObject;
-import pers.ebr.base.AppConsts;
+import pers.ebr.base.AppSymbols;
 import pers.ebr.base.AppException;
 import pers.ebr.types.ResultEnum;
 import pers.ebr.types.TaskTypeEnum;
@@ -68,7 +68,7 @@ class FlowMaker {
         for (String taskId : content.getMap().keySet()) {
             JsonObject taskBody = content.getJsonObject(taskId);
             Task task = new Task(Task.Meta.buildFrom(taskId, taskBody));
-            if (AppConsts.FLOW.equalsIgnoreCase(taskId)) {
+            if (AppSymbols.FLOW.equalsIgnoreCase(taskId)) {
                 if (!isNull(flow)) {
                     throw new AppException(ResultEnum.ERR_10102);
                 }

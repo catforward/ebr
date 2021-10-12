@@ -67,16 +67,16 @@ public class FlowListService extends BaseService {
         logger.trace("doService -> {}", inData);
         return Future.future(promise -> {
             JsonArray flows = new JsonArray();
-            outData.put(AppConsts.FLOWS, flows);
-            Map<String, TaskDefineFileProp> info =  TaskRepo.getAllDefineInfo();
+            outData.put(AppSymbols.FLOWS, flows);
+            Map<String, TaskDefineFileProp> info =  TaskRepo.getAllFlowInfo();
             info.forEach((url, prop) -> {
                 JsonObject flow = new JsonObject();
-                flow.put(AppConsts.URL, prop.getFlowUrl());
-                flow.put(AppConsts.STATE, prop.getState());
-                flow.put(AppConsts.LAST_MODIFIED_TIME,
+                flow.put(AppSymbols.URL, prop.getFlowUrl());
+                flow.put(AppSymbols.STATE, prop.getState());
+                flow.put(AppSymbols.LAST_MODIFIED_TIME,
                         StringUtils.toDatetimeStr(prop.getLastModifiedTime(),
                         AppConfigs.getZoneId()));
-                flow.put(AppConsts.SIZE, prop.getFileSize());
+                flow.put(AppSymbols.SIZE, prop.getFileSize());
                 flows.add(flow);
             });
             promise.complete(ResultEnum.SUCCESS);

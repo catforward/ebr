@@ -27,9 +27,9 @@ import io.vertx.core.json.JsonObject;
  *
  * @author l.gong
  */
-public final class AppConsts {
+public final class AppSymbols {
 
-    private AppConsts() {}
+    private AppSymbols() {}
 
     public static final String ENV_EBR_ROOT = "EBR_ROOT";
     public static final String BASE_URL = "/ebr";

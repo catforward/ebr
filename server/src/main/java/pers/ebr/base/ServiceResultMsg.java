@@ -58,10 +58,10 @@ public class ServiceResultMsg {
 
     public JsonObject toJsonObject() {
         JsonObject jsonObject = new JsonObject();
-        jsonObject.put(AppConsts.CODE, this.code);
-        jsonObject.put(AppConsts.MSG, this.message);
+        jsonObject.put(AppSymbols.CODE, this.code);
+        jsonObject.put(AppSymbols.MSG, this.message);
         if (!this.data.isEmpty()) {
-            jsonObject.put(AppConsts.DATA, this.data);
+            jsonObject.put(AppSymbols.DATA, this.data);
         }
         return jsonObject;
     }

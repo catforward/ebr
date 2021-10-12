@@ -57,10 +57,10 @@ public class BaseHandler implements Handler<RoutingContext> {
         try {
             HttpServerRequest request = routingContext.request();
             JsonObject inData = new JsonObject()
-                    .put(AppConsts.USER_AGENT, request.getHeader(HttpHeaders.USER_AGENT))
-                    .put(AppConsts.METHOD, request.method().toString())
-                    .put(AppConsts.PATH, request.path())
-                    .put(AppConsts.BODY, Optional.ofNullable(routingContext.getBodyAsJson()).orElse(emptyBody));
+                    .put(AppSymbols.USER_AGENT, request.getHeader(HttpHeaders.USER_AGENT))
+                    .put(AppSymbols.METHOD, request.method().toString())
+                    .put(AppSymbols.PATH, request.path())
+                    .put(AppSymbols.BODY, Optional.ofNullable(routingContext.getBodyAsJson()).orElse(emptyBody));
             logger.trace("request info: {}", inData);
 
             doPrepare(inData)
@@ -92,7 +92,7 @@ public class BaseHandler implements Handler<RoutingContext> {
 
     private Future<Void> doPrepare(JsonObject inData) {
         return Future.future(promise -> {
-            String path = inData.getString(AppConsts.PATH);
+            String path = inData.getString(AppSymbols.PATH);
             if (isNull(apiServiceMap.get(path))) {
                 promise.fail(new AppException(ResultEnum.ERR_404));
             } else {
@@ -103,7 +103,7 @@ public class BaseHandler implements Handler<RoutingContext> {
 
     private Future<JsonObject> doHandle(RoutingContext routingContext, JsonObject inData) {
         return Future.future(promise -> {
-            String serviceName = apiServiceMap.get(inData.getString(AppConsts.PATH));
+            String serviceName = apiServiceMap.get(inData.getString(AppSymbols.PATH));
             if (isNull(serviceName) || serviceName.isBlank()) {
                 promise.fail(new AppException(ResultEnum.ERR_500));
                 return;

@@ -69,7 +69,7 @@ public abstract class BaseService extends BaseVerticle {
     }
 
     protected JsonObject getPostBody() {
-        return isNull(inData) ? AppConsts.EMPTY_JSON_OBJ : inData.getJsonObject(AppConsts.BODY);
+        return isNull(inData) ? AppSymbols.EMPTY_JSON_OBJ : inData.getJsonObject(AppSymbols.BODY);
     }
 
     protected String getParameter(String name, String def) {
@@ -78,16 +78,16 @@ public abstract class BaseService extends BaseVerticle {
         }
         String value;
         switch (name) {
-            case AppConsts.USER_AGENT: { value = inData.getString(AppConsts.USER_AGENT); break; }
-            case AppConsts.METHOD: { value = inData.getString(AppConsts.METHOD); break; }
-            case AppConsts.PATH:{ value = inData.getString(AppConsts.PATH); break; }
+            case AppSymbols.USER_AGENT: { value = inData.getString(AppSymbols.USER_AGENT); break; }
+            case AppSymbols.METHOD: { value = inData.getString(AppSymbols.METHOD); break; }
+            case AppSymbols.PATH:{ value = inData.getString(AppSymbols.PATH); break; }
             default: { value = def; break; }
         }
         return isNull(value) ? def : value;
     }
 
     protected String getParameter(String name) {
-        return getParameter(name, AppConsts.BLANK_STR);
+        return getParameter(name, AppSymbols.BLANK_STR);
     }
 
     protected Future<IResult> doPrepare() {
@@ -109,16 +109,16 @@ public abstract class BaseService extends BaseVerticle {
             .onSuccess(ret -> makeReplyMsg(msg, ret))
             .onFailure(ex -> {
                if (ex instanceof AppException) {
-                   logger.debug(AppConsts.BLANK_STR, ex.getCause());
+                   logger.debug(AppSymbols.BLANK_STR, ex.getCause());
                    AppException se = (AppException) ex;
                    msg.reply(new ServiceResultMsg(se.getReason()).toJsonObject());
                } else {
-                   logger.error(AppConsts.BLANK_STR, ex);
+                   logger.error(AppSymbols.BLANK_STR, ex);
                    msg.reply(new ServiceResultMsg(ResultEnum.ERR_500).toJsonObject());
                }
             });
         } catch (Exception ex) {
-            logger.error(AppConsts.BLANK_STR, ex);
+            logger.error(AppSymbols.BLANK_STR, ex);
             msg.reply(new ServiceResultMsg(ResultEnum.ERR_500).toJsonObject());
         }
     }
@@ -136,16 +136,16 @@ public abstract class BaseService extends BaseVerticle {
             .onSuccess(ret -> makeReplyMsg(msg, ret))
             .onFailure(ex -> {
                 if (ex instanceof AppException) {
-                    logger.debug(AppConsts.BLANK_STR, ex.getCause());
+                    logger.debug(AppSymbols.BLANK_STR, ex.getCause());
                     AppException se = (AppException) ex;
                     msg.reply(new ServiceResultMsg(se.getReason()).toJsonObject());
                 } else {
-                    logger.error(AppConsts.BLANK_STR, ex);
+                    logger.error(AppSymbols.BLANK_STR, ex);
                     msg.reply(new ServiceResultMsg(ResultEnum.ERR_500).toJsonObject());
                 }
             });
         } catch (Exception ex) {
-            logger.error(AppConsts.BLANK_STR, ex);
+            logger.error(AppSymbols.BLANK_STR, ex);
             msg.reply(new ServiceResultMsg(ResultEnum.ERR_500).toJsonObject());
         }
     }

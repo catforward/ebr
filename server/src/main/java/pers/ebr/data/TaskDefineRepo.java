@@ -24,7 +24,7 @@ import com.google.common.cache.RemovalListener;
 import io.vertx.core.json.JsonObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pers.ebr.base.AppConsts;
+import pers.ebr.base.AppSymbols;
 import pers.ebr.base.AppException;
 import pers.ebr.base.AppPaths;
 import pers.ebr.base.StringUtils;
@@ -85,7 +85,7 @@ public class TaskDefineRepo {
             @Override
             public FileVisitResult visitFile(Path filePath, BasicFileAttributes attrs) throws IOException {
                 File file = filePath.toFile();
-                if (file.canRead() && file.getName().endsWith(AppConsts.FLOW_FILE_SUFFIX)) {
+                if (file.canRead() && file.getName().endsWith(AppSymbols.FLOW_FILE_SUFFIX)) {
                     TaskDefineFileProp prop = new TaskDefineFileProp();
                     prop.setAbsolutePath(file.getAbsolutePath());
                     prop.setFlowUrl(StringUtils.toFlowUrl(dataStorePath, filePath));
