@@ -12,9 +12,8 @@ import (
 
 // Flow/Task执行动作
 type AbortAction struct {
-	api_url   string
-	api_param map[string]string
-	api_res   []byte
+	api_request  ActionParam
+	api_response []byte
 }
 
 // Flow/Task执行动作的响应数据结构
@@ -24,10 +23,10 @@ type AbortActionRespData struct {
 }
 
 // 动作执行
-func (act *AbortAction) DoAction(target string) {
+func (act *AbortAction) DoAction(requiredFlow string) {
 	log.Println("AbortAction...")
 	// 初始化数据
-	act.initData(target)
+	act.initData(requiredFlow)
 	// 数据请求
 	act.doRequest()
 	// 格式化结果
@@ -39,20 +38,23 @@ func (act *AbortAction) initData(flow string) {
 		log.Fatalf("the target of abort action must be set.")
 		return
 	}
-	act.api_url = utl.BASE_URL + "/schd/action"
-	act.api_param = make(map[string]string)
-	act.api_param["action"] = "abort"
-	act.api_param["flow"] = flow
+
+	innerParam := make(map[string]string)
+	innerParam["action"] = "abort"
+	innerParam["flow"] = flow
+
+	act.api_request.Id = "api.schd.action"
+	act.api_request.Param = innerParam
 }
 
 func (act *AbortAction) doRequest() {
-	bytesData, err := json.Marshal(act.api_param)
+	bytesData, err := json.Marshal(act.api_request)
 	if err != nil {
 		fmt.Println(err.Error())
 		return
 	}
 
-	request, err := http.NewRequest("POST", act.api_url, bytes.NewReader(bytesData))
+	request, err := http.NewRequest("POST", utl.BASE_URL, bytes.NewReader(bytesData))
 	if err != nil {
 		fmt.Println(err.Error())
 		return
@@ -72,13 +74,13 @@ func (act *AbortAction) doRequest() {
 		fmt.Println(err.Error())
 		return
 	}
-	act.api_res = respBytes
-	// fmt.Println("response Body:", string(act.api_res))
+	act.api_response = respBytes
+	// fmt.Println("response Body:", string(act.api_response))
 }
 
 func (act *AbortAction) formatResult() {
 	var res AbortActionRespData
-	if err := json.Unmarshal(act.api_res, &res); err != nil {
+	if err := json.Unmarshal(act.api_response, &res); err != nil {
 		fmt.Println(err.Error())
 		return
 	}
