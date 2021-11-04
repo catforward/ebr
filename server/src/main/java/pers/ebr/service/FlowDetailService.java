@@ -88,8 +88,7 @@ public class FlowDetailService extends BaseService {
     public Future<IResult> doPrepare() {
         logger.trace("doPrepare -> {}", inData);
         return Future.future(promise -> {
-            JsonObject postBody = getPostBody();
-            String taskUrl = postBody.getString(FLOW);
+            String taskUrl = inData.getString(FLOW);
             if (isNull(taskUrl) || taskUrl.isBlank()) {
                 logger.debug("flow's url is empty.");
                 promise.fail(new AppException(ResultEnum.ERR_11001));
@@ -103,8 +102,7 @@ public class FlowDetailService extends BaseService {
     protected Future<IResult> doService() {
         logger.trace("doService -> {}", inData);
         return Future.future(promise -> {
-            JsonObject postBody = getPostBody();
-            String flowUrl = postBody.getString(FLOW);
+            String flowUrl = inData.getString(FLOW);
             JsonObject flowData = new JsonObject();
             outData.put(FLOW, flowData);
             try {

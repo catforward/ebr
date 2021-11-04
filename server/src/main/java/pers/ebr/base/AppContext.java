@@ -37,7 +37,7 @@ public final class AppContext {
 
     private final List<VerticleProp> verticleDescList = new CopyOnWriteArrayList<>();
     /**
-     * key: api url value: service id
+     * key: api id value: service id
      */
     private final Map<String, String> apiServiceMap = new ConcurrentHashMap<>();
 

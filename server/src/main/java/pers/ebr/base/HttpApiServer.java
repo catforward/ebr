@@ -29,8 +29,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pers.ebr.AppMain;
 
-import java.util.Map;
-
 import static java.util.Objects.isNull;
 
 /**
@@ -62,12 +60,10 @@ public class HttpApiServer extends AbstractVerticle {
         router.route().handler(BodyHandler.create());
         router.route().failureHandler(ErrorHandler.create(vertx));
         // API
-        router.route(AppSymbols.BASE_URL + "/api").handler(context ->
+        router.get(AppSymbols.BASE_URL).handler(context ->
             context.response().end(new JsonObject().put("version", AppMain.VERSION).encodePrettily())
         );
-        Map<String, String> mapping = AppContext.getApiServiceMapping();
-        BaseHandler handler = new BaseHandler(mapping);
-        mapping.forEach((apiUrl, serviceId) -> router.post(apiUrl).handler(handler));
+        router.post(AppSymbols.BASE_URL).handler(new BaseHandler(AppContext.getApiServiceMapping()));
 
         // server
         String host = config().getString(AppConfigs.HTTP_ADDRESS, "localhost");

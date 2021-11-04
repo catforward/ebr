@@ -25,12 +25,12 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-		<java.version>11</java.version>
+		<java.version>17</java.version>
 		<maven.compiler.source>${java.version}</maven.compiler.source>
 		<maven.compiler.target>${java.version}</maven.compiler.target>
 		<sonar.java.binaries>${project.basedir}/target/classes</sonar.java.binaries>
 		<ebr.main>pers.ebr.AppMain</ebr.main>
-		<vertx.version>4.1.4</vertx.version>
+		<vertx.version>4.1.5</vertx.version>
 		<guava.version>31.0.1-jre</guava.version>
 		<log4j2.version>2.14.1</log4j2.version>
 		<cron.version>9.1.5</cron.version>

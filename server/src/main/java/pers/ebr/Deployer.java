@@ -77,9 +77,9 @@ public class Deployer {
                     .build();
             TaskRepo.setIdleFlowPoolCache(taskCache);
             // API
-            AppContext.addApiServiceMapping(ServiceSymbols.URL_INFO_FLOW_LIST, ServiceSymbols.SERVICE_INFO_FLOW_LIST);
-            AppContext.addApiServiceMapping(ServiceSymbols.URL_INFO_FLOW_DETAIL, ServiceSymbols.SERVICE_INFO_FLOW_DETAIL);
-            AppContext.addApiServiceMapping(ServiceSymbols.URL_SCHD_ACTION, ServiceSymbols.SERVICE_SCHD_ACTION);
+            AppContext.addApiServiceMapping(ServiceSymbols.API_INFO_FLOW_LIST, ServiceSymbols.SERVICE_INFO_FLOW_LIST);
+            AppContext.addApiServiceMapping(ServiceSymbols.API_INFO_FLOW_DETAIL, ServiceSymbols.SERVICE_INFO_FLOW_DETAIL);
+            AppContext.addApiServiceMapping(ServiceSymbols.API_SCHD_ACTION, ServiceSymbols.SERVICE_SCHD_ACTION);
             // Vertical
             AppContext.addVerticle(new VerticleProp(FsRepoWatchVerticle::new, makeDefaultWorkerOptions(1, config)));
             AppContext.addVerticle(new VerticleProp(FlowListService::new, makeDefaultWorkerOptions(1, config)));

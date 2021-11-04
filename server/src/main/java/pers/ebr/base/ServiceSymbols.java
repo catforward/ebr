@@ -19,8 +19,6 @@
  */
 package pers.ebr.base;
 
-import static pers.ebr.base.AppSymbols.BASE_URL;
-
 /**
  * <pre>Service's const</pre>
  *
@@ -30,14 +28,15 @@ public final class ServiceSymbols {
 
     private ServiceSymbols() {}
 
-    /* API */
-    public static final String URL_INFO_FLOW_LIST = BASE_URL + "/api/info/flows";
-    public static final String SERVICE_INFO_FLOW_LIST = "service.info.flows";
+    /* API & Service */
+    /* naming rule: func_type.module.func_name */
+    public static final String API_INFO_FLOW_LIST = "api.info.flow_list";
+    public static final String SERVICE_INFO_FLOW_LIST = "service.info.flow_list";
 
-    public static final String URL_INFO_FLOW_DETAIL = BASE_URL + "/api/info/flow";
-    public static final String SERVICE_INFO_FLOW_DETAIL = "service.info.flow";
+    public static final String API_INFO_FLOW_DETAIL = "api.info.flow_detail";
+    public static final String SERVICE_INFO_FLOW_DETAIL = "service.info.flow_detail";
 
-    public static final String URL_SCHD_ACTION = BASE_URL + "/api/schd/action";
+    public static final String API_SCHD_ACTION = "api.schd.action";
     public static final String SERVICE_SCHD_ACTION = "service.schd.action";
 
     /* MSG */
@@ -51,7 +50,7 @@ public final class ServiceSymbols {
 
     public static final String MSG_STATE_TASK_LAUNCH = "msg.state.task.launch";
     public static final String MSG_STATE_TASK_ABORTED = "msg.state.task.aborted";
-    public static final String MSG_STATE_TASK_PAUSED = "msg.state.task.paused";;
+    public static final String MSG_STATE_TASK_PAUSED = "msg.state.task.paused";
     public static final String MSG_STATE_TASK_SKIPPED = "msg.state.task.skipped";
     public static final String MSG_STATE_TASK_COMPLETE = "msg.state.task.complete";
     public static final String MSG_STATE_TASK_RUNNING = "msg.state.task.running";
