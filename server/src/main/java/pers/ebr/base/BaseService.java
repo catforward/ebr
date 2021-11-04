@@ -26,7 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pers.ebr.types.ResultEnum;
 
-import static java.util.Objects.isNull;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -68,28 +67,6 @@ public abstract class BaseService extends BaseVerticle {
         vertx.eventBus().consumer(msgId, this::handleMsgEvent);
     }
 
-    protected JsonObject getPostBody() {
-        return isNull(inData) ? AppSymbols.EMPTY_JSON_OBJ : inData.getJsonObject(AppSymbols.BODY);
-    }
-
-    protected String getParameter(String name, String def) {
-        if (isNull(inData) || isNull(name)) {
-            return def;
-        }
-        String value;
-        switch (name) {
-            case AppSymbols.USER_AGENT: { value = inData.getString(AppSymbols.USER_AGENT); break; }
-            case AppSymbols.METHOD: { value = inData.getString(AppSymbols.METHOD); break; }
-            case AppSymbols.PATH:{ value = inData.getString(AppSymbols.PATH); break; }
-            default: { value = def; break; }
-        }
-        return isNull(value) ? def : value;
-    }
-
-    protected String getParameter(String name) {
-        return getParameter(name, AppSymbols.BLANK_STR);
-    }
-
     protected Future<IResult> doPrepare() {
         return Future.future(promise -> promise.complete(ResultEnum.SUCCESS));
     }
@@ -108,9 +85,8 @@ public abstract class BaseService extends BaseVerticle {
             .compose(ret -> doRequest())
             .onSuccess(ret -> makeReplyMsg(msg, ret))
             .onFailure(ex -> {
-               if (ex instanceof AppException) {
+               if (ex instanceof AppException se) {
                    logger.debug(AppSymbols.BLANK_STR, ex.getCause());
-                   AppException se = (AppException) ex;
                    msg.reply(new ServiceResultMsg(se.getReason()).toJsonObject());
                } else {
                    logger.error(AppSymbols.BLANK_STR, ex);
@@ -135,9 +111,8 @@ public abstract class BaseService extends BaseVerticle {
             .compose(ret -> doService())
             .onSuccess(ret -> makeReplyMsg(msg, ret))
             .onFailure(ex -> {
-                if (ex instanceof AppException) {
+                if (ex instanceof AppException se) {
                     logger.debug(AppSymbols.BLANK_STR, ex.getCause());
-                    AppException se = (AppException) ex;
                     msg.reply(new ServiceResultMsg(se.getReason()).toJsonObject());
                 } else {
                     logger.error(AppSymbols.BLANK_STR, ex);
@@ -160,9 +135,8 @@ public abstract class BaseService extends BaseVerticle {
             outData = new JsonObject();
 
             doMsg().onFailure(ex -> {
-                if (ex instanceof AppException) {
+                if (ex instanceof AppException se) {
                     logger.debug("Service Fail...", ex.getCause());
-                    AppException se = (AppException) ex;
                     msg.reply(new ServiceResultMsg(se.getReason()).toJsonObject());
                 } else {
                     logger.error("Unknown Error...", ex);

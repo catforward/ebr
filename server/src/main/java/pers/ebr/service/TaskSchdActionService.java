@@ -67,14 +67,13 @@ public class TaskSchdActionService extends BaseService {
     public Future<IResult> doPrepare() {
         logger.trace("doPrepare -> {}", inData);
         return Future.future(promise -> {
-            JsonObject postBody = getPostBody();
-            String action = postBody.getString(AppSymbols.ACTION);
+            String action = inData.getString(AppSymbols.ACTION);
             if (isNull(action) || action.isBlank()) {
                 logger.debug("parameter[action] is empty.");
                 promise.fail(new AppException(ResultEnum.ERR_11001));
                 return;
             }
-            String flowUrl = postBody.getString(AppSymbols.FLOW);
+            String flowUrl = inData.getString(AppSymbols.FLOW);
             if (isNull(flowUrl) || flowUrl.isBlank()) {
                 logger.debug("parameter[flowUrl] is empty.");
                 promise.fail(new AppException(ResultEnum.ERR_11001));
@@ -88,9 +87,8 @@ public class TaskSchdActionService extends BaseService {
     protected Future<IResult> doService() {
         logger.trace("doService -> {}", inData);
         return Future.future(promise -> {
-            JsonObject postBody = getPostBody();
-            String action = postBody.getString(AppSymbols.ACTION);
-            String flowUrl = postBody.getString(AppSymbols.FLOW);
+            String action = inData.getString(AppSymbols.ACTION);
+            String flowUrl = inData.getString(AppSymbols.FLOW);
             handleAction(action, flowUrl)
             .onSuccess(ar -> promise.complete(ResultEnum.SUCCESS))
             .onFailure(promise::fail);

@@ -47,6 +47,8 @@ public final class AppSymbols {
     public static final String METHOD = "method";
     public static final String PATH = "path";
     public static final String BODY = "body";
+    public static final String API = "api";
+    public static final String PARAM = "param";
 
     public static final String FLOW_FILE_SUFFIX = ".json";
     public static final String FLOWS = "flows";
