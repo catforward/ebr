@@ -35,8 +35,8 @@ import pers.ebr.schd.CronSchdVerticle;
 import pers.ebr.schd.TaskExecVerticle;
 import pers.ebr.service.FlowDetailService;
 import pers.ebr.service.FlowListService;
+import pers.ebr.service.FlowSchdActionService;
 import pers.ebr.service.FsRepoWatchVerticle;
-import pers.ebr.service.TaskSchdActionService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -77,14 +77,14 @@ public class Deployer {
                     .build();
             TaskRepo.setIdleFlowPoolCache(taskCache);
             // API
-            AppContext.addApiServiceMapping(ServiceSymbols.URL_INFO_FLOW_LIST, ServiceSymbols.SERVICE_INFO_FLOW_LIST);
-            AppContext.addApiServiceMapping(ServiceSymbols.URL_INFO_FLOW_DETAIL, ServiceSymbols.SERVICE_INFO_FLOW_DETAIL);
-            AppContext.addApiServiceMapping(ServiceSymbols.URL_SCHD_ACTION, ServiceSymbols.SERVICE_SCHD_ACTION);
+            AppContext.addApiServiceMapping(ServiceSymbols.API_INFO_FLOW_LIST, ServiceSymbols.SERVICE_INFO_FLOW_LIST);
+            AppContext.addApiServiceMapping(ServiceSymbols.API_INFO_FLOW_DETAIL, ServiceSymbols.SERVICE_INFO_FLOW_DETAIL);
+            AppContext.addApiServiceMapping(ServiceSymbols.API_SCHD_ACTION, ServiceSymbols.SERVICE_SCHD_ACTION);
             // Vertical
             AppContext.addVerticle(new VerticleProp(FsRepoWatchVerticle::new, makeDefaultWorkerOptions(1, config)));
             AppContext.addVerticle(new VerticleProp(FlowListService::new, makeDefaultWorkerOptions(1, config)));
             AppContext.addVerticle(new VerticleProp(FlowDetailService::new, makeDefaultWorkerOptions(1, config)));
-            AppContext.addVerticle(new VerticleProp(TaskSchdActionService::new, makeDefaultWorkerOptions(1, config)));
+            AppContext.addVerticle(new VerticleProp(FlowSchdActionService::new, makeDefaultWorkerOptions(1, config)));
             AppContext.addVerticle(new VerticleProp(ActionSchdVerticle::new, makeDefaultWorkerOptions(1, config)));
             AppContext.addVerticle(new VerticleProp(TaskExecVerticle::new, makeDefaultWorkerOptions(1, config)));
             AppContext.addVerticle(new VerticleProp(CronSchdVerticle::new, makeDefaultWorkerOptions(1, config)));

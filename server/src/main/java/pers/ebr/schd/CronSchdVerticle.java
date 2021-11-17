@@ -30,7 +30,6 @@ import pers.ebr.base.BaseScheduler;
 import pers.ebr.base.ServiceSymbols;
 import pers.ebr.data.CronFlowRepo;
 import pers.ebr.data.Flow;
-import pers.ebr.types.TaskStateEnum;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
@@ -39,8 +38,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
 import static java.util.Objects.isNull;
-import static pers.ebr.base.AppConsts.EMPTY_JSON_OBJ;
-import static pers.ebr.types.TaskStateEnum.STORED;
+import static pers.ebr.base.AppSymbols.EMPTY_JSON_OBJ;
+import static pers.ebr.types.TaskStateEnum.STANDBY;
 
 /**
  * <pre>checking flow's cron expr every n seconds</pre>
@@ -74,9 +73,8 @@ public class CronSchdVerticle extends BaseScheduler {
 
     private void handlePeriodic(Message<JsonObject> msg) {
         CronFlowRepo.getCronSchdFlowPoolRef().forEach((flowUrl, flowObj) -> {
-            TaskStateEnum state = flowObj.getState();
             Cron cron = flowObj.getCron();
-            if (STORED == state && !isNull(cron)) {
+            if (STANDBY == flowObj.getState() && !isNull(cron)) {
                 LocalDateTime lastFinTime = flowObj.getLatestResetDateTime();
                 ZonedDateTime now = ZonedDateTime.now(AppConfigs.getZoneId());
                 ZonedDateTime from = isNull(lastFinTime) ? now : ZonedDateTime.of(lastFinTime, AppConfigs.getZoneId());

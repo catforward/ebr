@@ -40,14 +40,14 @@ public class BaseVerticle extends AbstractVerticle {
     protected void notice(String msg, Task task) {
         String flowUrl = isNull(task.getRoot()) ? task.getUrl() : task.getRoot().getUrl();
         JsonObject param = new JsonObject();
-        param.put(AppConsts.FLOW, flowUrl);
-        param.put(AppConsts.TASK, task.getUrl());
+        param.put(AppSymbols.FLOW, flowUrl);
+        param.put(AppSymbols.TASK, task.getUrl());
         emitMsg(msg, param);
     }
 
     protected void notice(String msg, Flow flow) {
         JsonObject param = new JsonObject();
-        param.put(AppConsts.FLOW, flow.getUrl());
+        param.put(AppSymbols.FLOW, flow.getUrl());
         emitMsg(msg, param);
     }
 }

@@ -4,10 +4,16 @@ import (
 	"ebr/symbols"
 )
 
+// Server端的请求数据
+type ActionParam struct {
+	Id    string            `json:"api"`   // 请求ID
+	Param map[string]string `json:"param"` // 请求参数
+}
+
 // cli的动作接口
 type IAction interface {
 	// 动作执行
-	DoAction(target string)
+	DoAction(requiredFlow string)
 }
 
 // 已实现的动作

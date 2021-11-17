@@ -26,7 +26,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pers.ebr.types.ResultEnum;
 
-import static java.util.Objects.isNull;
 import static java.util.Objects.requireNonNull;
 
 /**
@@ -68,28 +67,6 @@ public abstract class BaseService extends BaseVerticle {
         vertx.eventBus().consumer(msgId, this::handleMsgEvent);
     }
 
-    protected JsonObject getPostBody() {
-        return isNull(inData) ? AppConsts.EMPTY_JSON_OBJ : inData.getJsonObject(AppConsts.BODY);
-    }
-
-    protected String getParameter(String name, String def) {
-        if (isNull(inData) || isNull(name)) {
-            return def;
-        }
-        String value;
-        switch (name) {
-            case AppConsts.USER_AGENT: { value = inData.getString(AppConsts.USER_AGENT); break; }
-            case AppConsts.METHOD: { value = inData.getString(AppConsts.METHOD); break; }
-            case AppConsts.PATH:{ value = inData.getString(AppConsts.PATH); break; }
-            default: { value = def; break; }
-        }
-        return isNull(value) ? def : value;
-    }
-
-    protected String getParameter(String name) {
-        return getParameter(name, AppConsts.BLANK_STR);
-    }
-
     protected Future<IResult> doPrepare() {
         return Future.future(promise -> promise.complete(ResultEnum.SUCCESS));
     }
@@ -108,17 +85,16 @@ public abstract class BaseService extends BaseVerticle {
             .compose(ret -> doRequest())
             .onSuccess(ret -> makeReplyMsg(msg, ret))
             .onFailure(ex -> {
-               if (ex instanceof AppException) {
-                   logger.debug(AppConsts.BLANK_STR, ex.getCause());
-                   AppException se = (AppException) ex;
+               if (ex instanceof AppException se) {
+                   logger.debug(AppSymbols.BLANK_STR, ex.getCause());
                    msg.reply(new ServiceResultMsg(se.getReason()).toJsonObject());
                } else {
-                   logger.error(AppConsts.BLANK_STR, ex);
+                   logger.error(AppSymbols.BLANK_STR, ex);
                    msg.reply(new ServiceResultMsg(ResultEnum.ERR_500).toJsonObject());
                }
             });
         } catch (Exception ex) {
-            logger.error(AppConsts.BLANK_STR, ex);
+            logger.error(AppSymbols.BLANK_STR, ex);
             msg.reply(new ServiceResultMsg(ResultEnum.ERR_500).toJsonObject());
         }
     }
@@ -135,17 +111,16 @@ public abstract class BaseService extends BaseVerticle {
             .compose(ret -> doService())
             .onSuccess(ret -> makeReplyMsg(msg, ret))
             .onFailure(ex -> {
-                if (ex instanceof AppException) {
-                    logger.debug(AppConsts.BLANK_STR, ex.getCause());
-                    AppException se = (AppException) ex;
+                if (ex instanceof AppException se) {
+                    logger.debug(AppSymbols.BLANK_STR, ex.getCause());
                     msg.reply(new ServiceResultMsg(se.getReason()).toJsonObject());
                 } else {
-                    logger.error(AppConsts.BLANK_STR, ex);
+                    logger.error(AppSymbols.BLANK_STR, ex);
                     msg.reply(new ServiceResultMsg(ResultEnum.ERR_500).toJsonObject());
                 }
             });
         } catch (Exception ex) {
-            logger.error(AppConsts.BLANK_STR, ex);
+            logger.error(AppSymbols.BLANK_STR, ex);
             msg.reply(new ServiceResultMsg(ResultEnum.ERR_500).toJsonObject());
         }
     }
@@ -160,9 +135,8 @@ public abstract class BaseService extends BaseVerticle {
             outData = new JsonObject();
 
             doMsg().onFailure(ex -> {
-                if (ex instanceof AppException) {
+                if (ex instanceof AppException se) {
                     logger.debug("Service Fail...", ex.getCause());
-                    AppException se = (AppException) ex;
                     msg.reply(new ServiceResultMsg(se.getReason()).toJsonObject());
                 } else {
                     logger.error("Unknown Error...", ex);

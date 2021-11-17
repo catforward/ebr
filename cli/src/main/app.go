@@ -15,10 +15,10 @@ import (
 )
 
 var (
-	required string
-	showCmd  = flag.NewFlagSet(symbols.SHOW, flag.ExitOnError)
-	startCmd = flag.NewFlagSet(symbols.START, flag.ExitOnError)
-	abortCmd = flag.NewFlagSet(symbols.ABORT, flag.ExitOnError)
+	requiredFlow string
+	showCmd      = flag.NewFlagSet(symbols.SHOW, flag.ExitOnError)
+	startCmd     = flag.NewFlagSet(symbols.START, flag.ExitOnError)
+	abortCmd     = flag.NewFlagSet(symbols.ABORT, flag.ExitOnError)
 )
 
 var subcommands = map[string]*flag.FlagSet{
@@ -37,7 +37,7 @@ Usage: ebr [command] [option url]
 Commands:
 	show   : show flow's info then exit
 	start  : run the specified flow then exit
-	stop   : try to stop the specified flow then exit
+	abort  : try to abort the specified flow then exit
 Options:
 	-f url : set flow's url
 `)
@@ -46,7 +46,7 @@ Options:
 
 func setupCommonFlags() {
 	for _, fs := range subcommands {
-		fs.StringVar(&required, "f", "", "required flow's url for all commands")
+		fs.StringVar(&requiredFlow, "f", "", "required flow's url for all commands")
 	}
 }
 
@@ -54,27 +54,27 @@ func checkAndRun(flg *flag.FlagSet, action act.IAction) {
 	switch flg {
 	case showCmd:
 		{
-			if required == "" {
+			if requiredFlow == "" {
 				action.DoAction(symbols.ALL)
 			} else {
-				action.DoAction(required)
+				action.DoAction(requiredFlow)
 			}
 		}
 	case startCmd:
 		{
-			if required == "" {
+			if requiredFlow == "" {
 				log.Fatalf("-f is required for '%s' command", flg.Name())
 				os.Exit(symbols.COMMAND_ERROR)
 			}
-			action.DoAction(required)
+			action.DoAction(requiredFlow)
 		}
 	case abortCmd:
 		{
-			if required == "" {
+			if requiredFlow == "" {
 				log.Fatalf("-f is required for '%s' command", flg.Name())
 				os.Exit(symbols.COMMAND_ERROR)
 			}
-			action.DoAction(required)
+			action.DoAction(requiredFlow)
 		}
 	default:
 		log.Fatalf("[ERROR] unknown subcommand '%s', see help for more details.", flg.Name())

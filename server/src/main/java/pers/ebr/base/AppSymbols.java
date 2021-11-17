@@ -27,9 +27,9 @@ import io.vertx.core.json.JsonObject;
  *
  * @author l.gong
  */
-public final class AppConsts {
+public final class AppSymbols {
 
-    private AppConsts() {}
+    private AppSymbols() {}
 
     public static final String ENV_EBR_ROOT = "EBR_ROOT";
     public static final String BASE_URL = "/ebr";
@@ -47,6 +47,8 @@ public final class AppConsts {
     public static final String METHOD = "method";
     public static final String PATH = "path";
     public static final String BODY = "body";
+    public static final String API = "api";
+    public static final String PARAM = "param";
 
     public static final String FLOW_FILE_SUFFIX = ".json";
     public static final String FLOWS = "flows";

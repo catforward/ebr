@@ -41,8 +41,7 @@ public class TaskRunnerThreadFactory implements ThreadFactory {
     @Override
     public Thread newThread(Runnable r) {
         Objects.requireNonNull(r);
-        SecurityManager s = System.getSecurityManager();
-        Thread t = new Thread((s != null) ? s.getThreadGroup() : Thread.currentThread().getThreadGroup(),
+        Thread t = new Thread(Thread.currentThread().getThreadGroup(),
                 r, namePrefix + threadNumber.getAndIncrement(), 0);
         if (t.isDaemon()) {
             t.setDaemon(false);

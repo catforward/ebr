@@ -34,19 +34,29 @@ import org.slf4j.LoggerFactory;
 import pers.ebr.types.ResultEnum;
 
 import java.util.Map;
-import java.util.Optional;
 
 import static java.util.Objects.isNull;
+import static pers.ebr.base.AppSymbols.BLANK_STR;
+import static pers.ebr.base.AppSymbols.EMPTY_JSON_OBJ;
 
 /**
- * <pre>Http's request handler</pre>
+ * <pre>
+ *     Http's request handler
+ *     Post Body:
+ *     {
+ *         "api": "xxx",
+ *         "param": {
+ *             "xxx":"xxx",
+ *             ...
+ *         }
+ *     }
+ * </pre>
  *
  * @author l.gong
  */
 public class BaseHandler implements Handler<RoutingContext> {
     private static final Logger logger = LoggerFactory.getLogger(BaseHandler.class);
     private final Map<String, String> apiServiceMap;
-    protected final JsonObject emptyBody = new JsonObject();
 
     public BaseHandler(Map<String, String> apiServiceMap) {
         this.apiServiceMap = apiServiceMap;
@@ -57,10 +67,9 @@ public class BaseHandler implements Handler<RoutingContext> {
         try {
             HttpServerRequest request = routingContext.request();
             JsonObject inData = new JsonObject()
-                    .put(AppConsts.USER_AGENT, request.getHeader(HttpHeaders.USER_AGENT))
-                    .put(AppConsts.METHOD, request.method().toString())
-                    .put(AppConsts.PATH, request.path())
-                    .put(AppConsts.BODY, Optional.ofNullable(routingContext.getBodyAsJson()).orElse(emptyBody));
+                    .put(AppSymbols.USER_AGENT, request.getHeader(HttpHeaders.USER_AGENT))
+                    .put(AppSymbols.BODY, routingContext.getBody().length() == 0 ? EMPTY_JSON_OBJ
+                            : routingContext.getBody().toJsonObject());
             logger.trace("request info: {}", inData);
 
             doPrepare(inData)
@@ -72,8 +81,7 @@ public class BaseHandler implements Handler<RoutingContext> {
                 response.end(ar.toString());
             }).onFailure(ex -> {
                 logger.debug("service failed...", ex);
-                if (ex instanceof AppException) {
-                    AppException se = (AppException) ex;
+                if (ex instanceof AppException se) {
                     String respStr = new ServiceResultMsg(se.getReason()).toJsonObject().toString();
                     logger.trace("response info: {}", respStr);
                     HttpServerResponse response = routingContext.response();
@@ -92,8 +100,8 @@ public class BaseHandler implements Handler<RoutingContext> {
 
     private Future<Void> doPrepare(JsonObject inData) {
         return Future.future(promise -> {
-            String path = inData.getString(AppConsts.PATH);
-            if (isNull(apiServiceMap.get(path))) {
+            String api = getHttpRequestBody(inData).getString(AppSymbols.API, BLANK_STR);
+            if (isNull(apiServiceMap.get(api))) {
                 promise.fail(new AppException(ResultEnum.ERR_404));
             } else {
                 promise.complete();
@@ -103,13 +111,13 @@ public class BaseHandler implements Handler<RoutingContext> {
 
     private Future<JsonObject> doHandle(RoutingContext routingContext, JsonObject inData) {
         return Future.future(promise -> {
-            String serviceName = apiServiceMap.get(inData.getString(AppConsts.PATH));
+            String serviceName = apiServiceMap.get(getHttpRequestBody(inData).getString(AppSymbols.API));
             if (isNull(serviceName) || serviceName.isBlank()) {
                 promise.fail(new AppException(ResultEnum.ERR_500));
                 return;
             }
             EventBus bus = routingContext.vertx().eventBus();
-            bus.request(serviceName, inData, (AsyncResult<Message<JsonObject>> res) -> {
+            bus.request(serviceName, getRequestParams(inData), (AsyncResult<Message<JsonObject>> res) -> {
                 if (res.failed()) {
                     logger.error("calling service failed... ", res.cause());
                     promise.fail(res.cause());
@@ -118,6 +126,15 @@ public class BaseHandler implements Handler<RoutingContext> {
                 }
             });
         });
+    }
+
+    private JsonObject getHttpRequestBody(JsonObject inData) {
+        return inData.getJsonObject(AppSymbols.BODY, EMPTY_JSON_OBJ);
+    }
+
+    private JsonObject getRequestParams(JsonObject inData) {
+        JsonObject body = getHttpRequestBody(inData);
+        return body.getJsonObject(AppSymbols.PARAM, EMPTY_JSON_OBJ);
     }
 
 }

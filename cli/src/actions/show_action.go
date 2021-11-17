@@ -14,9 +14,8 @@ import (
 
 // Flow/Task的信息显示动作
 type ShowAction struct {
-	api_url   string
-	api_param map[string]string
-	api_res   []byte
+	api_request  ActionParam
+	api_response []byte
 }
 
 // Flow的显示数据
@@ -58,37 +57,38 @@ type FlowDetailRespData struct {
 }
 
 // 动作执行
-func (act *ShowAction) DoAction(target string) {
+func (act *ShowAction) DoAction(requiredFlow string) {
 	// 初始化数据
-	act.initData(target)
+	act.initReqData(requiredFlow)
 	// 数据请求
 	act.doRequest()
 	// 格式化结果
-	if target == symbols.ALL {
+	if requiredFlow == symbols.ALL {
 		act.formatFlowListResult()
 	} else {
 		act.formatFlowDetailResult()
 	}
 }
 
-func (act *ShowAction) initData(target string) {
-	act.api_param = make(map[string]string)
-	if target == symbols.ALL {
-		act.api_url = utl.BASE_URL + "/info/flows"
-	} else {
-		act.api_url = utl.BASE_URL + "/info/flow"
-		act.api_param["flow"] = target
+func (act *ShowAction) initReqData(requiredFlow string) {
+	innerParam := make(map[string]string)
+	act.api_request.Id = "api.info.flow_list"
+	if requiredFlow != symbols.ALL {
+		act.api_request.Id = "api.info.flow_detail"
+		innerParam["flow"] = requiredFlow
 	}
+	act.api_request.Param = innerParam
+
 }
 
 func (act *ShowAction) doRequest() {
-	bytesData, err := json.Marshal(act.api_param)
+	bytesData, err := json.Marshal(act.api_request)
 	if err != nil {
 		fmt.Println(err.Error())
 		return
 	}
 
-	request, err := http.NewRequest("POST", act.api_url, bytes.NewReader(bytesData))
+	request, err := http.NewRequest("POST", utl.BASE_URL, bytes.NewReader(bytesData))
 	if err != nil {
 		fmt.Println(err.Error())
 		return
@@ -108,13 +108,13 @@ func (act *ShowAction) doRequest() {
 		fmt.Println(err.Error())
 		return
 	}
-	act.api_res = respBytes
-	// fmt.Println("response Body:", string(act.api_res))
+	act.api_response = respBytes
+	// fmt.Println("response Body:", string(act.api_response))
 }
 
 func (act *ShowAction) formatFlowListResult() {
 	var res FlowInfoRespData
-	if err := json.Unmarshal(act.api_res, &res); err != nil {
+	if err := json.Unmarshal(act.api_response, &res); err != nil {
 		fmt.Println(err.Error())
 		return
 	}
@@ -129,7 +129,7 @@ func (act *ShowAction) formatFlowListResult() {
 
 func (act *ShowAction) formatFlowDetailResult() {
 	var res FlowDetailRespData
-	if err := json.Unmarshal(act.api_res, &res); err != nil {
+	if err := json.Unmarshal(act.api_response, &res); err != nil {
 		fmt.Println(err.Error())
 		return
 	}

@@ -21,7 +21,7 @@ package pers.ebr.data;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pers.ebr.base.AppConsts;
+import pers.ebr.base.AppSymbols;
 import pers.ebr.base.AppException;
 import pers.ebr.types.ResultEnum;
 import pers.ebr.types.TaskTypeEnum;
@@ -46,7 +46,7 @@ public class ExternalScriptAttrValidator implements IValidator {
         if (TaskTypeEnum.TASK != task.getType()) {
             return;
         }
-        String[] fullCommand = task.meta.script.split(AppConsts.SPACE);
+        String[] fullCommand = task.meta.script.split(AppSymbols.SPACE);
         if (fullCommand.length == 0) {
             logger.debug("task[{}]'s parameter[script] not define.", task.meta.id);
             throw new AppException(ResultEnum.ERR_10104);

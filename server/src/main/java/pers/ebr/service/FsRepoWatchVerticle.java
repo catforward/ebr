@@ -30,7 +30,7 @@ import pers.ebr.data.TaskDefineRepo;
 
 import java.io.IOException;
 
-import static pers.ebr.base.AppConsts.EMPTY_JSON_OBJ;
+import static pers.ebr.base.AppSymbols.EMPTY_JSON_OBJ;
 
 /**
  * <pre>Refreshing define file's folder every n seconds</pre>
