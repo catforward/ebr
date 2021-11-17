@@ -46,8 +46,8 @@ import static java.util.Objects.isNull;
  *
  * @author l.gong
  */
-public class TaskSchdActionService extends BaseService {
-    private static final Logger logger = LoggerFactory.getLogger(TaskSchdActionService.class);
+public class FlowSchdActionService extends BaseService {
+    private static final Logger logger = LoggerFactory.getLogger(FlowSchdActionService.class);
     private final Map<String, String> actionMapping = new HashMap<>();
 
     @Override
@@ -60,7 +60,7 @@ public class TaskSchdActionService extends BaseService {
 
     @Override
     protected String getServiceName() {
-        return TaskSchdActionService.class.getName();
+        return FlowSchdActionService.class.getName();
     }
 
     @Override

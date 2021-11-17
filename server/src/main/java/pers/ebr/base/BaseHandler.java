@@ -34,7 +34,6 @@ import org.slf4j.LoggerFactory;
 import pers.ebr.types.ResultEnum;
 
 import java.util.Map;
-import java.util.Optional;
 
 import static java.util.Objects.isNull;
 import static pers.ebr.base.AppSymbols.BLANK_STR;
@@ -69,7 +68,8 @@ public class BaseHandler implements Handler<RoutingContext> {
             HttpServerRequest request = routingContext.request();
             JsonObject inData = new JsonObject()
                     .put(AppSymbols.USER_AGENT, request.getHeader(HttpHeaders.USER_AGENT))
-                    .put(AppSymbols.BODY, Optional.ofNullable(routingContext.getBodyAsJson()).orElse(EMPTY_JSON_OBJ));
+                    .put(AppSymbols.BODY, routingContext.getBody().length() == 0 ? EMPTY_JSON_OBJ
+                            : routingContext.getBody().toJsonObject());
             logger.trace("request info: {}", inData);
 
             doPrepare(inData)
