@@ -32,7 +32,7 @@
         <ebr.main>pers.ebr.AppMain</ebr.main>
         <vertx.version>4.2.1</vertx.version>
         <guava.version>31.0.1-jre</guava.version>
-        <log4j2.version>2.17.0</log4j2.version>
+        <log4j2.version>2.17.1</log4j2.version>
         <cron.version>9.1.6</cron.version>
         <junit.jupiter.version>5.8.2</junit.jupiter.version>
         <junit.platform.version>1.8.2</junit.platform.version>
