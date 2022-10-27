@@ -30,12 +30,12 @@
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <sonar.java.binaries>${project.basedir}/target/classes</sonar.java.binaries>
         <ebr.main>pers.ebr.AppMain</ebr.main>
-        <vertx.version>4.2.2</vertx.version>
-        <guava.version>31.0.1-jre</guava.version>
-        <log4j2.version>2.17.1</log4j2.version>
-        <cron.version>9.1.6</cron.version>
-        <junit.jupiter.version>5.8.2</junit.jupiter.version>
-        <junit.platform.version>1.8.2</junit.platform.version>
+        <vertx.version>4.3.4</vertx.version>
+        <guava.version>31.1-jre</guava.version>
+        <log4j2.version>2.19.0</log4j2.version>
+        <cron.version>9.2.0</cron.version>
+        <junit.jupiter.version>5.9.0</junit.jupiter.version>
+        <junit.platform.version>1.9.0</junit.platform.version>
     </properties>
 
     <dependencyManagement>
@@ -72,8 +72,19 @@
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>${log4j2.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-slf4j-impl</artifactId>
             <version>${log4j2.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-api</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
 			<groupId>org.junit.jupiter</groupId>

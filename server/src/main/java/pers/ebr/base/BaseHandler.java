@@ -68,8 +68,8 @@ public class BaseHandler implements Handler<RoutingContext> {
             HttpServerRequest request = routingContext.request();
             JsonObject inData = new JsonObject()
                     .put(AppSymbols.USER_AGENT, request.getHeader(HttpHeaders.USER_AGENT))
-                    .put(AppSymbols.BODY, routingContext.getBody().length() == 0 ? EMPTY_JSON_OBJ
-                            : routingContext.getBody().toJsonObject());
+                    .put(AppSymbols.BODY, routingContext.body().buffer().length() == 0 ? EMPTY_JSON_OBJ
+                            : routingContext.body().asJsonObject());
             logger.trace("request info: {}", inData);
 
             doPrepare(inData)
